@@ -2,7 +2,13 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="screen-orientation" content="portrait">
 <title>Racha BR — Garagem, Rua & Arrancada</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -130,27 +136,32 @@ input[type=range]{width:100%;accent-color:var(--ac)}
 .tgl button.on::after{left:25px;background:#111}
 #race{position:fixed;inset:0;z-index:50;background:#000;display:none;touch-action:none;user-select:none;-webkit-user-select:none}
 #race canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.ctl{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;padding:14px;pointer-events:none}
-.ctl .gp{display:flex;gap:10px;pointer-events:auto}
-.tb{width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);font-family:'Russo One','Arial Black',sans-serif;font-size:13px;color:#fff;display:grid;place-items:center;touch-action:none;text-align:center;line-height:1.05}
-.tb.big{width:96px;height:96px}
-.tb.g{border-color:var(--ac);color:var(--ac)}
-.tb.n{border-color:var(--bl);color:var(--bl)}
-.tb.r{border-color:var(--rd);color:var(--rd)}
-.tb.y{border-color:var(--ac2);color:var(--ac2)}
-.tb.act{background:rgba(255,255,255,.3)}
+
+.ctl{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;padding:12px 12px calc(14px + env(safe-area-inset-bottom));pointer-events:none;gap:10px}
+.ctl>*{pointer-events:auto}
+#race,#race *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.ctl svg{pointer-events:none;display:block}
+.cbtn{position:relative;border:0;padding:0;background:none;touch-action:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45));transition:transform .06s,filter .06s}
+.cbtn.act{transform:translateY(4px) scale(.96);filter:drop-shadow(0 2px 4px rgba(0,0,0,.5)) brightness(1.15)}
+.cbtn .lb{position:absolute;left:0;right:0;bottom:-15px;text-align:center;font:700 11px Rajdhani,Arial,sans-serif;color:#fff;letter-spacing:1px;text-shadow:0 1px 3px #000}
+.pedal.gas svg{width:78px;height:128px}.pedal.brake svg{width:92px;height:96px}
+.pedals{display:flex;gap:12px;align-items:flex-end;padding-bottom:14px}
+.paddles{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.paddle svg{width:60px;height:52px}.nitrob svg{width:52px;height:68px}
+.rcl{display:flex;gap:10px;align-items:flex-end}
+.wheel{width:168px;height:168px;touch-action:none;position:relative;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
+.wheel svg{width:100%;height:100%;transition:transform .05s linear}
+.shifter svg{width:118px;height:118px}
+@media(max-width:420px){.wheel{width:146px;height:146px}.pedal.gas svg{width:66px;height:112px}.pedal.brake svg{width:76px;height:80px}.paddle svg{width:52px;height:46px}.shifter svg{width:104px;height:104px}.nitrob svg{width:44px;height:58px}.ctl{padding-left:8px;padding-right:8px}.pedals{gap:8px}}
+#rotate{position:fixed;inset:0;z-index:300;background:#0a0c0f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#eef1f5;font:700 18px Rajdhani,Arial,sans-serif;text-align:center;padding:20px}
+#rotate svg{width:90px;height:90px;animation:rot 1.6s ease-in-out infinite}
+@keyframes rot{0%,30%{transform:rotate(-90deg)}60%,100%{transform:rotate(0)}}
+@media (orientation:landscape) and (pointer:coarse) and (max-height:560px){#rotate{display:flex}}
+
 .pausebtn{position:absolute;top:12px;right:12px;width:42px;height:42px;border-radius:10px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);color:#fff;font-family:'Russo One','Arial Black',sans-serif;z-index:2}
 .keys{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.45);font-size:13px;font-weight:600;pointer-events:none;text-align:center}
 @media (hover:none){.keys{display:none}}
 .empty{color:var(--mu);padding:20px;text-align:center}
-.tb{transition:background .1s,transform .05s}
-.ctl .gp{align-items:flex-end}.ctl .gp.col,.ctl .col{display:flex;flex-direction:column;gap:10px;align-items:center}
-.tb{border-radius:22px;backdrop-filter:blur(4px);background:rgba(10,12,16,.45);box-shadow:0 6px 18px rgba(0,0,0,.35);user-select:none;-webkit-user-select:none}
-.tb small{display:block;font-family:Rajdhani,Arial,sans-serif;font-weight:700;font-size:10px;opacity:.85;letter-spacing:.5px}
-.tb.sm{width:70px;height:58px;font-size:15px}.tb.md{width:84px;height:70px}.tb.lg{width:92px;height:92px;font-size:26px;border-radius:50%}.tb.xl{width:120px;height:120px;font-size:16px;border-radius:50%}
-.tb.act{transform:scale(.94);background:rgba(255,255,255,.28)}
-@media(max-width:700px){.tb.sm{width:60px;height:50px;font-size:13px}.tb.md{width:70px;height:60px;font-size:12px}.tb.lg{width:78px;height:78px}.tb.xl{width:96px;height:96px;font-size:13px}}
-@media(max-width:520px){.tb{width:62px;height:62px;font-size:11px}.tb.big{width:74px;height:74px}.ctl{padding:10px}.ctl .gp{gap:8px}}
 a.btn{text-decoration:none;color:var(--tx)}
 .foot{color:var(--mu);font-size:13px;text-align:center;padding:24px 0 10px}
 </style>
@@ -172,6 +183,7 @@ a.btn{text-decoration:none;color:var(--tx)}
   <div class="keys" id="keys"></div>
 </div>
 <div id="modalRoot"></div>
+<div id="rotate"><svg viewBox="0 0 64 64"><rect x="18" y="6" width="28" height="52" rx="5" fill="none" stroke="#c6ff3d" stroke-width="4"/><circle cx="32" cy="51" r="2.5" fill="#c6ff3d"/></svg><div>Gire o celular na vertical<br><span style="color:#8b95a4;font-weight:600;font-size:15px">O Racha BR foi feito para jogar em pé</span></div></div>
 
 <script>
 'use strict';
@@ -357,7 +369,7 @@ const newPid=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>'abcde
 function newState(){
   const s={v:1,money:6000,xp:0,level:1,cars:[],active:null,uidc:1,
     stats:{races:0,wins:0,earned:0,nearMiss:0,perfect:0,best402:null},
-    missions:[],daily:{last:'',streak:0},settings:{sound:true,autoShift:false,autoGas:isTouch,view3d:true,nick:'',room:''}};
+    missions:[],daily:{last:'',streak:0},settings:{sound:true,autoShift:false,autoGas:false,view3d:true,nick:'',room:''}};
   s.pid=newPid();addCar(s,'chevette');s.active=s.cars[0].uid;return s;
 }
 function addCar(s,id){
@@ -368,7 +380,7 @@ function migrate(d){
   const b=newState();
   if(!d||!Array.isArray(d.cars)||!d.cars.length)return b;
   d.stats={...b.stats,...(d.stats||{})};d.settings={...b.settings,...(d.settings||{})};
-  d.daily=d.daily||b.daily;d.missions=d.missions||[];if(typeof d.pid!=='string'||!/^[a-z0-9]{12}$/.test(d.pid))d.pid=b.pid;
+  d.daily=d.daily||b.daily;d.missions=d.missions||[];if(!d.settings.ctl2){d.settings.autoGas=false;d.settings.ctl2=1}if(typeof d.pid!=='string'||!/^[a-z0-9]{12}$/.test(d.pid))d.pid=b.pid;
   d.cars=d.cars.filter(c=>CAR[c.model]);if(!d.cars.length)return b;
   const hx=/^#[0-9a-fA-F]{6}$/;
   d.cars.forEach(c=>{c.health={motor:100,turbo:100,cambio:100,...(c.health||{})};for(const k in c.health)c.health[k]=clamp(+c.health[k]||0,0,100);c.up={...UP0(),...c.up};for(const k in c.up)c.up[k]=clamp(Math.floor(+c.up[k]||0),0,4);
@@ -561,12 +573,13 @@ const Snd={ctx:null,eng:null,
 };
 
 /* ---------- 8. INPUT ---------- */
-const Input={k:{},pr:{},
+const Input={k:{},pr:{},axis:0,
   down(c){if(!this.k[c])this.pr[c]=true;this.k[c]=true},up(c){this.k[c]=false},
-  take(c){const v=this.pr[c];this.pr[c]=false;return!!v},clear(){this.k={};this.pr={}}};
+  take(c){const v=this.pr[c];this.pr[c]=false;return!!v},clear(){this.k={};this.pr={};this.axis=0}};
 const KEYMAP={KeyQ:'down',ControlLeft:'down',ControlRight:'down',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'nitro',KeyN:'nitro',ShiftLeft:'shift',ShiftRight:'shift',KeyE:'shift',Enter:'shift',Escape:'pause',KeyP:'pause'};
 addEventListener('keydown',e=>{if(!Game.scene)return;const k=KEYMAP[e.code];if(k){e.preventDefault();Input.down(k)}});
 addEventListener('keyup',e=>{const k=KEYMAP[e.code];if(k)Input.up(k)});
+['contextmenu','selectstart','dragstart'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('#race'))e.preventDefault()}));
 
 /* ---------- 9. CENAS ---------- */
 
@@ -592,13 +605,13 @@ function drawTach(ctx,x,y,R,o){
 function drawBoost(ctx,x,y,R,bar,maxBar){
   const lo=-1,hi=Math.max(1,Math.ceil(maxBar+.5));ctx.save();ctx.translate(x,y);
   ctx.fillStyle='rgba(6,8,11,.9)';ctx.beginPath();ctx.arc(0,0,R+8,0,7);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=2;ctx.stroke();
-  const a0=Math.PI*.8,a1=Math.PI*2.2,A=v=>a0+(a1-a0)*clamp((v-lo)/(hi-lo),0,1);
+  const a0=Math.PI*.75,a1=Math.PI*2.25,A=v=>a0+(a1-a0)*clamp((v-lo)/(hi-lo),0,1);
   ctx.lineWidth=5;ctx.strokeStyle='#3db8ff';ctx.beginPath();ctx.arc(0,0,R-2,A(0),A(maxBar));ctx.stroke();ctx.strokeStyle='#ff4d5a';ctx.beginPath();ctx.arc(0,0,R-2,A(maxBar),A(hi));ctx.stroke();ctx.strokeStyle='#4a5260';ctx.beginPath();ctx.arc(0,0,R-2,A(lo),A(0));ctx.stroke();
   ctx.fillStyle='#d9dee5';ctx.font=`700 ${Math.max(9,Math.round(R*.24))}px Rajdhani,Arial,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
   for(let v=lo;v<=hi;v++){const a=A(v);ctx.fillText(v,Math.cos(a)*(R-14),Math.sin(a)*(R-14))}
   const a=A(bar);ctx.save();ctx.rotate(a);ctx.fillStyle='#eef1f5';ctx.beginPath();ctx.moveTo(-5,-2);ctx.lineTo(R-3,0);ctx.lineTo(-5,2);ctx.fill();ctx.restore();
-  ctx.fillStyle='#8b95a4';ctx.font=`700 ${Math.max(9,Math.round(R*.2))}px Rajdhani,Arial,sans-serif`;ctx.fillText('TURBO',0,R*.38);
-  ctx.fillStyle=bar>maxBar*.98?'#ff4d5a':'#3db8ff';ctx.font=`${Math.max(10,Math.round(R*.26))}px "Russo One","Arial Black",sans-serif`;ctx.fillText(bar.toFixed(1),0,R*.68);
+  ctx.fillStyle='rgba(6,8,11,.9)';ctx.beginPath();ctx.roundRect(-58,R+6,116,18,6);ctx.fill();ctx.font=`700 12px Rajdhani,Arial,sans-serif`;ctx.fillStyle='#8b95a4';ctx.textAlign='right';ctx.fillText('TURBO',-2,R+16);
+  ctx.fillStyle=bar>maxBar*.98?'#ff4d5a':'#3db8ff';ctx.font=`13px "Russo One","Arial Black",sans-serif`;ctx.textAlign='left';ctx.fillText(bar.toFixed(1)+' bar',3,R+16);
   ctx.restore();
 }
 function drawShiftLights(ctx,cx,y,rf,t){
@@ -617,11 +630,11 @@ function drawTemp(ctx,x,y,w,heat,t,warn){
 }
 function maxBarOf(sp){return sp.turboStock||sp.tm>1.001?(sp.turboStock?.8:0)+(sp.tm-1)*2.2:0}
 function drawCluster(sc,ctx,W,H,r,o={}){
-  const sp=sc.spec,R=W<640?Math.min(62,W*.15):Math.min(84,W*.085),x=R+18,y=R+22;
+  const sp=sc.spec,port=H>W*1.1,R=W<640?Math.min(60,W*.15):Math.min(84,W*.085),x=R+16,y=port?R+66:R+22;
   drawTach(ctx,x,y,R,{rl:sc.model.rl,rpm:o.rpmNum!=null?o.rpmNum:rpmNum(sc.model,r.rpm),gear:o.gear!=null?o.gear:r.gear,kmh:r.v*3.6,zone:o.zone,limiter:r.limiter||o.limiter,gearCol:sc.broken&&sc.broken.cambio?'#ff4d5a':null});
-  let nx=x+R+14;const mb=maxBarOf(sp);
+  let nx=x+R+24;const mb=maxBarOf(sp);
   if(mb>0||sc.broken&&sc.broken.turbo){const br=R*.55;r.boostG=r.boostG==null?-.6:r.boostG;const tgt=sc.broken&&sc.broken.turbo?-.1:(o.gas?-.2+r.boost*(mb+.2)+(r.nitroOn?.25:0):-.65);r.boostG+=(tgt-r.boostG)*Math.min(1,.016*14);
-    drawBoost(ctx,nx+br,y-R*.28,br,r.boostG,Math.max(mb,.5));nx+=br*2+18}
+    drawBoost(ctx,nx+br,y-R*.3,br,r.boostG,Math.max(mb,.5));nx+=br*2+18}
   drawTemp(ctx,x-R+4,y+R+30,Math.min(150,R*2),sc.heat||0,sc.t,sc.heat>.8?'SUPERAQUECENDO':sc.dmg&&sc.dmg.motor>6?'CHECK MOTOR':'');
   const rf=o.rf!=null?o.rf:r.rpm;drawShiftLights(ctx,W/2,42,rf,sc.t);
   return{R,x,y,nx,bottom:y+R+50};
@@ -753,17 +766,17 @@ class DragRace{
     Snd.setEngine(blown?.05:p.rpm,gas?1:0);
   }
   draw(ctx,W,H){
-    const s=clamp(W/24,16,42),p=this.p,o=this.o;
+    const port=H>W*1.1,s=port?clamp(W/11,22,44):clamp(W/24,16,42),p=this.p,o=this.o;
     ctx.save();if(this.shake>0)ctx.translate((Math.random()-.5)*this.shake*24,(Math.random()-.5)*this.shake*12);
-    const camX=p.x-(W*.42)/s;const X=wx=>(wx-camX)*s;
+    const camX=p.x-(W*(port?.62:.42))/s;const X=wx=>(wx-camX)*s;
     const sky=ctx.createLinearGradient(0,0,0,H*.55);sky.addColorStop(0,'#05070b');sky.addColorStop(1,'#1a1f2b');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
     const layer=(f,sp,fn)=>{const off=camX*s*f;const k0=Math.floor(off/sp)-1;for(let k=k0;k<k0+W/sp+3;k++)fn(k*sp-off,k)};
-    layer(.12,90,(sx,k)=>{const h=60+hash(k)*120;ctx.fillStyle='#0e121a';ctx.fillRect(sx,H*.42-h,80,h);ctx.fillStyle='rgba(255,210,120,.35)';for(let i=0;i<6;i++)for(let j=0;j<Math.floor(h/18);j++)if(hash(k*31+i*7+j)>.7)ctx.fillRect(sx+6+i*12,H*.42-h+8+j*18,5,7)});
-    const yStand=H*.46;
+    const yB=(port?H*.34:H*.46)-H*.04;layer(.12,90,(sx,k)=>{const h=60+hash(k)*120;ctx.fillStyle='#0e121a';ctx.fillRect(sx,yB-h,80,h);ctx.fillStyle='rgba(255,210,120,.35)';for(let i=0;i<6;i++)for(let j=0;j<Math.floor(h/18);j++)if(hash(k*31+i*7+j)>.7)ctx.fillRect(sx+6+i*12,yB-h+8+j*18,5,7)});
+    const yStand=port?H*.34:H*.46;
     layer(.5,140,(sx,k)=>{ctx.fillStyle='#161b24';ctx.fillRect(sx,yStand-55,138,55);for(let r=0;r<4;r++)for(let i=0;i<22;i++){if(hash(k*97+r*13+i)>.35){ctx.fillStyle=['#3a4150','#4b3a3a','#2f4a3a','#4a4a2f'][(k+r+i)%4];ctx.fillRect(sx+4+i*6,yStand-50+r*12,4,6)}}
       if(k%2===0){ctx.fillStyle='#2a313b';ctx.fillRect(sx+60,yStand-150,4,100);ctx.fillStyle='rgba(255,250,220,.9)';ctx.fillRect(sx+48,yStand-156,28,8);const lg=ctx.createRadialGradient(sx+62,yStand-150,2,sx+62,yStand-150,120);lg.addColorStop(0,'rgba(255,240,200,.18)');lg.addColorStop(1,'rgba(255,240,200,0)');ctx.fillStyle=lg;ctx.fillRect(sx-60,yStand-270,240,240)}});
     ctx.fillStyle='#2b313a';ctx.fillRect(0,yStand,W,10);ctx.fillStyle='#e9edf2';for(let i=0;i<W;i+=40)ctx.fillRect(i-(camX*s)%40,yStand,20,10);
-    const yO=H*.66,yP=H*.88;
+    const yO=port?H*.47:H*.66,yP=port?H*.6:H*.88;
     const asp=ctx.createLinearGradient(0,yStand+10,0,H);asp.addColorStop(0,'#1d2026');asp.addColorStop(1,'#26292f');ctx.fillStyle=asp;ctx.fillRect(0,yStand+10,W,H);
     ctx.fillStyle='#e9edf2';ctx.fillRect(0,(yO+yP)/2-6,W,3);
     for(let m=Math.floor(camX/50)*50;m<camX+W/s+50;m+=50){if(m<=0||m>=402)continue;const sx=X(m);ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(sx,yStand+12,2,H);ctx.fillStyle='#ffd23d';ctx.font='700 14px Rajdhani,Arial';ctx.textAlign='center';ctx.fillText(m+'m',sx,yStand+28)}
@@ -794,7 +807,7 @@ class DragRace{
     if(this.net&&!this.net.go)netWaitHUD(ctx,W,H,this.net);
     let hy=C.bottom+14;if(sp.nitro>0){hudBar(ctx,18,hy,Math.min(150,R*2),7,p.nitroLeft/sp.nitro,'#3db8ff','NITRO');hy+=30}
     if(this.react!=null){ctx.fillStyle='#eef1f5';ctx.font='700 15px Rajdhani,Arial';ctx.textAlign='left';ctx.fillText('Reação '+this.react.toFixed(3)+'s',18,hy+4)}
-    if(!p.launched&&!this.jump){ctx.fillStyle='rgba(8,10,13,.75)';const tw=Math.min(560,W-30);ctx.fillRect((W-tw)/2,H*.18,tw,58);ctx.fillStyle='#eef1f5';ctx.textAlign='center';ctx.font='700 17px Rajdhani,Arial';ctx.fillText('Segure ACELERAR: giro na faixa verde arma o launch',W/2,H*.18+24);ctx.fillStyle='#c6ff3d';ctx.fillText('Aperte MARCHA quando a luz ficar verde',W/2,H*.18+46)}
+    if(!p.launched&&!this.jump){const hy=H>W*1.1?H*.64:H*.18,fs=W<420?14:17;ctx.fillStyle='rgba(8,10,13,.78)';const tw=Math.min(560,W-20);ctx.fillRect((W-tw)/2,hy,tw,58);ctx.fillStyle='#eef1f5';ctx.textAlign='center';ctx.font=`700 ${fs}px Rajdhani,Arial`;ctx.fillText('Segure o PEDAL: giro na faixa verde arma o launch',W/2,hy+24);ctx.fillStyle='#c6ff3d';ctx.fillText('Toque em MARCHA quando a luz ficar verde',W/2,hy+46)}
     let my=H*.36;for(const m of this.msgs){ctx.globalAlpha=clamp(m.life,0,1);ctx.fillStyle=m.c;ctx.font=`${Math.round(clamp(W/22,22,40))}px "Russo One","Arial Black",sans-serif`;ctx.textAlign='center';ctx.fillText(m.t,W/2,my);my+=46}ctx.globalAlpha=1;
   }
 }
@@ -851,7 +864,7 @@ class StreetRace{
     this.t+=dt;const p=this.p,pr=p.r,sp=this.spec;
     if(this.t<0){const c=Math.ceil(-this.t);if(c!==this.cd){this.cd=c;Snd.beep(520,.15,.07)}Input.take('shift');Input.take('down');const g0=!!Input.k.gas||S.settings.autoGas;pr.rpm=clamp((pr.rpm||.15)+(g0?dt*1.4:-dt*1.2),.15,.9);if(g0&&pr.rpm>.82&&Math.random()<dt*6)pop(pr,.6);if(pr.popT>0)pr.popT-=dt;Snd.setEngine(pr.rpm,g0?1:0);return}
     if(this.cd!==0){this.cd=0;Snd.beep(1040,.25,.08)}
-    const steer=(Input.k.left?-1:0)+(Input.k.right?1:0);
+    const steer=Input.axis||((Input.k.left?-1:0)+(Input.k.right?1:0));
     const brake=!!Input.k.brake,blown=this.broken.motor,gas=!blown&&(S.settings.autoGas?!brake:!!Input.k.gas);
     const up=Input.take('shift'),dn=Input.take('down');
     if(!S.settings.autoShift&&!this.pFin){if(up)doShift(this,pr,sp,1,true);if(dn)doShift(this,pr,sp,-1,true)}
@@ -943,7 +956,7 @@ class StreetRace{
   }
   draw(ctx,W,H){
     if(this.v3){ctx.clearRect(0,0,W,H);try{this.v3.render(W,H)}catch(e){console.warn(e);this.v3=null;$('#rc3d').style.display='none'}this.drawHUD(ctx,W,H);return}
-    this.H=clamp(H,400,1100);const p=this.p,pr=p.r,s=this.zoom,py=H*.72;
+    this.H=clamp(H,400,1100);const p=this.p,pr=p.r,s=this.zoom,py=H>W*1.1?H*.56:H*.72;
     const sh=this.shake>0?(Math.random()-.5)*this.shake*20:0;
     ctx.save();ctx.translate(sh,sh*.5);
     const SX=x=>W/2+(x-this.camX)*s,SY=d=>py-(d-pr.x)*s;
@@ -989,8 +1002,8 @@ class StreetRace{
     const p=this.p,pr=p.r,sp=this.spec;
     const C=drawCluster(this,ctx,W,H,pr,{gas:!this.broken.motor&&(S.settings.autoGas?!Input.k.brake:!!Input.k.gas),rf:pr.v/gearTop(sp,pr.gear)});const R=C.R;
     const pos=this.pFin?this.pos:1+this.rivals.filter(a=>a.r.x>pr.x).length;
-    ctx.textAlign='right';ctx.fillStyle='#eef1f5';ctx.font=`${Math.round(R*.7)}px "Russo One","Arial Black",sans-serif`;ctx.fillText(pos+'º',W-70,R*.95+10);ctx.font='700 16px Rajdhani,Arial';ctx.fillStyle='#8b95a4';ctx.fillText('/'+(this.rivals.length+1),W-48,R*.95+10);
-    const bw=Math.min(420,W*.46),bx=(W-bw)/2;hudBar(ctx,bx,14,bw,6,pr.x/this.D,'#c6ff3d','');ctx.fillStyle='#eef1f5';ctx.font='700 12px Rajdhani,Arial';ctx.textAlign='center';ctx.fillText(Math.max(0,Math.round(this.D-pr.x))+' m',W/2,70);
+    ctx.textAlign='right';ctx.fillStyle='#eef1f5';ctx.font=`${Math.round(R*.7)}px "Russo One","Arial Black",sans-serif`;const py2=H>W*1.1?C.y+R*.3:R*.95+10;ctx.fillText(pos+'º',W-40,py2);ctx.font='700 16px Rajdhani,Arial';ctx.fillStyle='#8b95a4';ctx.fillText('/'+(this.rivals.length+1),W-16,py2);
+    const bw=Math.min(420,W*.46),bx=(W-bw)/2;hudBar(ctx,bx,14,bw,6,pr.x/this.D,'#c6ff3d','');ctx.fillStyle='#eef1f5';ctx.font='700 12px Rajdhani,Arial';ctx.textAlign='left';ctx.fillText(Math.max(0,Math.round(this.D-pr.x))+' m',bx+bw+8,22);
     for(const a of this.rivals){ctx.fillStyle='#ff4d5a';ctx.fillRect(bx+bw*clamp(a.r.x/this.D,0,1)-2,10,4,14)}
     let y=C.bottom+16;ctx.textAlign='left';ctx.font='700 15px Rajdhani,Arial';
     if(sp.nitro>0){hudBar(ctx,18,y,Math.min(150,R*2),7,pr.nitroLeft/sp.nitro,'#3db8ff','NITRO');y+=30}
@@ -1317,7 +1330,7 @@ class World3D{
     if(rc.t<0){const a=(-rc.t/3.2)*2.2,r=7.5;des.set(P.x+Math.sin(a)*r,P.y+2.2+(-rc.t)*.6,P.z+Math.cos(a)*r)}
     if(this.first){cam.position.copy(des);this.first=false}else cam.position.lerp(des,1-Math.exp(-dt*(rc.t<0?3:6)));
     if(rc.shake>0){cam.position.x+=(Math.random()-.5)*rc.shake*.8;cam.position.y+=(Math.random()-.5)*rc.shake*.5}
-    const look=P.clone().addScaledVector(fwd,9);look.y=rc.g(d+9)+1.1;cam.lookAt(look);
+    const la=9-port*7;const look=P.clone().addScaledVector(fwd,la);look.y=rc.g(d+la)+1.1-port*.6;cam.lookAt(look);
     const fov=58+port*14+clamp(pr.v/70,0,1)*14+(pr.nitroOn?6:0);cam.fov+=(fov-cam.fov)*Math.min(1,dt*3);cam.updateProjectionMatrix();
     this.skyG.position.set(cam.position.x,0,cam.position.z);
     this.sun.position.set(P.x+40,P.y+70,P.z+30);this.sun.target.position.copy(P);
@@ -1342,7 +1355,7 @@ const Game={scene:null,raf:0,last:0,paused:false,ev:null,car:null,
     const car=activeCar();if(isBroken(car)){toast('Seu carro está quebrado. Conserte na Oficina.');TAB='oficina';render();return}this.ev=ev;this.car=car;this.bet=bet||0;
     S.money-=ev.entry+(bet||0);save();
     this.net=net||null;this.scene=ev.mode==='drag'?new DragRace(ev,car,net):new StreetRace(ev,car,bet,net);
-    Input.clear();this.paused=false;$('#race').style.display='block';$('#rc3d').style.display=this.scene.v3?'block':'none';buildControls(ev.mode);
+    lockPortrait();Input.clear();this.paused=false;$('#race').style.display='block';$('#rc3d').style.display=this.scene.v3?'block':'none';buildControls(ev.mode);
     Snd.startEngine();this.last=performance.now();cancelAnimationFrame(this.raf);this.raf=requestAnimationFrame(t=>this.loop(t));
   },
   loop(t){
@@ -1404,24 +1417,49 @@ const Game={scene:null,raf:0,last:0,paused:false,ev:null,car:null,
     modal(`<div class="big" style="color:${col}">${title}</div><p class="sub" style="text-align:center">${ev.name}${vsTxt} · ${model.name}</p>${det}<div class="lines">${lines}</div>${upsTxt}${sc&&sc.dmg&&Object.keys(sc.broken).length?'<p class="sub" style="color:var(--ac2);margin:8px 0 0">Leve o carro na Oficina para consertar.</p>':''}${ev.online?`<div class="acts"><button class="btn" data-act="leave">Voltar</button>${this.net&&NET.peer(this.net.peer)?`<button class="btn pri" data-act="rematch" data-v="${this.net.peer}">Revanche</button>`:''}</div>`:`<div class="acts"><button class="btn" data-act="leave">Garagem</button><button class="btn pri" data-act="again">Correr de novo</button></div>`}`,true);
   },
   dispose(){if(this.scene&&this.scene.v3){try{this.scene.v3.dispose()}catch(e){}this.scene.v3=null}},
-  leave(){closeModal();cancelAnimationFrame(this.raf);this.dispose();this.scene=null;this.net=null;NET.end();Input.clear();$('#race').style.display='none';render()},
+  leave(){unlockPortrait();closeModal();cancelAnimationFrame(this.raf);this.dispose();this.scene=null;this.net=null;NET.end();Input.clear();$('#race').style.display='none';render()},
+};
+const ICON={
+ gas:`<svg viewBox="0 0 60 100"><defs><linearGradient id="gm" x1="0" x2="1"><stop offset="0" stop-color="#f4f6f8"/><stop offset=".5" stop-color="#d4d9df"/><stop offset="1" stop-color="#a9b0b9"/></linearGradient></defs><rect x="4" y="4" width="52" height="92" rx="12" fill="url(#gm)" stroke="#6f7782" stroke-width="2"/><rect x="11" y="12" width="38" height="76" rx="7" fill="#24282e"/>${[0,1,2,3,4].map(i=>`<rect x="${15+i*6.6}" y="17" width="3.2" height="66" rx="1.6" fill="#5b636e"/>`).join('')}<rect x="24" y="90" width="12" height="8" rx="2" fill="#8a929c"/><path d="M30 26 l9 10 h-6 v8 h-6 v-8 h-6z" fill="#c6ff3d"/></svg>`,
+ brake:`<svg viewBox="0 0 90 90"><defs><linearGradient id="bm" x1="0" x2="1"><stop offset="0" stop-color="#f4f6f8"/><stop offset=".5" stop-color="#d4d9df"/><stop offset="1" stop-color="#a9b0b9"/></linearGradient></defs><rect x="4" y="6" width="82" height="70" rx="14" fill="url(#bm)" stroke="#6f7782" stroke-width="2"/><rect x="12" y="14" width="66" height="54" rx="8" fill="#24282e"/>${[0,1,2,3,4,5].map(i=>`<rect x="17" y="${19+i*7.6}" width="56" height="3.2" rx="1.6" fill="#5b636e"/>`).join('')}<rect x="38" y="76" width="14" height="10" rx="2" fill="#8a929c"/><circle cx="45" cy="41" r="11" fill="none" stroke="#ff4d5a" stroke-width="4"/><path d="M45 34v9" stroke="#ff4d5a" stroke-width="4" stroke-linecap="round"/><circle cx="45" cy="47.5" r="2.3" fill="#ff4d5a"/></svg>`,
+ up:`<svg viewBox="0 0 60 52"><rect x="2" y="2" width="56" height="48" rx="12" fill="#eef1f5" stroke="#8a929c" stroke-width="2"/><path d="M18 30 L30 17 L42 30" fill="none" stroke="#1a1d22" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><text x="30" y="45" text-anchor="middle" font-family="Rajdhani,Arial" font-weight="700" font-size="10" fill="#1a1d22">MARCHA</text></svg>`,
+ down:`<svg viewBox="0 0 60 52"><rect x="2" y="2" width="56" height="48" rx="12" fill="#2a2f37" stroke="#8a929c" stroke-width="2"/><path d="M18 14 L30 27 L42 14" fill="none" stroke="#eef1f5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><text x="30" y="45" text-anchor="middle" font-family="Rajdhani,Arial" font-weight="700" font-size="10" fill="#eef1f5">REDUZ</text></svg>`,
+ nitro:`<svg viewBox="0 0 52 68"><rect x="10" y="16" width="32" height="48" rx="10" fill="#1e7bd8" stroke="#bfe0ff" stroke-width="2.5"/><rect x="19" y="6" width="14" height="12" rx="3" fill="#c9ced6"/><rect x="15" y="2" width="22" height="6" rx="3" fill="#8a929c"/><rect x="10" y="30" width="32" height="10" fill="#eef1f5"/><text x="26" y="38.5" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="8" fill="#1e7bd8">NOS</text></svg>`,
+ wheel:`<svg viewBox="0 0 120 120"><defs><radialGradient id="wr" cx=".5" cy=".4"><stop offset=".8" stop-color="#3a414c"/><stop offset="1" stop-color="#1b1f25"/></radialGradient><linearGradient id="ws" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#f2f4f7"/><stop offset="1" stop-color="#9aa2ad"/></linearGradient></defs>
+  <circle cx="60" cy="60" r="52" fill="none" stroke="url(#wr)" stroke-width="15"/><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2" stroke-dasharray="3 5"/>
+  <rect x="55" y="5" width="10" height="15" rx="2" fill="#c6ff3d"/>
+  <path d="M10 66 Q35 58 46 62 L52 72 L68 72 L74 62 Q85 58 110 66 L110 74 Q86 70 76 76 L68 96 Q64 108 60 110 Q56 108 52 96 L44 76 Q34 70 10 74Z" fill="url(#ws)" stroke="#5d6570" stroke-width="1.5"/>
+  <circle cx="60" cy="66" r="15" fill="#20242b" stroke="#9aa2ad" stroke-width="3"/><circle cx="60" cy="66" r="6" fill="#c6ff3d"/></svg>`,
+ shifter:`<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="51" fill="#eef1f5" stroke="#8a929c" stroke-width="3"/><path d="M33 34v42M55 34v42M77 34v42M33 55h44" stroke="#c3c9d1" stroke-width="4" stroke-linecap="round"/><rect x="51" y="44" width="8" height="34" rx="4" fill="#5d6570"/><circle cx="55" cy="38" r="14" fill="#1a1d22"/><circle cx="51" cy="34" r="4" fill="#5d6570"/><text x="55" y="97" text-anchor="middle" font-family="Rajdhani,Arial" font-weight="700" font-size="13" fill="#1a1d22">MARCHA</text></svg>`,
 };
 function buildControls(mode){
   const c=$('#ctl'),k=$('#keys'),car=activeCar(),hasN=perf(CAR[car.model],car.up).spec.nitro>0,man=!S.settings.autoShift;
-  const tb=(key,label,cl='',sz='')=>`<button class="tb ${cl} ${sz}" data-key="${key}">${label}</button>`;
+  const B=(key,cls,icon,lab)=>`<button class="cbtn ${cls}" data-key="${key}" aria-label="${lab||key}">${ICON[icon]}${lab?`<span class="lb">${lab}</span>`:''}</button>`;
   if(mode==='drag'){
-    c.innerHTML=`<div class="gp col">${hasN?tb('nitro','NITRO','n','sm'):''}${tb('gas','ACELERAR','g','xl')}</div>
-      <div class="gp col">${man?tb('down','▼<small>MARCHA</small>','','sm'):''}${tb('shift',man?'▲ MARCHA<small>largada / troca</small>':'LARGAR','y','xl')}</div>`;
-    k.textContent=`↑/W acelerar · →/D/E/Shift marcha e largada${man?' · Q reduz':''}${hasN?' · Espaço nitro':''} · Esc pausa`}
+    c.innerHTML=`<div class="rcl">${B('gas','pedal gas','gas','ACELERA')}${hasN?`<div class="paddles">${B('nitro','nitrob','nitro')}</div>`:''}</div>
+      <div class="rcl">${man?`<div class="paddles">${B('down','paddle','down')}</div>`:''}${B('shift','shifter','shifter')}</div>`;
+    k.textContent=`↑/W acelerar · →/D/E/Shift largada e troca${man?' · Q reduz':''}${hasN?' · Espaço nitro':''} · Esc pausa`}
   else{
-    c.innerHTML=`<div class="gp">${tb('left','◀','','lg')}${tb('right','▶','','lg')}</div>
-      <div class="gp">${man?`<div class="col">${tb('shift','▲<small>MARCHA</small>','y','sm')}${tb('down','▼<small>MARCHA</small>','','sm')}</div>`:''}
-      <div class="col">${hasN?tb('nitro','NITRO','n','sm'):''}${tb('brake','FREIO','r','md')}</div>${S.settings.autoGas?'':tb('gas','ACELERAR','g','xl')}</div>`;
-    k.textContent=`←→/AD direção · ${S.settings.autoGas?'':'↑/W acelerar · '}↓/S freio${man?' · E/Shift sobe marcha · Q reduz':''}${hasN?' · Espaço nitro':''} · Esc pausa`}
+    c.innerHTML=`<div class="wheel" data-wheel>${ICON.wheel}</div>
+      <div class="rcl"><div class="paddles">${man?B('shift','paddle','up')+B('down','paddle','down'):''}${hasN?B('nitro','nitrob','nitro'):''}</div>
+      <div class="pedals">${B('brake','pedal brake','brake','FREIO')}${S.settings.autoGas?'':B('gas','pedal gas','gas','ACELERA')}</div></div>`;
+    k.textContent=`←→/AD direção · ${S.settings.autoGas?'':'↑/W acelerar · '}↓/S freio${man?' · E/Shift sobe · Q reduz':''}${hasN?' · Espaço nitro':''} · Esc pausa`}
   c.querySelectorAll('[data-key]').forEach(b=>{const key=b.dataset.key;
-    const dn=e=>{e.preventDefault();Snd.init();Input.down(key);b.classList.add('act')},upf=e=>{e.preventDefault();Input.up(key);b.classList.remove('act')};
-    b.addEventListener('pointerdown',dn);b.addEventListener('pointerup',upf);b.addEventListener('pointerleave',upf);b.addEventListener('pointercancel',upf)});
+    const dn=e=>{e.preventDefault();Snd.init();try{b.setPointerCapture(e.pointerId)}catch(_){}Input.down(key);b.classList.add('act');if(key==='shift'||key==='down')try{navigator.vibrate&&navigator.vibrate(10)}catch(_){}},
+      upf=e=>{e.preventDefault();Input.up(key);b.classList.remove('act')};
+    b.addEventListener('pointerdown',dn);b.addEventListener('pointerup',upf);b.addEventListener('pointercancel',upf);b.addEventListener('lostpointercapture',upf)});
+  const w=c.querySelector('[data-wheel]');
+  if(w){const svg=w.querySelector('svg');let pid=null;
+    const set=e=>{const r=w.getBoundingClientRect(),cx=r.left+r.width/2;const v=clamp((e.clientX-cx)/(r.width*.38),-1,1);Input.axis=v;svg.style.transform=`rotate(${v*120}deg)`};
+    w.addEventListener('pointerdown',e=>{e.preventDefault();Snd.init();pid=e.pointerId;try{w.setPointerCapture(pid)}catch(_){}set(e)});
+    w.addEventListener('pointermove',e=>{if(e.pointerId===pid)set(e)});
+    const rel=e=>{if(e.pointerId!==pid)return;pid=null;Input.axis=0;svg.style.transform='rotate(0deg)'};
+    w.addEventListener('pointerup',rel);w.addEventListener('pointercancel',rel);w.addEventListener('lostpointercapture',rel)}
 }
+function lockPortrait(){if(!isTouch)return;try{const el=document.documentElement,rq=el.requestFullscreen||el.webkitRequestFullscreen;
+  const go=()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait').catch(()=>{})}catch(_){}};
+  if(rq&&!document.fullscreenElement){const r=rq.call(el,{navigationUI:'hide'});r&&r.then?r.then(go,go):go()}else go()}catch(e){}}
+function unlockPortrait(){try{if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{})}catch(e){}}
 
 /* ---------- 10. UI ---------- */
 const $=s=>document.querySelector(s);
