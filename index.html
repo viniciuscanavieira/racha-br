@@ -270,6 +270,8 @@ const CARS=[
   {id:'twingo',brand:'R',snd:'sigma',rl:6500,name:'Twingo 1.2 16v',year:2001,cat:'Clássico',body:'small',L:3.43,hp:75,wt:850,grip:.84,handling:.74,drive:'FWD',turbo:false,price:16000,tune:1.3,color:'#2a7de1',glb:'/models/twingo.glb',glbCfg:{prep:true,len:3.43,rotY:Math.PI,wheelNode:'^WHEEL',roles:{object_15:'paint',object_17:'paint'}},desc:'Pequeno, leve e barato de manter. Bom pra começar e aprender a preparar.'},
   {id:'fox',brand:'V',snd:'ap',rl:7400,name:'Fox 1.6 Turbo "Tudão"',year:2004,cat:'Modificado',body:'hatch',L:3.82,hp:310,wt:1010,grip:.9,handling:.7,drive:'FWD',turbo:true,price:78000,tune:.9,color:'#e9ecef',bigPops:2.4,stockTune:{pops:true,flutter:true,twostep:true},preset:{height:3,wheel:10,wheelColor:'#1a1a1c',tint:2,exhaust:1},glb:'/models/fox.glb',glbCfg:{prep:true,len:3.82,rotY:0,spacer:.05,wheelMats:['Carro_Pneu','Carro_Roda'],roles:{Carro_Pintura:'paint',Carro_Vidros:'glass',Carro_Vidro_R:'glass'}},desc:'1.6 tudão, turbo de 280 whp, espaçador e válvula aberta de fábrica. Tiro alto e labareda no escape.'},
   {id:'vip5',brand:'V',vip:true,snd:'ap',rl:8200,bigPops:2.2,stockTune:{pops:true,flutter:true,twostep:true},name:'VIP Jato',year:2024,cat:'VIP',body:'hatch',L:4.5,hp:900,wt:1150,grip:1.0,handling:.75,drive:'RWD',turbo:true,price:900000,tune:.75,color:'#ff7a00',glb:'/models/vip5.glb',glbCfg:{prep:true,len:4.5,rotY:0,wheelNode:'^WHEEL',roles:{gl_lux_5:'glass'}},desc:'Pack VIP: esportivo de luxo exclusivo. Só pilotos VIP podem comprar.'},
+  {id:'hb20',brand:'I',snd:'tres',rl:6300,paredao:true,name:'HB20 1.0 do Paredão',year:2015,cat:'Popular',body:'hatch',L:3.92,hp:80,wt:1040,grip:.86,handling:.72,drive:'FWD',turbo:false,price:30000,tune:.9,color:'#9fc0e4',glb:'/models/hb20.glb',glbCfg:{prep:true,len:3.92,rotY:0,renormal:true,wheelNode:'^WHEEL',roles:{'00_-_HB20_-_2015_-_Pintura':'paint','00_-_HB20_-_2015_-_Vidros':'glass'}},desc:'Popular barato que já vem com paredão de som rebocado. O paredão é fixo: não sai do carro.'},
+  {id:'onix',brand:'I',snd:'tres',rl:6500,name:'Onix 1.0 Turbo 2024',year:2024,cat:'Popular',body:'hatch',L:4.16,hp:116,wt:1070,grip:.9,handling:.8,drive:'FWD',turbo:true,price:65000,tune:1.0,color:'#f2f2f2',glb:'/models/onix-2024.glb',glbCfg:{prep:true,len:4.16,rotY:0,renormal:true,wheelNode:'^WHEEL',roles:{ID74:'paint',ID61:'glass',ID118:'glass'}},desc:'O popular mais vendido do país, 1.0 turbo de 116 cv. Econômico de série e com bastante espaço pra preparação.'},
   {id:'unofirma',brand:'I',pass:true,snd:'fire',rl:8500,bigPops:3.4,stockTune:{pops:true,flutter:true,twostep:true},name:'Uno "Da Firma" 6000',year:1995,cat:'PASSE',body:'box80',L:3.7,hp:6000,wt:980,grip:2.4,handling:.62,drive:'AWD',turbo:true,price:0,tune:.6,color:'#d6d6d6',glb:'/models/uno-firma.glb',glbCfg:{prep:true,len:3.7,rotY:Math.PI,wheelNode:'^WHEEL',hoodFire:true},desc:'Exclusivo PASSE. 6000 whp, turbina saindo pelo capô e fogo sem parar. O Uno mais brabo que já existiu.'},
   {id:'f1',brand:'I',pass:true,snd:'f1v6',rl:13000,name:'Monoposto F1 2019',year:2019,cat:'PASSE',body:'hatch',L:5.7,hp:1000,wt:743,grip:2.0,handling:1.0,drive:'RWD',turbo:true,price:0,tune:.5,color:'#c8102e',glb:'/models/f1-2019.glb',glbCfg:{prep:true,len:5.7,rotY:0,renormal:true,wheelNode:'^WHEEL'},desc:'Exclusivo PASSE. Carro de corrida de verdade: V6 turbo híbrido, 743 kg e aderência absurda.'},
   {id:'s3',brand:'V',snd:'ea888',rl:6800,name:'S3 Sedan 2.0 TFSI',year:2016,cat:'Importado',body:'sedan',L:4.46,hp:310,wt:1430,grip:.98,handling:.84,drive:'AWD',turbo:true,price:240000,tune:1.1,color:'#9aa0a8',glb:'/models/audi-s3.glb',glbCfg:{prep:true,len:4.46,rotY:0,renormal:true,wheelNode:'^WHEEL',roles:{carpaint:'paint',VIDROS:'glass',BLACKGLASS:'glass'}},desc:'Sedã compacto de 310 cv com tração integral. Discreto por fora, monstro no remap.'},
@@ -384,6 +386,7 @@ const VIS={
   stripe:[{n:'Nenhuma',p:0},{n:'Lateral',p:400},{n:'Dupla',p:500},{n:'Rally',p:600},{n:'Degradê',p:800}],
   spoiler:[{n:'Nenhum',p:0},{n:'Lip',p:500},{n:'Aerofólio GT',p:1300}],
   neon:[{n:'Sem',p:0},{n:'Neon',p:900}],
+  paredao:[{n:'Sem',p:0},{n:'Paredão rebocado',p:15000}],
   paintP:300,customP:700,wheelColorP:250,
 };
 const PALETTE=['#e8e0c8','#f5f5f5','#15181d','#8a8f98','#d7263d','#ff7a00','#f2c200','#2bb673','#1e5bd8','#00c2c7','#7b2ff7','#ff4fa3','#5a3a22','#0f3d2e'];
@@ -426,8 +429,10 @@ const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 const UP0=()=>({motor:0,turbo:0,cambio:0,pneus:0,susp:0,peso:0,nitro:0,remap:0});
 const TUNE0=()=>({pops:true,twostep:true,als:false,flutter:false});
 const tuneOf=car=>{const m=car&&CAR[car.model],st=(m&&m.stockTune)||{},t={...TUNE0(),...st,...(car&&car.tune||{})},rm=car?Math.min(car.up.remap||0,remapMax(m,car.up)):0;return{rm,st,pops:t.pops&&(rm>=2||st.pops),twostep:t.twostep&&(rm>=1||st.twostep),flat:rm>=3,als:t.als&&rm>=4,flutter:t.flutter&&(rm>=2||st.flutter)}};
-const VIS0=c=>({color:c,wheel:0,wheelColor:'#c9ccd1',height:0,tint:0,stripe:0,stripeColor:'#111111',spoiler:0,neon:0,neonColor:'#3db8ff',hood:0,front:0,skirt:0,roof:0,lights:0,decal:0,exhaust:0});
-const VCATS=['wheel','height','tint','stripe','spoiler','neon','hood','front','skirt','roof','lights','decal','exhaust'];
+const VIS0=c=>({color:c,wheel:0,wheelColor:'#c9ccd1',height:0,tint:0,stripe:0,stripeColor:'#111111',spoiler:0,neon:0,neonColor:'#3db8ff',hood:0,front:0,skirt:0,roof:0,lights:0,decal:0,exhaust:0,paredao:0});
+const VCATS=['wheel','height','tint','stripe','spoiler','neon','hood','front','skirt','roof','lights','decal','exhaust','paredao'];
+const PAR_URL='/models/paredao.glb',PAR_LEN=3.4;
+const hasPar=(model,vis)=>!!(model&&(model.paredao||(vis&&vis.paredao&&model.cat==='Rebaixado')));
 const vMax=k=>k==='height'?4:k==='tint'?3:VIS[k].length-1;
 const newPid=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');
 function newState(){
@@ -486,7 +491,7 @@ function styleScore(car){
 }
 function visLabel(k,v){if(k==='color')return'Pintura';if(k==='wheelColor')return'Cor da roda';if(k==='stripeColor')return'Cor da faixa';if(k==='neonColor')return'Cor do neon';
   if(k==='height')return'Rebaixamento: '+VIS.height[v];if(k==='tint')return'Insulfilm: '+VIS.tint[v];
-  const t={wheel:'Rodas',stripe:'Faixa',spoiler:'Aerofólio',neon:'Neon',hood:'Capô',front:'Dianteira',skirt:'Saia',roof:'Teto',lights:'Faróis',decal:'Adesivo',exhaust:'Escape'}[k];return t+': '+VIS[k][v].n}
+  const t={wheel:'Rodas',stripe:'Faixa',spoiler:'Aerofólio',neon:'Neon',hood:'Capô',front:'Dianteira',skirt:'Saia',roof:'Teto',lights:'Faróis',decal:'Adesivo',exhaust:'Escape',paredao:'Paredão'}[k];return t+': '+VIS[k][v].n}
 function visKey(k,v){return k+':'+v}
 function visPrice(car,k,v){const m=CAR[car.model],pre=m.preset||{};
   if(k==='stripeColor'||k==='neonColor')return 0;
@@ -566,7 +571,7 @@ function sprRedraw(){if(SPR.redraw)return;SPR.redraw=setTimeout(()=>{SPR.redraw=
 function buildSprite(model,vis){
   if(!SPR.r){const cv=document.createElement('canvas');SPR.r=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true,preserveDrawingBuffer:true});SPR.r.outputEncoding=THREE.sRGBEncoding;SPR.r.toneMapping=THREE.ACESFilmicToneMapping;SPR.r.toneMappingExposure=1.15;SPR.r.setClearColor(0,0);if(!R3.T)R3.makeTex()}
   const R=SPR.r,cfg=model.glbCfg||GOL_CFG,sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(lin('#dfe6ff'),lin('#2a2c30'),1.0));const k=new THREE.DirectionalLight(lin('#fff4e6'),1.7);k.position.set(6,6,-3);sc.add(k);const f=new THREE.DirectionalLight(lin('#9fc4ff'),.5);f.position.set(4,2,5);sc.add(f);
-  const mesh=carMesh(model,vis,{lights:false,brand:model.brand,cheap:false,decalN:7});mesh.traverse(o=>{if(o.isMesh&&o.material&&(o.material.map===R3.T.blob||o.material.map===R3.T.glow))o.visible=false;if(o.isPoints)o.visible=false});
+  const mesh=carMesh(model,vis,{lights:false,brand:model.brand,cheap:false,decalN:7,noTrailer:true});mesh.traverse(o=>{if(o.isMesh&&o.material&&(o.material.map===R3.T.blob||o.material.map===R3.T.glow))o.visible=false;if(o.isPoints)o.visible=false});
   const wheels=mesh.userData.wheels||[];wheels.forEach(w=>w.visible=false);sc.add(mesh);mesh.updateMatrixWorld(true);
   const box=new THREE.Box3();mesh.traverse(o=>{let v=o.visible;for(let q=o.parent;q;q=q.parent)if(!q.visible)v=false;if(o.isMesh&&v)box.expandByObject(o)});const L=box.max.z-box.min.z,cz=(box.max.z+box.min.z)/2,H=Math.max(1,box.max.y),pad=.15,ppm=110;
   const w=Math.round((L+pad*2)*ppm),h=Math.round((H+pad*2)*ppm);R.setPixelRatio(1);R.setSize(w,h,false);
@@ -580,6 +585,15 @@ function buildSprite(model,vis){
     wimg=document.createElement('canvas');wimg.width=wimg.height=n;wimg.getContext('2d').drawImage(R.domElement,0,0)}
   const wz=wheels.map(w=>w.getWorldPosition(new THREE.Vector3()).z);const zs=wz.length?[Math.min(...wz),Math.max(...wz)]:cfg.wheelZ;
   return{img,L,H,pad,wimg,r,wz:zs,zr:box.max.z,hl:cfg.hl||.6}}
+function parSprite(){if(SPR.par)return SPR.par;const src=window.THREE&&parScene();if(!src){if(GLB[PAR_URL]&&GLB[PAR_URL].p&&!SPR.parW){SPR.parW=1;GLB[PAR_URL].p.then(()=>sprRedraw())}return null}if(!SPR.r)return null;
+  const R=SPR.r,sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(lin('#dfe6ff'),lin('#2a2c30'),1.0));const k=new THREE.DirectionalLight(lin('#fff4e6'),1.6);k.position.set(6,6,-3);sc.add(k);
+  const g=new THREE.Group(),inner=src.clone(true);inner.scale.setScalar(.9);inner.rotation.y=Math.PI/2;g.add(inner);sc.add(g);g.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(g),L=box.max.z-box.min.z,cz=(box.max.z+box.min.z)/2,H=box.max.y,pad=.1,ppm=110,w=Math.round((L+pad*2)*ppm),h=Math.round((H+pad*2)*ppm);R.setPixelRatio(1);R.setSize(w,h,false);
+  const cam=new THREE.OrthographicCamera(-(L/2+pad),L/2+pad,H+pad,-pad,.1,60);cam.position.set(20,0,cz);cam.lookAt(0,0,cz);R.render(sc,cam);
+  const img=document.createElement('canvas');img.width=w;img.height=h;img.getContext('2d').drawImage(R.domElement,0,0);return SPR.par={img,L,H,pad}}
+function drawTrailerSide(ctx,x,gy,s){const sp=parSprite();if(!sp){if(window.THREE&&!SPR.r){try{carSprite(CAR.hb20,VIS0('#fff'))}catch(e){}}return}
+  const right=x+.25*s;ctx.save();ctx.fillStyle='rgba(0,0,0,.45)';ctx.beginPath();ctx.ellipse(right-sp.L*s/2,gy+1,sp.L*s*.45,Math.max(2,s*.08),0,0,7);ctx.fill();
+  ctx.drawImage(sp.img,right-(sp.L+sp.pad)*s,gy-(sp.H+sp.pad)*s,(sp.L+sp.pad*2)*s,(sp.H+sp.pad*2)*s);ctx.restore()}
 function drawSpriteCar(ctx,model,vis,sp,x,gy,s,wa,o){const S2=s*model.L/sp.L,L=model.L*s;
   ctx.save();ctx.fillStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.ellipse(x+L/2,gy+1,L*.52,Math.max(2,s*.1),0,0,7);ctx.fill();
   if(vis.neon){ctx.save();ctx.shadowColor=vis.neonColor;ctx.shadowBlur=s*.9;ctx.fillStyle=rgba(vis.neonColor,.65);ctx.beginPath();ctx.ellipse(x+L/2,gy-s*.04,L*.42,s*.07,0,0,7);ctx.fill();ctx.restore()}
@@ -608,6 +622,7 @@ function drawAccSide(ctx,model,vis,x,gy,s,P,yb,arches,B,sx,L,bot,o){
   ctx.restore();
 }
 function drawCarSide(ctx,model,vis,x,gy,s,wa=0,o={}){
+  if(hasPar(model,vis))drawTrailerSide(ctx,x,gy,s);
   if(model.glb){const sp=carSprite(model,vis);if(sp){drawSpriteCar(ctx,model,vis,sp,x,gy,s,wa,o);return}}
   const B=BODIES[model.body],sx=model.L/B.L,low=(vis.height||0)*.032,L=model.L*s;
   const P=(px,py)=>[x+px*sx*s,gy-(py-low)*s];
@@ -699,7 +714,7 @@ function fit(cv){
 function drawPreview(cv,model,vis,small,car){
   const{ctx,w,h}=fit(cv);ctx.clearRect(0,0,w,h);
   const bg=ctx.createRadialGradient(w/2,h*.15,10,w/2,h*.5,w*.7);bg.addColorStop(0,'#2a313a');bg.addColorStop(1,'#0b0d10');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
-  const gy=h*(small?.82:.8),s=Math.min(w*(small?.86:.78)/model.L,h*.6/2);const x=(w-model.L*s)/2;
+  const tl=hasPar(model,vis)?PAR_LEN+.4:0,LL=model.L+tl,gy=h*(small?.82:.8),s=Math.min(w*(small?.86:.78)/LL,h*.6/(tl?2.9:2));const x=(w-LL*s)/2+tl*s;
   const fl=ctx.createLinearGradient(0,gy,0,h);fl.addColorStop(0,'#1c2128');fl.addColorStop(1,'#0b0d10');ctx.fillStyle=fl;ctx.fillRect(0,gy,w,h-gy);
   if(!small){ctx.save();ctx.translate(0,gy*2);ctx.scale(1,-1);ctx.globalAlpha=.13;drawCarSide(ctx,model,vis,x,gy,s,0);ctx.restore()}
   drawCarSide(ctx,model,vis,x,gy,s,.3,{car});
@@ -718,6 +733,7 @@ const SNDP={
   sigma:{cyl:4,half:.3,odd:.05,roll:1.2,rasp:.3,lp:1250,g:.85,dist:.14},
   f4r:{cyl:4,half:.36,odd:.06,roll:1.05,rasp:.48,lp:1350,g:.9,dist:.24},
   f4rt:{cyl:4,half:.3,odd:.05,roll:1.0,rasp:.58,lp:1550,g:.95,dist:.28},
+  tres:{cyl:3,half:.3,odd:.12,roll:1.05,rasp:.3,lp:1000,g:.9,dist:.16},
   f1v6:{cyl:6,half:.08,odd:.02,roll:1.7,rasp:.62,lp:2600,g:.8,dist:.16},
   carb:{cyl:4,half:.65,odd:.14,roll:.95,rasp:.3,lp:800,g:.9,dist:.25},       // carburado: bem manco
   v8:{cyl:8,half:.25,odd:.04,roll:1.15,rasp:.28,lp:720,g:1.25,dist:.2,v8:1}};
@@ -1517,7 +1533,19 @@ function buildGlbCar(src,vis,o,cfg){cfg=cfg||GOL_CFG;
   grp.userData={paint,tailM,glow,flame,bodyG,popG,wheels,hoodG};
   return grp;
 }
-function carMesh(model,vis,o){const u=model&&model.glb;if(u&&!GLB[u]){const p=loadGLB(u);p&&p.then(()=>{if(TAB==='visual'&&!Game.scene)render()})}return glbReady(u)?buildGlbCar(GLB[u].scene,vis,o,model.glbCfg||GOL_CFG):buildCar(model.body,model.L,vis,o)}
+function carMesh(model,vis,o){const u=model&&model.glb;if(u&&!GLB[u]){const p=loadGLB(u);p&&p.then(()=>{if(TAB==='visual'&&!Game.scene)render()})}const g=glbReady(u)?buildGlbCar(GLB[u].scene,vis,o,model.glbCfg||GOL_CFG):buildCar(model.body,model.L,vis,o);
+  if(!(o&&o.noTrailer)&&hasPar(model,vis))attachTrailer(g,model);return g}
+function parScene(){if(!GLB[PAR_URL]){const p=loadGLB(PAR_URL);p&&p.then(sc=>{if(!sc)return;G3.key=null;if(TAB==='visual'&&!Game.scene)render();if(Game.scene&&Game.scene.rebuildCars)Game.scene.rebuildCars()})}return glbReady(PAR_URL)?GLB[PAR_URL].scene:null}
+function attachTrailer(g,model){const src=parScene();if(!src)return;
+  const piv=new THREE.Group(),inner=src.clone(true);inner.scale.setScalar(.9);inner.rotation.y=Math.PI/2;
+  const hx=2.98*.9,hz=-.52*.9;inner.position.set(-hz,0,hx);inner.traverse(o=>{if(o.isMesh){o.castShadow=true}});
+  piv.add(inner);piv.position.set(0,0,model.L/2+.28);g.add(piv);g.userData.trailer=piv;g.userData.trA=null}
+function trailFx(m){const t=m&&m.userData.trailer;if(!t)return;m.updateMatrixWorld(true);const H=t.getWorldPosition(new THREE.Vector3());let A=m.userData.trA;
+  if(!A){A=t.localToWorld(new THREE.Vector3(0,0,PAR_LEN));m.userData.trA=A}
+  const d=A.clone().sub(H);d.y=0;const len=d.length();if(len<.01)return;d.multiplyScalar(PAR_LEN/len);A.copy(H).add(d);
+  const inv=new THREE.Quaternion();m.getWorldQuaternion(inv).invert();const l=d.clone().applyQuaternion(inv);let a=Math.atan2(l.x,l.z);
+  if(Math.abs(a)>1.15){a=clamp(a,-1.15,1.15);const ld=new THREE.Vector3(Math.sin(a),0,Math.cos(a)).multiplyScalar(PAR_LEN).applyQuaternion(m.getWorldQuaternion(new THREE.Quaternion()));A.copy(H).add(ld)}
+  t.rotation.y=a}
 function setBrake(m,on){const u=m.userData;const t=on?2.6:1;if(u.tailM.emissiveIntensity!==t){u.tailM.emissiveIntensity=t;const c=u.glow.geometry.attributes.color;const v=on?1:.9,k=on?.2:.05;for(const i of[2,3]){c.setXYZ(i,v,k,k)}c.needsUpdate=true;u.glow.material.size=on?1.6:1.3}}
 
 class World3D{
@@ -1645,9 +1673,9 @@ class World3D{
     const fl=this.pm.userData.flame;fl.visible=pr.nitroOn;if(fl.visible)fl.scale.set(1,1,.7+Math.random()*.8);
     const spin=(m,r)=>{const w=m.userData.wheels;if(w)for(const x of w)x.rotation.x=-r.x/.31};spin(this.pm,pr);rc.rivals.forEach((a,i)=>spin(this.rm[i],a.r));
     const popV=(m,r)=>{const g=m.userData.popG,on=r.popT>0;g.visible=on;if(on){const k=(r.popS||1)*(.7+Math.random()*.8);g.children.forEach(c=>c.scale.set(1,1,k))}};
-    popV(this.pm,pr);hoodFx(this.pm,pr);if(!this.popL){this.popL=new THREE.PointLight(lin('#ff8a2a'),0,9,2);this.scene.add(this.popL)}
+    popV(this.pm,pr);hoodFx(this.pm,pr);trailFx(this.pm);if(!this.popL){this.popL=new THREE.PointLight(lin('#ff8a2a'),0,9,2);this.scene.add(this.popL)}
     this.popL.intensity=pr.popT>0?2.5*(pr.popS||1):0;if(pr.popT>0){this.popL.position.copy(this.pm.position);this.popL.position.y+=.5;this.popL.position.z+=Math.cos(this.pm.rotation.y)*(rc.model.L/2+.5)}
-    rc.rivals.forEach((a,i)=>{const m=this.rm[i];this.place(m,a.x,a.r.x,yawOf(a.xv,a.r.v));setBrake(m,a.brake);m.userData.flame.visible=a.r.nitroOn;popV(m,a.r);hoodFx(m,a.r)});
+    rc.rivals.forEach((a,i)=>{const m=this.rm[i];this.place(m,a.x,a.r.x,yawOf(a.xv,a.r.v));setBrake(m,a.brake);m.userData.flame.visible=a.r.nitroOn;popV(m,a.r);hoodFx(m,a.r);trailFx(m)});
     const near=rc.traffic.filter(t=>t.d>pr.x-80&&t.d<pr.x+430),cur=new Set(near);for(const t of[...this.live])if(!cur.has(t))this.release(t);
     for(const t of near){if(!t.mesh)this.acquire(t);this.place(t.mesh,rc.wx(t.d,t.off),t.d,-Math.atan(rc.slope(t.d))+t.rot);setBrake(t.mesh,t.hit||(t.v<8))}
     // câmera
@@ -1846,13 +1874,13 @@ class Roam3D{
         const nm=NET.nameOf(p),sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(nm,(p.presence.car.vis&&p.presence.car.vis.color)||'#c6ff3d'),depthWrite:false,transparent:true}));sp.scale.set(4,1,1);sp.position.y=2.4;g.add(sp);
         this.scene.add(g);e={g,mesh,key,x:f.x,z:f.z,h:f.h,w:0};this.remote.set(p.peer,e)}
       const fx=Math.sin(f.h),fz=-Math.cos(f.h),tx=f.x+fx*f.v*.12,tz=f.z+fz*f.v*.12,k=Math.min(1,dt*8);e.x+=(tx-e.x)*k;e.z+=(tz-e.z)*k;let dh=f.h-e.h;dh=Math.atan2(Math.sin(dh),Math.cos(dh));e.h+=dh*k;e.w+=f.v*dt;
-      e.g.position.set(e.x,0,e.z);e.g.rotation.y=-e.h;const w=e.mesh.userData.wheels;if(w)for(const x of w)x.rotation.x=-e.w/.31;setBrake(e.mesh,f.v<1)}
+      e.g.position.set(e.x,0,e.z);e.g.rotation.y=-e.h;trailFx(e.mesh);const w=e.mesh.userData.wheels;if(w)for(const x of w)x.rotation.x=-e.w/.31;setBrake(e.mesh,f.v<1)}
     for(const[id,e]of this.remote)if(!seen.has(id)){this.scene.remove(e.g);this.remote.delete(id)}}
   render(W,H){const now=performance.now(),dt=Math.min(.05,(now-this.last)/1000);this.last=now;const R=this.R,rc=this.rc,cam=this.cam;
     if(this.W!==W||this.H!==H){R.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();this.W=W;this.H=H}
     const pm=this.pm,vs=rc.r.v-rc.back;pm.position.set(rc.x,0,rc.z);pm.rotation.y=-rc.h;pm.userData.bodyG.rotation.z=clamp(rc.steer*vs*.004,-.06,.06);setBrake(pm,!!Input.k.brake||rc.back>0);
     this.wa=(this.wa||0)+vs*dt;const w=pm.userData.wheels;if(w)for(const x of w)x.rotation.x=-this.wa/.31;
-    const fl=pm.userData.flame;fl.visible=rc.r.nitroOn;const g=pm.userData.popG;g.visible=rc.r.popT>0;if(g.visible){const k=(rc.r.popS||1)*(.7+Math.random()*.8);g.children.forEach(c=>c.scale.set(1+(k>1.6?.6:0),1+(k>1.6?.6:0),k))}hoodFx(pm,rc.r);
+    const fl=pm.userData.flame;fl.visible=rc.r.nitroOn;const g=pm.userData.popG;g.visible=rc.r.popT>0;if(g.visible){const k=(rc.r.popS||1)*(.7+Math.random()*.8);g.children.forEach(c=>c.scale.set(1+(k>1.6?.6:0),1+(k>1.6?.6:0),k))}hoodFx(pm,rc.r);trailFx(pm);
     rc.traffic.forEach((t,i)=>{const m=this.tr[i];if(t.x==null)return;m.position.set(t.x,0,t.z);m.rotation.y=-t.h;setBrake(m,t.vt<t.v*.6)});
     this.syncRemote(dt);
     const fwd=new THREE.Vector3(Math.sin(rc.h),0,-Math.cos(rc.h)),P=new THREE.Vector3(rc.x,0,rc.z),port=clamp((1.2-cam.aspect)*1.1,0,.75);
@@ -1895,7 +1923,7 @@ const G3={cv:null,r:null,scene:null,cam:null,key:'',car:null,ex:null,yaw:-.7,pit
   mount(host,model,vis,car){if(!this.ok()||!this.init())return false;host.appendChild(this.cv);this.setCar(model,vis,car);if(!this.on){this.on=true;this.last=performance.now();this.loop()}return true},
   setCar(model,vis,car){const key=model.id+JSON.stringify(vis)+(glbReady(model.glb)?1:0)+(car?car.up.turbo:0);if(key===this.key)return;this.key=key;
     if(this.car){this.scene.remove(this.car)}const g=new THREE.Group(),m=carMesh(model,vis,{hero:true,lights:true,brand:model.brand,decalN:DECAL_N(car)});g.add(m);this.body=m;
-    this.ex=this.parts(model,vis,car);g.add(this.ex.g);this.car=g;this.scene.add(g);this.dist=Math.max(model.L,3.8)*1.55},
+    this.ex=this.parts(model,vis,car);g.add(this.ex.g);this.car=g;this.scene.add(g);this.dist=Math.max(model.L,3.8)*1.55;if(hasPar(model,vis)){this.dist=(model.L+PAR_LEN+1)*1.25;g.position.z=-PAR_LEN/2}},
   parts(model,vis,car){const D=carDims(model),g=new THREE.Group(),paint=new THREE.MeshPhysicalMaterial({color:lin(vis.color),metalness:.2,roughness:.34,clearcoat:.9,clearcoatRoughness:.12}),
       glass=new THREE.MeshStandardMaterial({color:lin(['#6d8aa0','#3a4a5a','#1d252f','#07090c'][vis.tint||0]),metalness:.3,roughness:.1,transparent:true,opacity:.55,side:THREE.DoubleSide}),
       dark=new THREE.MeshStandardMaterial({color:lin('#15171b'),roughness:.7}),W=D.W,low=(vis.height||0)*.032;
@@ -2169,6 +2197,7 @@ function vVisual(m){
    ${grp('roof','Teto')}
    ${grp('lights','Faróis')}
    ${grp('exhaust','Escapamento')}
+   ${model.paredao?`<div class="optgroup"><h4>Paredão <span>fixo de fábrica</span></h4><p class="sub" style="margin:0">Esse carro já vem com o paredão rebocado e ele não sai.</p></div>`:model.cat==='Rebaixado'?grp('paredao','Paredão','só categoria Rebaixado'):`<div class="optgroup"><h4>Paredão <span>só categoria Rebaixado</span></h4><p class="sub" style="margin:0">O paredão rebocado só pode ser instalado em carros da categoria Rebaixado.</p></div>`}
    <div class="optgroup"><h4>Neon</h4><div class="opts">${VIS.neon.map((w,i)=>opt('neon',i,w.n)).join('')}</div>${v.neon?`<div class="opts" style="margin-top:8px">${['#3db8ff','#c6ff3d','#ff4fa3','#7b2ff7','#ff4d5a'].map(c=>sw('ncolor','neonColor',c,1)).join('')}</div>`:''}</div>
   </div></div>
   ${cd.items.length?`<div class="cartbar"><span>${cd.items.length} ite${cd.items.length>1?'ns':'m'} · ${cd.total?fmt(cd.total):'grátis'}</span><button class="btn sm" data-act="vcartgo">Ver</button><button class="btn sm" data-act="vtest" data-v="drag">Testar</button><button class="btn sm pri" ${S.money<cd.total?'disabled':''} data-act="vbuy">${cd.total?'Comprar':'Instalar'}</button></div>`:''}</div>`;
@@ -2176,7 +2205,7 @@ function vVisual(m){
   if(use3d){const h=$('#g3host');if(!G3.mount(h,model,v,car)){S.settings.vis2d=true;render()}}
   const cc=$('#customColor');cc.addEventListener('change',()=>setDraft('color',cc.value));
 }
-function setDraft(k,val){const car=activeCar(),v=draftVis(car);const model=CAR[car.model];
+function setDraft(k,val){const car=activeCar(),v=draftVis(car);const model=CAR[car.model];if(k==='paredao'&&model.cat!=='Rebaixado'){toast(model.paredao?'Esse paredão é fixo de fábrica':'Paredão só pra carros da categoria Rebaixado');return}
   if(k==='height'&&val>Math.max(car.up.susp,(model.preset&&model.preset.height)||0)){toast(`Instale suspensão ${LV_NAMES[val]} na Oficina primeiro`);return}
   v[k]=val;const y=scrollY;render();scrollTo(0,y)}
 function buyCart(){const car=activeCar();if(!VD||VD.uid!==car.uid)return;const cd=cartDiff(car,VD.vis);if(!cd.items.length)return;if(S.money<cd.total){toast('Dinheiro insuficiente');return}
@@ -2252,7 +2281,7 @@ function vConta(m){
    <textarea id="saveCode" readonly>${btoa(unescape(encodeURIComponent(JSON.stringify(S))))}</textarea>
    <div style="display:flex;gap:8px;margin:8px 0 16px;flex-wrap:wrap"><button class="btn sm" data-act="copy">Copiar código</button></div>
    <textarea id="importCode" placeholder="Cole aqui um código de backup"></textarea>
-   <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-act="import">Importar</button><button class="btn sm warn" data-act="reset">Recomeçar do zero</button></div></div></div><details class="credits"><summary>Créditos</summary><div class="cred"><h4>Criadores dos modelos 3D</h4><ul><li>"LowPoly_Fiat Uno (Da Firma)" (<a href="https://sketchfab.com/3d-models/lowpoly-fiat-uno-da-firma-03b9e77233dd480086174998e2fbb04c" target="_blank" rel="noopener">sketchfab.com</a>) por Sollari, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Uno "Da Firma" (modificado: logos removidos)</li><li>"Ferrari F1 2019" (<a href="https://sketchfab.com/3d-models/ferrari-f1-2019-1b050bffe4e749b586b4782ee7ff4fd0" target="_blank" rel="noopener">sketchfab.com</a>) por valvetin, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Monoposto F1 2019 (modificado: decalques e patrocínios removidos)</li><li>"Renault Twingo" (<a href="https://skfb.ly/pDEQG" target="_blank" rel="noopener">skfb.ly/pDEQG</a>) por GraveDiggerMonsterTruck, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Twingo</li><li>"Audi S3 Limousine 8V" (<a href="https://sketchfab.com/3d-models/audi-s3-limousine-8v-4658de67e4444184b6e5d29facc09038" target="_blank" rel="noopener">sketchfab.com</a>) por KOElkast1007, licença Sketchfab Standard · S3 Sedan</li><li>"Volkswagen Jetta GLI (2025)" (<a href="https://sketchfab.com/3d-models/volkswagen-jetta-gli-2025-4adbe6ffcf5246ddac95921cb39bd2bf" target="_blank" rel="noopener">sketchfab.com</a>) por geyges, licença Sketchfab Standard · Jetta GLI 2025</li><li>"Low Poly Vehicle Mini Pack 6" (<a href="https://sketchfab.com/3d-models/low-poly-vehicle-mini-pack-6-3f343b730f964c9e8fc74a56001b99dc" target="_blank" rel="noopener">sketchfab.com</a>) por Vladek, licença Sketchfab Standard · VIP Jato</li><li>"2004 Volkswagen Fox" (<a href="https://skfb.ly/pF8sJ" target="_blank" rel="noopener">skfb.ly/pF8sJ</a>) por tonielpro520, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Fox Tudão</li><li>"VolksWagen UP!" (<a href="https://skfb.ly/pqYyR" target="_blank" rel="noopener">skfb.ly/pqYyR</a>) por esprit3d.website, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Up TSI</li><li>"02_Chevrolet Astra" (<a href="https://sketchfab.com/3d-models/02-chevrolet-astra-4dbf081570584f6d911fa6e009d35234" target="_blank" rel="noopener">sketchfab.com/3d-models/02-chevrolet-astra-4dbf081570584f6d911fa6e009d35234</a>) por foxcgi, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Astra</li><li>"Chevrolet Chevette sl 76" (<a href="https://sketchfab.com/3d-models/chevrolet-chevette-sl-76-2322139894c545b6838000f08d853662" target="_blank" rel="noopener">sketchfab.com/3d-models/chevrolet-chevette-sl-76-2322139894c545b6838000f08d853662</a>) por Laerte.Hubaleque, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Chevette</li><li>"2008 Ford Fiesta RS Concept" (<a href="https://sketchfab.com/3d-models/2008-ford-fiesta-rs-concept-9653f4e559df478280e156323453a959" target="_blank" rel="noopener">sketchfab.com/3d-models/2008-ford-fiesta-rs-concept-9653f4e559df478280e156323453a959</a>) por ActsOfDoge, licença Sketchfab Standard · Fiesta RS Concept</li><li>"2006 Ford Mustang GT" (<a href="https://sketchfab.com/3d-models/2006-ford-mustang-gt-bec5ad76822549aa90b2298b09c11a1f" target="_blank" rel="noopener">sketchfab.com/3d-models/2006-ford-mustang-gt-bec5ad76822549aa90b2298b09c11a1f</a>) por ActsOfDoge, licença Sketchfab Standard · Mustang GT</li></ul>
+   <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-act="import">Importar</button><button class="btn sm warn" data-act="reset">Recomeçar do zero</button></div></div></div><details class="credits"><summary>Créditos</summary><div class="cred"><h4>Criadores dos modelos 3D</h4><ul><li>"Hyundai HB20" (<a href="https://skfb.ly/pCJ76" target="_blank" rel="noopener">sketchfab.com</a>) por Nieve5677, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · HB20 (modificado: emblemas removidos)</li><li>"Chevrolet Onix 2024" (<a href="https://skfb.ly/pELAP" target="_blank" rel="noopener">sketchfab.com</a>) por UZBEK 3D, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Onix (modificado: emblemas removidos)</li><li>"Paredão" (<a href="https://skfb.ly/RBuM" target="_blank" rel="noopener">sketchfab.com</a>) por uelitonrostirolla, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Paredão rebocado</li><li>"LowPoly_Fiat Uno (Da Firma)" (<a href="https://sketchfab.com/3d-models/lowpoly-fiat-uno-da-firma-03b9e77233dd480086174998e2fbb04c" target="_blank" rel="noopener">sketchfab.com</a>) por Sollari, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Uno "Da Firma" (modificado: logos removidos)</li><li>"Ferrari F1 2019" (<a href="https://sketchfab.com/3d-models/ferrari-f1-2019-1b050bffe4e749b586b4782ee7ff4fd0" target="_blank" rel="noopener">sketchfab.com</a>) por valvetin, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Monoposto F1 2019 (modificado: decalques e patrocínios removidos)</li><li>"Renault Twingo" (<a href="https://skfb.ly/pDEQG" target="_blank" rel="noopener">skfb.ly/pDEQG</a>) por GraveDiggerMonsterTruck, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Twingo</li><li>"Audi S3 Limousine 8V" (<a href="https://sketchfab.com/3d-models/audi-s3-limousine-8v-4658de67e4444184b6e5d29facc09038" target="_blank" rel="noopener">sketchfab.com</a>) por KOElkast1007, licença Sketchfab Standard · S3 Sedan</li><li>"Volkswagen Jetta GLI (2025)" (<a href="https://sketchfab.com/3d-models/volkswagen-jetta-gli-2025-4adbe6ffcf5246ddac95921cb39bd2bf" target="_blank" rel="noopener">sketchfab.com</a>) por geyges, licença Sketchfab Standard · Jetta GLI 2025</li><li>"Low Poly Vehicle Mini Pack 6" (<a href="https://sketchfab.com/3d-models/low-poly-vehicle-mini-pack-6-3f343b730f964c9e8fc74a56001b99dc" target="_blank" rel="noopener">sketchfab.com</a>) por Vladek, licença Sketchfab Standard · VIP Jato</li><li>"2004 Volkswagen Fox" (<a href="https://skfb.ly/pF8sJ" target="_blank" rel="noopener">skfb.ly/pF8sJ</a>) por tonielpro520, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Fox Tudão</li><li>"VolksWagen UP!" (<a href="https://skfb.ly/pqYyR" target="_blank" rel="noopener">skfb.ly/pqYyR</a>) por esprit3d.website, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Up TSI</li><li>"02_Chevrolet Astra" (<a href="https://sketchfab.com/3d-models/02-chevrolet-astra-4dbf081570584f6d911fa6e009d35234" target="_blank" rel="noopener">sketchfab.com/3d-models/02-chevrolet-astra-4dbf081570584f6d911fa6e009d35234</a>) por foxcgi, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Astra</li><li>"Chevrolet Chevette sl 76" (<a href="https://sketchfab.com/3d-models/chevrolet-chevette-sl-76-2322139894c545b6838000f08d853662" target="_blank" rel="noopener">sketchfab.com/3d-models/chevrolet-chevette-sl-76-2322139894c545b6838000f08d853662</a>) por Laerte.Hubaleque, licença <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons Attribution 4.0</a> · Chevette</li><li>"2008 Ford Fiesta RS Concept" (<a href="https://sketchfab.com/3d-models/2008-ford-fiesta-rs-concept-9653f4e559df478280e156323453a959" target="_blank" rel="noopener">sketchfab.com/3d-models/2008-ford-fiesta-rs-concept-9653f4e559df478280e156323453a959</a>) por ActsOfDoge, licença Sketchfab Standard · Fiesta RS Concept</li><li>"2006 Ford Mustang GT" (<a href="https://sketchfab.com/3d-models/2006-ford-mustang-gt-bec5ad76822549aa90b2298b09c11a1f" target="_blank" rel="noopener">sketchfab.com/3d-models/2006-ford-mustang-gt-bec5ad76822549aa90b2298b09c11a1f</a>) por ActsOfDoge, licença Sketchfab Standard · Mustang GT</li></ul>
 <p>Modelos adaptados para o jogo: otimizados, sem interior e sem logotipos das montadoras. Nomes e marcas de carros no jogo são fictícios ou usados apenas como referência.</p>
 <h4>Jogo</h4><p>Racha BR · feito com three.js (MIT) e PeerJS (MIT).</p></div></details>`;
 }
@@ -2561,7 +2590,7 @@ if(/resgat|presente|gift/i.test(location.hash+location.search)&&!S.gift80&&!PEND
 render();
 if(!S.gift80&&!PEND_CODE&&!/^#sala-/i.test(location.hash))setTimeout(giftModal,500);
 NET.init();
-try{if(window.THREE&&THREE.GLTFLoader)S.cars.forEach(c=>{const m=CAR[c.model];m&&m.glb&&loadGLB(m.glb)})}catch(e){}
+try{if(window.THREE&&THREE.GLTFLoader){S.cars.forEach(c=>{const m=CAR[c.model];m&&m.glb&&loadGLB(m.glb)});if(S.cars.some(c=>hasPar(CAR[c.model],c.vis)))parScene()}}catch(e){}
 if(S.daily.last!==today()&&S.stats.races>0)setTimeout(()=>toast('Bônus diário disponível em Patrocínios'),800);
 </script>
 </body>

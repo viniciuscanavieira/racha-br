@@ -1,7 +1,7 @@
 import { put, list } from '@vercel/blob';
 
 const int = (v, a, b) => Math.max(a, Math.min(b, Math.floor(Number(v) || 0)));
-const CARS = ['unofirma','f1','s3','vip5','fox','twingo','fiestars','mustang','golturbao','chevette','saveiro','golgti','unoturbo','opala','uptsi','f250','golfgti','jetta','amarok','astra','vectra','fiesta','sandero','clio'];
+const CARS = ['hb20','onix','unofirma','f1','s3','vip5','fox','twingo','fiestars','mustang','golturbao','chevette','saveiro','golgti','unoturbo','opala','uptsi','f250','golfgti','jetta','amarok','astra','vectra','fiesta','sandero','clio'];
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
