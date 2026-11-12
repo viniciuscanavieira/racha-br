@@ -693,9 +693,20 @@ function drawPreview(cv,model,vis,small,car){
 }
 
 /* ---------- 7. ÁUDIO ---------- */
-const SNDP={ap:{cyl:4,sub:.55,hi:.15,rasp:.35,lp:900,g:1},ea888:{cyl:4,sub:.3,hi:.25,rasp:.22,lp:1100,g:.9},fire:{cyl:4,sub:.42,hi:.2,rasp:.4,lp:1000,g:.85},i6:{cyl:6,sub:.22,hi:.42,rasp:.15,lp:650,g:1.15},i3:{cyl:3,sub:.8,hi:.2,rasp:.35,lp:950,g:.9,subR:2/3},
-  diesel:{cyl:4,sub:.6,hi:.05,rasp:.22,lp:430,g:1.15,diesel:1},dieselv6:{cyl:6,sub:.4,hi:.1,rasp:.16,lp:500,g:1.1,diesel:.7},ecotec:{cyl:4,sub:.45,hi:.3,rasp:.3,lp:1050,g:.95},sigma:{cyl:4,sub:.35,hi:.35,rasp:.3,lp:1200,g:.85},f4r:{cyl:4,sub:.4,hi:.42,rasp:.45,lp:1300,g:.9},f4rt:{cyl:4,sub:.35,hi:.52,rasp:.55,lp:1500,g:.95},carb:{cyl:4,sub:.6,hi:.1,rasp:.3,lp:800,g:.9}};
-SNDP.v8={cyl:8,sub:.75,hi:.25,rasp:.3,lp:700,g:1.25};
+const SNDP={
+  ap:{cyl:4,half:.55,odd:.1,roll:1.0,rasp:.35,lp:950,g:1,dist:.22},          // AP 8v: grosso e manco
+  ea888:{cyl:4,half:.22,odd:.03,roll:1.25,rasp:.2,lp:1150,g:.9,dist:.12},   // EA888: liso e abafado
+  fire:{cyl:4,half:.38,odd:.06,roll:1.1,rasp:.42,lp:1050,g:.85,dist:.2},    // Fire: rasgadinho
+  i6:{cyl:6,half:.12,odd:.02,roll:1.35,rasp:.12,lp:650,g:1.2,dist:.1},      // 6 em linha: liso e grave
+  i3:{cyl:3,half:.75,odd:.18,roll:.95,rasp:.32,lp:950,g:.9,dist:.2},         // 3 cilindros: ronco torto
+  diesel:{cyl:4,half:.6,odd:.2,roll:.8,rasp:.25,lp:420,g:1.15,dist:.35,diesel:1},
+  dieselv6:{cyl:6,half:.4,odd:.12,roll:.9,rasp:.18,lp:480,g:1.1,dist:.28,diesel:.7},
+  ecotec:{cyl:4,half:.42,odd:.06,roll:1.1,rasp:.3,lp:1050,g:.95,dist:.17},
+  sigma:{cyl:4,half:.3,odd:.05,roll:1.2,rasp:.3,lp:1250,g:.85,dist:.14},
+  f4r:{cyl:4,half:.36,odd:.06,roll:1.05,rasp:.48,lp:1350,g:.9,dist:.24},
+  f4rt:{cyl:4,half:.3,odd:.05,roll:1.0,rasp:.58,lp:1550,g:.95,dist:.28},
+  carb:{cyl:4,half:.65,odd:.14,roll:.95,rasp:.3,lp:800,g:.9,dist:.25},       // carburado: bem manco
+  v8:{cyl:8,half:.25,odd:.04,roll:1.15,rasp:.28,lp:720,g:1.25,dist:.2,v8:1}};
 const SND_CAR={golturbao:'ap',chevette:'carb',saveiro:'ap',golgti:'ap',unoturbo:'fire',opala:'i6',uptsi:'i3',f250:'diesel',golfgti:'ea888',jetta:'ea888',amarok:'dieselv6'};
 function tuneFx(sc,r,gas,dt){const tn=sc.tn;if(!tn)return;const tb=sc.spec.turboStock||sc.spec.tm>1.001;
   if(sc.lastGas&&!gas){if(tb&&r.boost>.3){if(tn.flutter)Snd.flutter();else Snd.bov()}if(tn.pops&&r.rpm>.5)sc.overT=.7+tn.rm*.25}
@@ -704,29 +715,54 @@ function tuneFx(sc,r,gas,dt){const tn=sc.tn;if(!tn)return;const tb=sc.spec.turbo
 const Snd={ctx:null,eng:null,
   init(){if(this.ctx)return;try{const C=window.AudioContext||window.webkitAudioContext;if(C)this.ctx=new C()}catch(e){}},
   ok(){return this.ctx&&S.settings.sound},
-  prof(car){const m=car&&CAR[car.model]||CAR.chevette,id=m.snd||SND_CAR[m.id]||'ap',P={...SNDP[id]},tn=tuneOf(car);P.rl=m.rl||6500;P.turbo=m.turbo||(car&&car.up.turbo>0);
-    const loud=(tn.rm>=2?1:0)+((car&&car.vis&&car.vis.exhaust)?1:0)+((car&&car.up.motor>=2)?.5:0);P.g*=1+loud*.18;P.rasp+=loud*.12;return P},
-  startEngine(){this.stopEngine();if(!this.ok())return;try{const c=this.ctx;c.resume&&c.resume();const P=this.P=this.prof(Game.car||activeCar());
-    const mk=(type,gv)=>{const o=c.createOscillator(),g=c.createGain();o.type=type;g.gain.value=gv;o.connect(g);o.start();return{o,g}};
-    const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=800;f.Q.value=1.1;const g=c.createGain();g.gain.value=0;f.connect(g);g.connect(c.destination);
-    const a=mk('sawtooth',1),b=mk('square',P.sub),h=mk('triangle',P.hi);a.g.connect(f);b.g.connect(f);h.g.connect(f);
-    const n=c.sampleRate,buf=c.createBuffer(1,n,c.sampleRate),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
-    const ns=c.createBufferSource();ns.buffer=buf;ns.loop=true;const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.4;const gn=c.createGain();gn.gain.value=0;ns.connect(bp);bp.connect(gn);gn.connect(f);ns.start();
-    let cl=null;if(P.diesel){const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=1800;const gc=c.createGain();gc.gain.value=0;const lf=c.createOscillator();lf.type='square';const lg=c.createGain();lg.gain.value=.05*P.diesel;lf.connect(lg);lg.connect(gc.gain);ns.connect(hp);hp.connect(gc);gc.connect(g);lf.start();cl={lf,gc}}
-    let tw=null;if(P.turbo){const o=c.createOscillator();o.type='sine';const gt=c.createGain();gt.gain.value=0;o.connect(gt);gt.connect(c.destination);o.start();tw={o,g:gt}}
-    this.eng={a,b,h,f,g,ns,bp,gn,cl,tw}}catch(e){console.warn(e)}},
-  setEngine(rf,load,boost=0){const e=this.eng;if(!e)return;const P=this.P,t=this.ctx.currentTime,rpm=800+clamp(rf,0,1.05)*(P.rl-800),fr=rpm/60*P.cyl/2;
-    e.a.o.frequency.setTargetAtTime(fr,t,.03);e.b.o.frequency.setTargetAtTime(fr*(P.subR||.5),t,.03);e.h.o.frequency.setTargetAtTime(fr*2,t,.03);e.bp.frequency.setTargetAtTime(Math.min(6000,fr*3.2),t,.04);
-    e.gn.gain.setTargetAtTime(P.rasp*(.25+load*.9)*.6,t,.05);e.f.frequency.setTargetAtTime(P.lp+load*1300+rf*900*(P.diesel?.5:1),t,.05);e.g.gain.setTargetAtTime((.03+load*.05)*P.g,t,.05);
-    if(e.cl){e.cl.lf.frequency.setTargetAtTime(fr,t,.03)}
-    if(e.tw){e.tw.o.frequency.setTargetAtTime(1600+boost*5200,t,.08);e.tw.g.gain.setTargetAtTime(clamp(boost,0,1.2)*(.004+load*.012),t,.08)}},
-  stopEngine(){const e=this.eng;if(e){try{e.a.o.stop();e.b.o.stop();e.h.o.stop();e.ns.stop();if(e.cl)e.cl.lf.stop();if(e.tw)e.tw.o.stop();e.g.disconnect();if(e.tw)e.tw.g.disconnect()}catch(x){}this.eng=null}},
+  // timbre por motor: harmônicas em relação à rotação do comando (cam = rpm/120). cyl = ordem de queima por volta do comando
+  wave(P){const N=48,re=new Float32Array(N+1),im=new Float32Array(N+1),c=P.cyl;for(let k=1;k<=N;k++){let a=0;
+      if(k%c===0)a=1/Math.pow(k/c,P.roll||1.1);                         // ordem de queima e harmônicas
+      else if(P.v8&&k%(c/2)===0)a=.55/Math.pow(k/(c/2),1.2);            // ronco cruzado do V8
+      else if(k%2===0)a=P.half*(1/Math.pow(k/2,.9));                    // meia-ordem: o "manco"
+      else a=P.odd/Math.pow(k,.8);                                      // irregularidade de queima
+      if(P.diesel)a*=k>c*3?1.6:1;im[k]=a*(.85+Math.sin(k*1.7+c)*.15)}
+    return this.ctx.createPeriodicWave(re,im)},
+  curve(amt){const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i/(n-1)*2-1;cv[i]=Math.tanh(x*(1+amt*6))/Math.tanh(1+amt*6)}return cv},
+  prof(car){const m=car&&CAR[car.model]||CAR.chevette,id=m.snd||SND_CAR[m.id]||'ap',P={...SNDP[id]},tn=tuneOf(car),up=(car&&car.up)||UP0(),v=(car&&car.vis)||{};
+    P.rl=m.rl||6500;P.turbo=m.turbo||up.turbo>0;P.tsize=(m.turbo?1:0)+up.turbo;P.cam=up.motor;P.rm=tn.rm;
+    P.loud=(tn.rm>=2?.6:0)+(v.exhaust?.7:0)+up.motor*.18+(m.bigPops?.8:0);P.g*=1+P.loud*.16;P.rasp+=P.loud*.1;P.dist=(P.dist||.15)+P.loud*.12+P.cam*.05;
+    P.half=(P.half||.35)+P.cam*.07;P.odd=(P.odd||.05)+P.cam*.03;P.bang=m.bigPops||(tn.rm>=2?1.2:1);return P},
+  bufs(){if(this.B)return this.B;const c=this.ctx,R=c.sampleRate,mk=(dur,fn)=>{const n=Math.floor(R*dur),b=c.createBuffer(1,n,R),d=b.getChannelData(0);let pk=0;fn(d,n,R);for(let i=0;i<n;i++)pk=Math.max(pk,Math.abs(d[i]));for(let i=0;i<n;i++)d[i]/=pk||1;return b};
+    const bang=(big,seed)=>mk(big?.42:.22,(d,n,R)=>{let lp=0,pr=0,ph=0;for(let i=0;i<n;i++){const t=i/R,f=(big?150:200)*Math.exp(-t*(big?9:14))+(big?42:60);ph+=2*Math.PI*f/R;
+        const th=Math.sin(ph)*Math.exp(-t/(big?.07:.035))*(big?1.1:.8);const w=Math.random()*2-1;lp+=(w-lp)*.12;const body=lp*Math.exp(-t/(big?.045:.022))*1.6;
+        const cr=(w-pr*.7)*Math.exp(-t/(big?.009:.005))*(big?1.3:1);pr=w;const e=t>.035?Math.exp(-(t-.035)/.06)*.22*Math.sin(ph*.97):0;d[i]=Math.tanh((th+body+cr+e*(big?1:0))*(big?2.2:1.7))}});
+    const chuff=mk(.06,(d,n,R)=>{let a=0,b=0;for(let i=0;i<n;i++){const t=i/R,w=Math.random()*2-1;a+=(w-a)*.25;b+=(a-b)*.25;d[i]=(a-b*.6)*Math.exp(-t/.018)}});
+    return this.B={small:[bang(0,1),bang(0,2),bang(0,3)],big:[bang(1,1),bang(1,2)],chuff}},
+  play(buf,vol,rate=1,delay=0){try{const c=this.ctx,s=c.createBufferSource();s.buffer=buf;s.playbackRate.value=rate;const g=c.createGain();g.gain.value=vol;s.connect(g);g.connect(this.out());s.start(c.currentTime+delay)}catch(e){}},
+  out(){if(this.comp)return this.comp;const c=this.ctx,k=c.createDynamicsCompressor();k.threshold.value=-10;k.ratio.value=6;k.attack.value=.002;k.release.value=.12;const mg=c.createGain();mg.gain.value=.75;k.connect(mg);mg.connect(c.destination);return this.comp=k},
+  startEngine(){this.stopEngine();if(!this.ok())return;try{const c=this.ctx;if(c.state==='suspended'&&!(c instanceof (window.OfflineAudioContext||Object)))c.resume();const P=this.P=this.prof(Game.car||activeCar());this.bufs();
+    const o=c.createOscillator();o.setPeriodicWave(this.wave(P));const ws=c.createWaveShaper();ws.curve=this.curve(P.dist);ws.oversample='none';
+    const pre=c.createGain();pre.gain.value=.6;const f=c.createBiquadFilter();f.type='lowpass';f.Q.value=.9;const pk=c.createBiquadFilter();pk.type='peaking';pk.Q.value=1.2;pk.gain.value=4+P.loud*3;
+    const g=c.createGain();g.gain.value=0;o.connect(pre);pre.connect(ws);ws.connect(pk);pk.connect(f);f.connect(g);g.connect(this.out());o.start();
+    const n=c.sampleRate,buf=c.createBuffer(1,n,n),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;const ns=c.createBufferSource();ns.buffer=buf;ns.loop=true;ns.start();
+    const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.1;const gn=c.createGain();gn.gain.value=0;ns.connect(bp);bp.connect(gn);gn.connect(f);
+    let tw=null;if(P.turbo){const w=c.createOscillator();w.type='sine';const wg=c.createGain();wg.gain.value=0;w.connect(wg);wg.connect(this.out());w.start();
+      const hp=c.createBiquadFilter();hp.type='bandpass';hp.Q.value=.7;const hg=c.createGain();hg.gain.value=0;ns.connect(hp);hp.connect(hg);hg.connect(this.out());tw={w,wg,hp,hg}}
+    this.eng={o,f,pk,g,ns,bp,gn,tw,last:0,lastLoad:0}}catch(e){console.warn(e)}},
+  setEngine(rf,load,boost=0){const e=this.eng;if(!e)return;const P=this.P,t=this.ctx.currentTime;let rpm=800+clamp(rf,0,1.05)*(P.rl-800);
+    if(rf<.18&&P.cam>=2)rpm*=1+Math.sin(t*(5+P.cam))*.035*P.cam;                 // marcha lenta irregular de comando bravo
+    const cam=rpm/120,fir=cam*P.cyl;e.o.frequency.setTargetAtTime(cam,t,.025);
+    e.f.frequency.setTargetAtTime(Math.min(9000,(P.lp+load*1500+rf*1100*(P.diesel?.45:1))*(1+P.loud*.18)),t,.04);e.pk.frequency.setTargetAtTime(fir*2,t,.04);
+    e.bp.frequency.setTargetAtTime(Math.min(7000,fir*3),t,.04);e.gn.gain.setTargetAtTime(P.rasp*(.15+load*.85)*.5*(P.diesel?1.6:1),t,.05);
+    const vol=(.05+load*.07+rf*.03)*P.g;e.g.gain.setTargetAtTime(vol,t,load>e.lastLoad?.03:.08);e.lastLoad=load;
+    if(e.tw){const ts=P.tsize,b=clamp(boost,0,1.4);e.tw.w.frequency.setTargetAtTime(Math.max(900,(3200-ts*350)+b*(5200-ts*500)),t,.09);e.tw.wg.gain.setTargetAtTime(b*(.004+load*.01)*(1+ts*.18),t,.08);
+      e.tw.hp.frequency.setTargetAtTime(2400+b*3000,t,.1);e.tw.hg.gain.setTargetAtTime(b*load*.02*(1+ts*.35),t,.1)}},
+  stopEngine(){const e=this.eng;if(e){try{e.o.stop();e.ns.stop();if(e.tw)e.tw.w.stop();e.g.disconnect();if(e.tw){e.tw.wg.disconnect();e.tw.hg.disconnect()}}catch(x){}this.eng=null}},
+  pop(st=1){if(!this.ok())return;const B=this.bufs(),k=(this.P&&this.P.bang)||1,big=st>1.6;
+    if(big){this.play(B.big[Math.random()*B.big.length|0],Math.min(.95,.42*st/1.6),.9+Math.random()*.2);if(Math.random()<.5)this.play(B.small[Math.random()*3|0],.35,1.1+Math.random()*.3,.04+Math.random()*.05)}
+    else{const n=Math.random()<.35*k?2+(Math.random()*2|0):1;for(let i=0;i<n;i++)this.play(B.small[Math.random()*3|0],(.28+Math.random()*.2)*st*(i?.7:1),.85+Math.random()*.35,i*(.025+Math.random()*.04))}},
   bov(){if(!this.ok())return;try{const c=this.ctx,n=Math.floor(c.sampleRate*.45),b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,1.6);
-    const s=c.createBufferSource();s.buffer=b;const f=c.createBiquadFilter();f.type='bandpass';f.Q.value=.9;f.frequency.setValueAtTime(5200,c.currentTime);f.frequency.exponentialRampToValueAtTime(1600,c.currentTime+.4);const g=c.createGain();g.gain.value=.22;s.connect(f);f.connect(g);g.connect(c.destination);s.start()}catch(e){}},
-  flutter(){if(!this.ok())return;for(let i=0;i<7;i++)setTimeout(()=>this.noise(.035,.14*(1-i/9),700+Math.random()*300),i*48)},
+    const s=c.createBufferSource();s.buffer=b;const f=c.createBiquadFilter();f.type='bandpass';f.Q.value=.9;const ts=(this.P&&this.P.tsize)||1;f.frequency.setValueAtTime(5600-ts*400,c.currentTime);f.frequency.exponentialRampToValueAtTime(1400,c.currentTime+.4);const g=c.createGain();g.gain.value=.18+ts*.03;s.connect(f);f.connect(g);g.connect(this.out());s.start()}catch(e){}},
+  flutter(){if(!this.ok())return;const B=this.bufs(),ts=(this.P&&this.P.tsize)||1,n=6+ts;for(let i=0;i<n;i++)this.play(B.chuff,(.5-i*.04)*(1+ts*.1),.8+i*.03+Math.random()*.08,i*(.042+i*.003))},
   noise(dur=.25,vol=.15,freq=1800){if(!this.ok())return;try{const c=this.ctx,n=Math.floor(c.sampleRate*dur),b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=c.createBufferSource();s.buffer=b;const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;const g=c.createGain();g.gain.value=vol;s.connect(f);f.connect(g);g.connect(c.destination);s.start()}catch(e){}},
   beep(freq=600,dur=.12,vol=.08){if(!this.ok())return;try{const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.frequency.value=freq;g.gain.value=vol;o.connect(g);g.connect(c.destination);o.start();g.gain.setTargetAtTime(0,c.currentTime+dur*.6,.03);o.stop(c.currentTime+dur+.1)}catch(e){}},
-  pop(st=1){if(!this.ok())return;if(st>1.6){this.noise(.12,.5*Math.min(st/2,1.4),120+Math.random()*90);setTimeout(()=>this.noise(.05,.3,2200),15)}this.noise(.06+Math.random()*.04,.32*Math.min(st,1.6),220+Math.random()*260);if(Math.random()<.6)setTimeout(()=>this.noise(.03,.18*st,1400+Math.random()*900),25)},
+  _oldpop(){},
   boom(){this.noise(.9,.6,110);setTimeout(()=>this.noise(.6,.35,600),80)},
   hiss(){this.noise(1.4,.3,4200)},
   grind(){this.noise(.28,.22,2300);this.beep(95,.2,.05)},
