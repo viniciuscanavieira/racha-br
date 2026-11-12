@@ -253,7 +253,7 @@ const CARS=[
   {id:'jetta',brand:'V',rl:6800,name:'Jetta GLI Turbo',year:2020,cat:'Turbo',body:'sedan',L:4.7,hp:230,wt:1440,grip:.94,handling:.8,drive:'FWD',turbo:true,price:128000,tune:1.2,color:'#1e5bd8',desc:'Sedã que engana. Com câmbio rápido assusta muito esportivo.'},
   {id:'astra',brand:'T',snd:'ecotec',rl:6800,name:'Astra GSi 2.0',year:2004,cat:'Clássico',body:'hatch',L:4.11,hp:136,wt:1150,grip:.86,handling:.66,drive:'FWD',turbo:false,price:34000,tune:1.2,color:'#c8202e',desc:'O 2.0 16v que virou febre nos encontros. Gira alto e aceita turbo fácil.'},
   {id:'vectra',brand:'T',snd:'ecotec',rl:6500,name:'Vectra GSi 2.0',year:1994,cat:'Clássico',body:'sedan',L:4.6,hp:150,wt:1250,grip:.86,handling:.62,drive:'FWD',turbo:false,price:42000,tune:1.25,color:'#15181d',desc:'Sedã executivo de alma esportiva. Base preferida pra turbo pesado.'},
-  {id:'fiesta',brand:'B',snd:'sigma',rl:6800,name:'New Fiesta Sport 2017',year:2017,cat:'Esportivo',body:'hatch',L:3.97,hp:130,wt:1090,grip:.9,handling:.78,drive:'FWD',turbo:false,price:48000,tune:1.1,color:'#ff7a00',desc:'Hatch ágil e bem acertado de fábrica. Curva como poucos na cidade.'},
+  {id:'fiesta',brand:'B',snd:'sigma',rl:6800,name:'New Fiesta Sport 2017',year:2017,cat:'Esportivo',body:'hatch',L:3.97,glb:'/models/new-fiesta.glb',glbCfg:{W:1.72,L:4.05,front:-2.07,rear:1.98,hl:.66,tl:.88,bmp:.3,hood:[.95,-.85,.82,-1.95],roofY:1.5,roofZ:[-.3,1.6],wheelZ:[-1.25,1.25],r:.31,belt:.94,top:1.42,spoilerZ:1.75,roles:{body:'paint',trim:'paint',mirror_L:'paint',mirror_R:'paint',handle_front_L:'paint',handle_rear_L:'paint',handle_front_R:'paint',handle_rear_R:'paint',windows:'glass',taillights:'tail',headlights:'lamp',badge_front:'badge',badge_rear:'badge'}},hp:130,wt:1090,grip:.9,handling:.78,drive:'FWD',turbo:false,price:48000,tune:1.1,color:'#ff7a00',desc:'Hatch ágil e bem acertado de fábrica. Curva como poucos na cidade.'},
   {id:'sandero',brand:'R',snd:'f4r',rl:7000,name:'Sandero RS 2.0',year:2019,cat:'Esportivo',body:'hatch',L:4.07,hp:150,wt:1160,grip:.9,handling:.76,drive:'FWD',turbo:false,price:58000,tune:1.15,color:'#d7263d',preset:{stripe:1,stripeColor:'#111111',wheel:4,wheelColor:'#1a1a1c'},desc:'O 2.0 que grita até 7 mil giros. Câmbio curto, perfeito pra arrancada.'},
   {id:'clio',brand:'R',snd:'f4rt',rl:7300,name:'Clio RS 2.0',year:2008,cat:'Esportivo',body:'hothatch',L:3.81,hp:172,wt:1210,grip:.93,handling:.84,drive:'FWD',turbo:false,price:72000,tune:1.15,color:'#f2c200',preset:{wheel:10,wheelColor:'#1a1a1c',front:2,decal:2},desc:'Hot hatch francês de pista. Leve, rasgado e com som de corrida.'},
   {id:'amarok',brand:'V',rl:4800,name:'Amarok V6',year:2021,cat:'Modificado',body:'truck',L:5.25,hp:258,wt:2150,grip:.92,handling:.55,drive:'AWD',turbo:true,price:165000,tune:1.35,color:'#2b2f36',desc:'Tração integral e V6 turbo diesel. Largada brutal.'},
@@ -1363,9 +1363,10 @@ const GLB={};
 function loadGLB(url){if(GLB[url])return GLB[url].p;if(!window.THREE||!THREE.GLTFLoader)return null;
   const e=GLB[url]={scene:null};e.p=new Promise(res=>{try{new THREE.GLTFLoader().load(url,g=>{e.scene=g.scene;res(g.scene)},undefined,err=>{console.warn('glb',err);res(null)})}catch(err){res(null)}});return e.p}
 function glbReady(url){return url&&GLB[url]&&GLB[url].scene}
-function buildGlbCar(src,vis,o){
+const GOL_CFG={W:1.62,L:4.02,front:-2.01,rear:2.01,hl:.56,tl:.66,bmp:.27,hood:[.85,-0.8,.68,-1.84],roofY:1.37,roofZ:[-0.18,1.22],wheelZ:[-1.22,1.22],r:.31,belt:.93,top:1.29,spoilerZ:1.3};
+function buildGlbCar(src,vis,o,cfg){cfg=cfg||GOL_CFG;
   const grp=new THREE.Group(),bodyG=new THREE.Group(),inner=src.clone(true);inner.rotation.y=Math.PI;bodyG.add(inner);grp.add(bodyG);
-  const W=1.62,L=4.02,rear=L/2,front=-L/2,hl=.56,tl=.66,bmp=.27,T=R3.T;
+  const W=cfg.W,L=cfg.L,rear=cfg.rear,front=cfg.front,hl=cfg.hl,tl=cfg.tl,bmp=cfg.bmp,T=R3.T,roles=cfg.roles||{};
   const paint=o.cheap?new THREE.MeshStandardMaterial({color:lin(vis.color),metalness:.15,roughness:.45}):new THREE.MeshPhysicalMaterial({color:lin(vis.color),metalness:.2,roughness:.34,clearcoat:.9,clearcoatRoughness:.12});
   const paintDS=paint.clone();paintDS.side=THREE.DoubleSide;
   const tint=vis.tint||0,glassM=mat('glass'+tint,()=>new THREE.MeshStandardMaterial({color:lin(['#6d8aa0','#3a4a5a','#1d252f','#07090c'][tint]),metalness:.3,roughness:.12,side:THREE.DoubleSide}));
@@ -1373,15 +1374,19 @@ function buildGlbCar(src,vis,o){
   const tailM=new THREE.MeshStandardMaterial({color:lin('#5a0a0a'),emissive:lin('#ff1a1a'),emissiveIntensity:1});
   const stM=vis.stripe?mat('st'+vis.stripeColor,()=>new THREE.MeshStandardMaterial({color:lin(vis.stripeColor),metalness:.3,roughness:.4})):null;
   const wheels=[],low=(vis.height||0)*.032;
-  inner.traverse(m=>{if(/^wheel_/.test(m.name||''))wheels.push(m);if(!m.isMesh)return;const n=m.material&&m.material.name;
+  const lip=/^wheel_(FL|FR|RL|RR)_(lip|spokes|hub)$/;
+  inner.traverse(m=>{if(/^wheel_(FL|FR|RL|RR)$/.test(m.name||''))wheels.push(m);if(!m.isMesh)return;let n=m.material&&m.material.name;
+    const role=roles[m.name]||(lip.test(m.name)?'rim':null);if(role){n=role==='paint'?'body':role==='glass'?'glass':role==='tail'?'tail':role==='rim'?'rim':role==='lamp'?'lamp':n;
+      if(role==='badge'){m.material=mat('badge'+(o.brand||'V'),()=>new THREE.MeshStandardMaterial({map:badgeTex(o.brand||'V'),metalness:.4,roughness:.3,transparent:true}))}}
     if(n==='body')m.material=paint;else if(n==='body_ds')m.material=paintDS;else if(n==='glass')m.material=glassM;else if(n==='rim')m.material=rimM;else if(n==='tail')m.material=tailM;
     else if(n==='stripe'){if(stM)m.material=stM;else m.visible=false}
     else if(m.name==='roof_spoiler')m.visible=!!vis.spoiler&&vis.roof!==2;
     if(n==='lamp'&&vis.lights===1)m.material=mat('xenon',()=>new THREE.MeshStandardMaterial({color:lin('#dff0ff'),emissive:lin('#bfe3ff'),emissiveIntensity:2}));
     if(m.name==='exhaust'){if(vis.exhaust===2)m.visible=false;else if(vis.exhaust===1)m.scale.set(1,1.6,1.6)}});
-  addAcc3D(bodyG,vis,{W,L,front,rear,bmp,hood:[.85,-0.8,.68,-1.84],roofY:1.37,roofZ:[-0.18,1.22],wheelZ:[-1.22,1.22],r:.31},o);
-  const root=inner.children[0]||inner;root.children.forEach(c=>{if(!/^wheel_/.test(c.name||''))c.position.y-=low});
-  if(vis.spoiler===2){const sp=mergeGeos([new THREE.BoxGeometry(W*.96,.05,.4).translate(0,1.62,1.3),...[-1,1].map(s=>new THREE.BoxGeometry(.05,.26,.12).translate(s*W*.3,1.5,1.3))]);bodyG.add(new THREE.Mesh(sp,mat('spo',()=>new THREE.MeshStandardMaterial({color:lin('#15171b'),metalness:.4,roughness:.35}))))}
+  addAcc3D(bodyG,vis,{W,L,front,rear,bmp,hood:cfg.hood,roofY:cfg.roofY,roofZ:cfg.roofZ,wheelZ:cfg.wheelZ,r:cfg.r},o);
+  const root=inner.children.length===1?inner.children[0]:inner;root.children.forEach(c=>{if(!/^wheel_/.test(c.name||''))c.position.y-=low});
+  if(vis.spoiler&&cfg.roles){const lipS=vis.spoiler===1;const sp=lipS?new THREE.BoxGeometry(W*.8,.04,.22).translate(0,cfg.roofY-.02,cfg.spoilerZ):null;if(sp)bodyG.add(new THREE.Mesh(sp,paint))}
+  if(vis.spoiler===2){const sz=cfg.spoilerZ,sy=cfg.roofY+.13;const sp=mergeGeos([new THREE.BoxGeometry(W*.96,.05,.4).translate(0,sy,sz),...[-1,1].map(s=>new THREE.BoxGeometry(.05,.26,.12).translate(s*W*.3,sy-.12,sz))]);bodyG.add(new THREE.Mesh(sp,mat('spo',()=>new THREE.MeshStandardMaterial({color:lin('#15171b'),metalness:.4,roughness:.35}))))}
   grp.add(new THREE.Mesh(new THREE.PlaneGeometry(W*1.35,L*1.12).rotateX(-Math.PI/2).translate(0,.025,0),mat('blob',()=>new THREE.MeshBasicMaterial({map:T.blob,transparent:true,depthWrite:false}))));
   if(vis.neon)grp.add(new THREE.Mesh(new THREE.PlaneGeometry(W*1.7,L*1.05).rotateX(-Math.PI/2).translate(0,.03,0),new THREE.MeshBasicMaterial({map:T.glow,color:lin(vis.neonColor),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})));
   const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.BufferAttribute(new Float32Array([-W*.32,hl,front-.05,W*.32,hl,front-.05,-W*.35,tl,rear+.05,W*.35,tl,rear+.05]),3));pg.setAttribute('color',new THREE.BufferAttribute(new Float32Array([1,.93,.75,1,.93,.75,.9,.05,.05,.9,.05,.05]),3));
@@ -1394,7 +1399,7 @@ function buildGlbCar(src,vis,o){
   grp.userData={paint,tailM,glow,flame,bodyG,popG,wheels};
   return grp;
 }
-function carMesh(model,vis,o){const u=model&&model.glb;return glbReady(u)?buildGlbCar(GLB[u].scene,vis,o):buildCar(model.body,model.L,vis,o)}
+function carMesh(model,vis,o){const u=model&&model.glb;return glbReady(u)?buildGlbCar(GLB[u].scene,vis,o,model.glbCfg||GOL_CFG):buildCar(model.body,model.L,vis,o)}
 function setBrake(m,on){const u=m.userData;const t=on?2.6:1;if(u.tailM.emissiveIntensity!==t){u.tailM.emissiveIntensity=t;const c=u.glow.geometry.attributes.color;const v=on?1:.9,k=on?.2:.05;for(const i of[2,3]){c.setXYZ(i,v,k,k)}c.needsUpdate=true;u.glow.material.size=on?1.6:1.3}}
 
 class World3D{
@@ -1746,7 +1751,8 @@ class Roam3D{
 }
 
 /* --- Garagem 3D (visual): orbitar, abrir portas e capô --- */
-function carDims(model){const glb=model.glb&&glbReady(model.glb),B=BODIES[model.body],X=BODY3D[model.body]||{fw:[4,5],rw:[1,2]},L=glb?4.02:model.L,sx=L/B.L,W=glb?1.62:B.w,Z=u=>-u*sx+L/2;
+function carDims(model){if(model.glb&&glbReady(model.glb)&&model.glbCfg){const c=model.glbCfg,zA=c.wheelZ[0]+c.r+.14;return{W:c.W,L:c.L,cowl:[c.hood[0],c.hood[1]],front:[c.hood[2],c.hood[3]],belt:c.belt,top:c.top,zA,zB:Math.min(zA+1.05,c.wheelZ[1]-c.r-.12),floor:.32}}
+  const glb=model.glb&&glbReady(model.glb),B=BODIES[model.body],X=BODY3D[model.body]||{fw:[4,5],rw:[1,2]},L=glb?4.02:model.L,sx=L/B.L,W=glb?1.62:B.w,Z=u=>-u*sx+L/2;
   const cw=B.pts[X.fw[1]],fr=B.pts[X.fw[1]+1]||cw,belt=B.win[0][1],top=Math.max(B.win[1][1],B.win[2][1]);
   const wz=B.wheels.map(u=>Z(u)),fwz=Math.min(...wz),rwz=Math.max(...wz),r=B.r;const zA=fwz+r+.14,zB=Math.min(zA+1.12,rwz-r-.12);
   return{W,L,cowl:[cw[1],Z(cw[0])],front:[fr[1],Z(fr[0])],belt,top,zA,zB,winZ:[Z(B.win[1][0]),Z(B.win[0][0])],floor:.3}}
