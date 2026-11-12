@@ -11,8 +11,10 @@ export default async function handler(req, res) {
   const pid = String((b && b.pid) || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 24);
   let codes = {};
   try { codes = JSON.parse(process.env.REDEEM_CODES || '{}'); } catch {}
-  const amount = Number(codes[code]);
-  if (!code || !amount) return res.status(404).json({ error: 'Código inválido' });
+  const val = codes[code];
+  const vip = val === 'vip';
+  const amount = vip ? 0 : Number(val);
+  if (!code || (!vip && !amount)) return res.status(404).json({ error: 'Código inválido' });
   const h = createHash('sha256').update('rbr:' + code).digest('hex').slice(0, 32);
   try {
     const { blobs } = await list({ prefix: `redeem/${h}`, limit: 1 });
@@ -23,5 +25,5 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(409).json({ error: 'Código já usado' });
   }
-  return res.status(200).json({ ok: true, amount });
+  return res.status(200).json({ ok: true, amount, vip });
 }
