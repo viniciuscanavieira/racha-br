@@ -105,6 +105,8 @@ h2{font-family:'Russo One','Arial Black',sans-serif;font-size:22px;margin-bottom
 .vleft{align-self:start;position:sticky;top:calc(var(--hh,62px) + 12px);display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - var(--hh,62px) - 24px);overflow:auto;scrollbar-width:thin}
 .vleft .cart{margin-top:0;border-top:0;padding-top:0}
 .cartbar{display:none}
+.gift{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:6px 0 16px;padding:14px 16px;border-radius:14px;border:1px solid var(--ac);background:linear-gradient(110deg,rgba(198,255,61,.16),rgba(198,255,61,.03) 60%),var(--p1)}
+.gift b{display:block;font-family:"Russo One","Arial Black",sans-serif;font-size:18px;color:var(--ac);letter-spacing:.5px}.gift span{color:#cfd6df;font-weight:600}.gift .btn{font-size:16px;padding:10px 22px}
 @media(max-width:860px){.vleft{display:contents}.vprev{position:sticky;top:var(--hh,62px);z-index:15;order:0;padding:8px 10px;box-shadow:0 10px 24px rgba(0,0,0,.55)}.vprev .stage{height:150px}.vprev h2{font-size:15px!important}.vprev .tag{font-size:12px!important}.vopts{order:1}.vcartp{order:2;scroll-margin-top:240px}}
 @media(max-width:860px){.cartbar{display:flex;position:fixed;left:8px;right:8px;bottom:8px;z-index:40;background:var(--p1,#14171c);border:1px solid var(--ac);border-radius:12px;padding:8px 10px;gap:8px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.6)}.cartbar span{flex:1;font-weight:700;font-size:14px}.vispad{padding-bottom:80px}}
 .sw{width:34px;height:34px;border-radius:8px;border:2px solid var(--ln)}
@@ -1621,7 +1623,7 @@ function render(){
   const need=xpNeed(S.level);
   $('#hstats').innerHTML=`<div class="money">${fmt(S.money)}</div><div class="lvl"><span class="badge">NV ${S.level}</span><div class="xpbar" title="${S.xp}/${need} XP"><div style="width:${S.xp/need*100}%"></div></div></div><button class="icbtn" data-act="snd" title="Som">${S.settings.sound?'🔊':'🔇'}</button>`;
   const claim=S.missions.some(m=>m.p>=m.n)||S.daily.last!==today();
-  $('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-v="${k}">${n}${(k==='patro'&&claim)?'<span class="dot"></span>':''}</button>`).join('');
+  $('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-v="${k}">${n}${(k==='patro'&&claim)||(k==='loja'&&!S.gift80)?'<span class="dot"></span>':''}</button>`).join('');
   const m=$('#main');
   ({online:vOnline,eventos:vEventos,garagem:vGaragem,oficina:vOficina,visual:vVisual,loja:vLoja,patro:vPatro,conta:vConta})[TAB](m);
   requestAnimationFrame(drawCanvases);
@@ -1709,8 +1711,11 @@ function setDraft(k,val){const car=activeCar(),v=draftVis(car);const model=CAR[c
   v[k]=val;const y=scrollY;render();scrollTo(0,y)}
 function buyCart(){const car=activeCar();if(!VD||VD.uid!==car.uid)return;const cd=cartDiff(car,VD.vis);if(!cd.items.length)return;if(S.money<cd.total){toast('Dinheiro insuficiente');return}
   S.money-=cd.total;car.spent+=cd.total;markOwned(car,VD.vis);car.vis={...VD.vis};VD=null;if(cd.total){track('style');Snd.cash()}save();toast(cd.total?`Visual instalado · ${fmt(cd.total)}`:'Visual trocado de graça');render()}
+const GIFT=80000;
+function giftHTML(){return S.gift80?'':`<div class="gift"><div><b>PRESENTE DE BOAS-VINDAS</b><span>${fmt(GIFT)} grátis pra montar seu primeiro projeto</span></div><button class="btn pri" data-act="gift">Resgatar</button></div>`}
+function giftModal(){if(S.gift80)return;modal(`<div class="big" style="color:var(--ac)">${fmt(GIFT)}</div><h2 style="text-align:center;margin-top:4px">Bem-vindo ao Racha BR!</h2><p class="sub" style="text-align:center">Presente de boas-vindas pra todo mundo: ${fmt(GIFT)} pra comprar seu carro, preparar e deixar no estilo. Resgate uma vez, na hora.</p><div class="acts"><button class="btn" data-act="close">Depois</button><button class="btn pri" data-act="gift">Resgatar</button></div>`)}
 function vLoja(m){
-  m.innerHTML=`<h2>Concessionária</h2><p class="sub">10 projetos do cenário nacional. Carros comprados podem ser vendidos por 70% do valor + 50% do que foi investido.</p>
+  m.innerHTML=`<h2>Concessionária</h2><p class="sub">10 projetos do cenário nacional. Carros comprados podem ser vendidos por 70% do valor + 50% do que foi investido.</p>${giftHTML()}
   <div class="grid g3">${CARS.map(c=>{const pf=perf(c,UP0());const own=S.cars.filter(x=>x.model===c.id);
    return`<div class="card"><canvas data-car="${c.id}" data-small="1"></canvas><div class="cb"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><h3>${c.name}</h3>${clsBadge(pf.pi)}</div><div class="tags" style="margin:0"><span class="tag a">${c.cat}</span><span class="tag">${c.drive}</span>${c.turbo&&c.cat!=='Turbo'?'<span class="tag">Turbo</span>':''}${own.length?`<span class="tag" style="color:var(--ac2)">Na garagem ×${own.length}</span>`:''}</div><p>${c.desc}</p>
    <div class="mini"><div><b>${c.hp} cv</b>potência</div><div><b>${pf.t100.toFixed(1)}s</b>0-100</div><div><b>${pf.t402.toFixed(1)}s</b>402m</div></div>
@@ -1781,6 +1786,7 @@ const ACT={
   pause:()=>Game.pause(),resume:()=>Game.resume(),quit:()=>Game.quit(),leave:()=>Game.leave(),
   again:()=>{const e=Game.ev,bet=Game.bet;closeModal();cancelAnimationFrame(Game.raf);Game.dispose();Game.scene=null;$('#race').style.display='none';render();if(S.money>=e.entry+bet&&(e.mode!=='racha'||bet<=S.money))Game.start(e,bet);else{toast('Dinheiro insuficiente');}},
   claim:d=>{const x=S.missions.find(m=>m.id==d.v);if(!x||x.p<x.n)return;S.money+=x.cash;const ups=addXP(x.rep);S.missions=S.missions.filter(m=>m!==x);save();Snd.cash();toast(`${x.sp} pagou ${fmt(x.cash)}`+(ups.length?` · nível ${S.level}!`:''));render()},
+  gift:()=>{if(S.gift80)return;S.gift80=1;S.money+=GIFT;save();closeModal();Snd.cash();toast(fmt(GIFT)+' na conta! Boas compras');TAB='loja';render();scrollTo(0,0)},
   daily:()=>{if(S.daily.last===today())return;const y=new Date(Date.now()-864e5).toISOString().slice(0,10);S.daily.streak=S.daily.last===y?S.daily.streak+1:1;const a=dailyAmount();S.money+=a;S.daily.last=today();save();Snd.cash();toast('Bônus diário: '+fmt(a));render()},
   copy:()=>{const t=$('#saveCode');try{navigator.clipboard.writeText(t.value).then(()=>toast('Código copiado'),()=>{t.select();toast('Selecionado: use Ctrl+C')})}catch(e){t.select();toast('Selecionado: use Ctrl+C')}},
   import:()=>{try{const d=JSON.parse(decodeURIComponent(escape(atob($('#importCode').value.trim()))));S=migrate(d);save();toast('Progresso importado');render()}catch(e){toast('Código inválido')}},
@@ -2028,7 +2034,9 @@ function netWaitHUD(ctx,W,H,n){ctx.fillStyle='rgba(8,10,13,.82)';const tw=Math.m
   ctx.fillStyle='#ffd23d';ctx.font='22px "Russo One","Arial Black",sans-serif';ctx.fillText('AGUARDANDO SEU AMIGO',W/2,H*.32+38);
   ctx.fillStyle='#eef1f5';ctx.font='700 16px Rajdhani,Arial,sans-serif';ctx.fillText(n.oppName+' está carregando a pista…',W/2,H*.32+66)}
 if(/^#sala-/i.test(location.hash))TAB='online';
+if(/resgat|presente|gift/i.test(location.hash+location.search)&&!S.gift80)TAB='loja';
 render();
+if(!S.gift80&&!/^#sala-/i.test(location.hash))setTimeout(giftModal,500);
 NET.init();
 try{if(window.THREE&&THREE.GLTFLoader)CARS.forEach(c=>c.glb&&loadGLB(c.glb))}catch(e){}
 if(S.daily.last!==today()&&S.stats.races>0)setTimeout(()=>toast('Bônus diário disponível em Patrocínios'),800);
