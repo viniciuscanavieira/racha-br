@@ -105,6 +105,7 @@ h2{font-family:'Russo One','Arial Black',sans-serif;font-size:22px;margin-bottom
 .vleft{align-self:start;position:sticky;top:calc(var(--hh,62px) + 12px);display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - var(--hh,62px) - 24px);overflow:auto;scrollbar-width:thin}
 .vleft .cart{margin-top:0;border-top:0;padding-top:0}
 .cartbar{display:none}
+.rivals{display:flex;flex-direction:column;gap:8px;margin-top:10px}.rv{display:flex;gap:10px;align-items:center;background:var(--p2);border:1px solid var(--ln);border-radius:12px;padding:8px}.rv canvas{width:118px;height:62px;flex:none;border-radius:8px;background:#0d1014}.rv b{font-size:15px}.rv small{display:block;font-size:12.5px;font-weight:600;line-height:1.25;margin-top:2px}.rv .cls{font-size:11px}
 .gift{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:6px 0 16px;padding:14px 16px;border-radius:14px;border:1px solid var(--ac);background:linear-gradient(110deg,rgba(198,255,61,.16),rgba(198,255,61,.03) 60%),var(--p1)}
 .gift b{display:block;font-family:"Russo One","Arial Black",sans-serif;font-size:18px;color:var(--ac);letter-spacing:.5px}.gift span{color:#cfd6df;font-weight:600}.gift .btn{font-size:16px;padding:10px 22px}
 @media(max-width:860px){.vleft{display:contents}.vprev{position:sticky;top:var(--hh,62px);z-index:15;order:0;padding:8px 10px;box-shadow:0 10px 24px rgba(0,0,0,.55)}.vprev .stage{height:150px}.vprev h2{font-size:15px!important}.vprev .tag{font-size:12px!important}.vopts{order:1}.vcartp{order:2;scroll-margin-top:240px}}
@@ -762,7 +763,24 @@ function hudBar(ctx,x,y,w,h,f,col,label){ctx.fillStyle='rgba(8,10,13,.75)';ctx.f
 class Particles{constructor(){this.a=[]}
   add(p){if(this.a.length<400)this.a.push(p)}
   update(dt){for(const p of this.a){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;p.r+=(p.gr||0)*dt}this.a=this.a.filter(p=>p.life>0)}}
-function randVis(model){return{color:pick(PALETTE),wheel:Math.floor(rnd(0,6)),wheelColor:pick(WHEEL_COLORS),height:Math.floor(rnd(0,4)),tint:Math.floor(rnd(0,4)),stripe:Math.random()<.4?Math.floor(rnd(1,5)):0,stripeColor:pick(['#111111','#ffffff','#d7263d','#f2c200']),spoiler:Math.floor(rnd(0,3)),neon:Math.random()<.3?1:0,neonColor:pick(['#3db8ff','#c6ff3d','#ff4fa3','#7b2ff7'])}}
+const BUILDS=[{n:'Turbo forte',w:{turbo:2,motor:1,cambio:0,pneus:0,susp:-1,peso:0,nitro:0}},{n:'Arrancadeiro',w:{pneus:2,peso:1,cambio:1,motor:0,turbo:0,susp:-2,nitro:1}},{n:'Aspirado bravo',w:{motor:2,cambio:1,turbo:-3,peso:1,pneus:0,susp:0,nitro:0}},{n:'Equilibrado',w:{motor:0,turbo:0,cambio:0,pneus:0,susp:0,peso:0,nitro:0}},{n:'Nitro na veia',w:{nitro:3,motor:0,turbo:0,cambio:0,pneus:1,susp:-1,peso:0}},{n:'Rebaixado de rua',w:{susp:2,pneus:1,peso:0,motor:0,turbo:0,cambio:0,nitro:-2}}];
+function evTier(ev){const l=EVENTS.filter(e=>e.mode===ev.mode&&!e.ghostOnly);return Math.max(0,l.indexOf(l.find(e=>e.id===ev.id)))}
+function rivalTarget(ev,car){const pi=perf(CAR[car.model],car.up).pi;return Math.round(Math.max(ev.pi*.85,pi*(.95+evTier(ev)*.022)))}
+function makeRival1(ev,car,tgtIn){const tgt=tgtIn,b=pick(BUILDS);
+  const pool=CARS.filter(c=>c.id!==car.model),base=c=>perf(c,UP0()).pi,top=c=>perf(c,{motor:4,turbo:4,cambio:4,pneus:4,susp:4,peso:4,nitro:4}).pi;
+  let cand=pool.filter(c=>base(c)<=tgt+120);if(!cand.length)cand=[pool.reduce((a,c)=>base(c)<base(a)?c:a)];
+  const model=pick(cand),lv=clamp((tgt-base(model))/170,0,4),up={};
+  for(const k in PARTS)up[k]=clamp(Math.round(lv+b.w[k]+rnd(-.6,.6)),0,4);if(!model.turbo&&up.turbo<2&&b.n!=='Aspirado bravo'&&Math.random()<.4)up.turbo=2;
+  let lo=.3,hi=6;for(let i=0;i<16;i++){const m=(lo+hi)/2;if(perf(model,up,{hpScale:m}).pi<tgt)lo=m;else hi=m}const hpScale=(lo+hi)/2;
+  const pi=perf(model,up,{hpScale}).pi,vis=randVis(model,lv);
+  const spec=computeSpec(model,up,{hpScale});return{id:model.id,model,up,hpScale,spec,pi,vis,build:b.n,hp:Math.round(spec.hp/10)*10}}
+function makeRival(ev,car){const tgt=rivalTarget(ev,car)*rnd(.96,1.04);let best=null;for(let i=0;i<6;i++){const r=makeRival1(ev,car,tgt);if(!best||Math.abs(r.pi-tgt)<Math.abs(best.pi-tgt))best=r;if(Math.abs(r.pi-tgt)<tgt*.025)break}return best}
+function rivalParts(r){return Object.keys(PARTS).filter(k=>r.up[k]>0).sort((a,b)=>r.up[b]-r.up[a]).slice(0,4).map(k=>`${k==='turbo'&&!r.model.turbo?'Kit turbo':PARTS[k].name} ${LV_NAMES[r.up[k]]}`)}
+function rivalVisList(v){const o=[];if(v.wheel)o.push('Rodas '+VIS.wheel[v.wheel].n);for(const k of['hood','front','skirt','roof','lights','decal','exhaust','spoiler'])if(v[k])o.push(VIS[k][v[k]].n);if(v.height>1)o.push(VIS.height[v.height]);if(v.neon)o.push('Neon');return o.slice(0,5)}
+function rivalPrize(ev,rv){const pi=Math.max(...rv.map(r=>r.pi)),m=clamp(pi/Math.max(1,ev.pi),1,2.2)**.6;return{prize:Math.round(ev.prize*m/100)*100,rep:Math.round(ev.rep*m)}}
+function randVis(model,lv=1.5){const r=Math.random,acc=k=>r()<.18+lv*.12?Math.floor(rnd(1,VIS[k].length)):0;
+  return{color:pick(PALETTE),wheel:r()<.85?Math.floor(rnd(1,VIS.wheel.length)):0,wheelColor:pick(WHEEL_COLORS),height:Math.floor(rnd(0,4)),tint:Math.floor(rnd(0,4)),stripe:r()<.4?Math.floor(rnd(1,5)):0,stripeColor:pick(['#111111','#ffffff','#d7263d','#f2c200']),spoiler:acc('spoiler'),neon:r()<.3?1:0,neonColor:pick(['#3db8ff','#c6ff3d','#ff4fa3','#7b2ff7']),hood:acc('hood'),front:acc('front'),skirt:acc('skirt'),roof:r()<.15?Math.floor(rnd(1,3)):0,lights:acc('lights'),decal:acc('decal'),exhaust:acc('exhaust')}}
+function randVisOld(model){return{color:pick(PALETTE),wheel:Math.floor(rnd(0,6)),wheelColor:pick(WHEEL_COLORS),height:Math.floor(rnd(0,4)),tint:Math.floor(rnd(0,4)),stripe:Math.random()<.4?Math.floor(rnd(1,5)):0,stripeColor:pick(['#111111','#ffffff','#d7263d','#f2c200']),spoiler:Math.floor(rnd(0,3)),neon:Math.random()<.3?1:0,neonColor:pick(['#3db8ff','#c6ff3d','#ff4fa3','#7b2ff7'])}}
 
 /* --- 9a. ARRANCADA --- */
 const ROLLOUT=0.45;
@@ -788,7 +806,7 @@ class DragRace{
   constructor(ev,car,net){
     this.mode='drag';this.ev=ev;this.car=car;this.model=CAR[car.model];this.spec=perf(this.model,car.up).spec;
     this.p=newRunner(this.spec);this.p.rev=.15;this.p.launched=false;
-    const op=makeOpponentSpec(ev.pi*rnd(.93,1.04),car.model);this.om=op.model;this.ospec=op.spec;this.ovis=randVis(op.model);this.opi=op.pi;
+    const op=(ev.rivals&&ev.rivals[0])||makeRival(ev,car);this.om=op.model;this.ospec=op.spec;this.ovis=op.vis;this.opi=op.pi;this.obuild=op.build;
     this.o=newRunner(this.ospec);this.o.launched=false;
     this.oReact=rnd(.17,.42);this.oShift=rnd(.87,.95);this.oLaunch=rnd(.5,.8);
     this.t=0;this.treeT=2.2+Math.random()*1.4;this.greenT=this.treeT+1.5;this.done=false;
@@ -905,7 +923,7 @@ class DragRace{
     const bw=Math.min(420,W*.5),bx=(W-bw)/2;hudBar(ctx,bx,14,bw,6,p.x/402,'#c6ff3d','');
     if(!this.solo){ctx.fillStyle='#ff4d5a';ctx.fillRect(bx+bw*clamp(this.o.x/402,0,1)-2,10,4,14)}
     if(this.ghost){ctx.fillStyle='#9fd4ff';ctx.fillRect(bx+bw*clamp(this.gx/402,0,1)-2,10,4,14)}
-    ctx.fillStyle='#eef1f5';ctx.font='700 13px Rajdhani,Arial';ctx.textAlign='right';if(W>=640)ctx.fillText(this.ev.test?'TEST DRIVE':this.solo?(this.ghost?`FANTASMA · ${this.ghost.t.toFixed(2)}s`:'PRIMEIRA PASSADA · SEM RECORDE'):this.net?`${this.net.oppName.toUpperCase()} · ${this.om.name}`:`${this.om.name.toUpperCase()} · PI ${this.opi}`,W-60,24);
+    ctx.fillStyle='#eef1f5';ctx.font='700 13px Rajdhani,Arial';ctx.textAlign='right';if(W>=640)ctx.fillText(this.ev.test?'TEST DRIVE':this.solo?(this.ghost?`FANTASMA · ${this.ghost.t.toFixed(2)}s`:'PRIMEIRA PASSADA · SEM RECORDE'):this.net?`${this.net.oppName.toUpperCase()} · ${this.om.name}`:`${this.om.name.toUpperCase()} · ${this.obuild?this.obuild.toUpperCase()+' · ':''}PI ${this.opi}`,W-60,24);
     if(this.net&&!this.net.go)netWaitHUD(ctx,W,H,this.net);
     let hy=C.bottom+14;if(sp.nitro>0){hudBar(ctx,18,hy,Math.min(150,R*2),7,p.nitroLeft/sp.nitro,'#3db8ff','NITRO');hy+=30}
     if(this.react!=null){ctx.fillStyle='#eef1f5';ctx.font='700 15px Rajdhani,Arial';ctx.textAlign='left';ctx.fillText('Reação '+this.react.toFixed(3)+'s',18,hy+4)}
@@ -931,9 +949,9 @@ class StreetRace{
     const pr=newRunner(this.spec);
     this.p={r:pr,x:0,xv:0,lane:1,L:this.model.L,W:BODIES[this.model.body].w,brake:false};
     this.rivals=[];const n=net?0:racha?1:3;
-    for(let i=0;i<n;i++){const op=makeOpponentSpec(ev.pi*rnd(.92,1.04),car.model);
+    for(let i=0;i<n;i++){const op=(ev.rivals&&ev.rivals[i])||makeRival(ev,car);
       const lane=racha?2:i;const d0=racha?0:8;const r=newRunner(op.spec);r.x=d0;
-      this.rivals.push({model:op.model,spec:op.spec,pi:op.pi,vis:randVis(op.model),r,lane,x:this.laneOff(lane),xv:0,L:op.model.L,W:BODIES[op.model.body].w,fin:null,brake:false,aggr:rnd(.9,1.0)})}
+      this.rivals.push({model:op.model,spec:op.spec,pi:op.pi,vis:op.vis,r,lane,x:this.laneOff(lane),xv:0,L:op.model.L,W:BODIES[op.model.body].w,fin:null,brake:false,aggr:rnd(.9,1.0)})}
     this.p.x=this.laneOff(net&&!net.host?2:1);pr.x=0;
     if(net){const m=net.oppModel,sp=perf(m,UP0()).spec,lane=net.host?2:1;this.rivals.push({remote:true,model:m,spec:sp,pi:net.oppPi,vis:net.oppVis,r:newRunner(sp),lane,x:this.laneOff(lane),xv:0,L:m.L,W:BODIES[m.body].w,fin:null,brake:false})}
     this.traffic=[];this.parts=new Particles();this.msgs=[];this.t=-3.2;this.cd=3;this.done=false;
@@ -1726,22 +1744,28 @@ function vEventos(m){
   const evs=EVENTS.filter(e=>e.mode===MODE);
   m.innerHTML=`<h2>Eventos</h2><p class="sub">Correndo com <b>${CAR[car.model].name}</b> · ${clsBadge(pf.pi)}</p>
   <div class="modes">${Object.entries(MODES).map(([k,v])=>`<button class="mode ${MODE===k?'on':''}" data-act="mode" data-v="${k}"><b>${v.n}</b><span>${v.d}</span></button>`).join('')}</div>
-  <div class="grid g3">${evs.map(e=>{const lock=S.level<e.lvl;const diff=pf.pi-e.pi;const dl=diff>60?['Fácil','var(--gr)']:diff>-30?['Equilibrado','var(--ac2)']:diff>-110?['Difícil','#ff8a3d']:['Muito difícil','var(--rd)'];
+  <div class="grid g3">${evs.map(e=>{const lock=S.level<e.lvl;const tg=e.ghostOnly?0:rivalTarget(e,car),diff=pf.pi-tg;const dl=diff>60?['Fácil','var(--gr)']:diff>-30?['Equilibrado','var(--ac2)']:diff>-110?['Difícil','#ff8a3d']:['Muito difícil','var(--rd)'];
    return`<div class="ev ${lock?'lock':''}">${lock?`<span class="lk">Nível ${e.lvl}</span>`:''}<h3>${e.name}</h3><div class="pl">${e.sky?({night:'Noite',dusk:'Entardecer',rain:'Chuva',day:'Dia'})[e.sky]+' · ':''}${e.place}${e.dist?` · ${(e.dist/1000).toFixed(1)} km`:' · 402 m'}</div>
-   ${e.ghostOnly?`<div class="vals"><div>Seu recorde<b style="color:var(--ac)">${car.ghost?car.ghost.t.toFixed(2)+'s':'—'}</b></div><div>Inscrição<b>Grátis</b></div><div>Bater recorde<b>${fmt(250+S.level*60)}</b></div></div>`:`<div class="vals"><div>Prêmio<b style="color:var(--ac)">${fmt(e.prize)}</b></div><div>${e.mode==='racha'?'Aposta até':'Inscrição'}<b>${fmt(e.mode==='racha'?e.maxBet:e.entry)}</b></div><div>Rivais<b>PI ~${e.pi}</b></div></div>`}
+   ${e.ghostOnly?`<div class="vals"><div>Seu recorde<b style="color:var(--ac)">${car.ghost?car.ghost.t.toFixed(2)+'s':'—'}</b></div><div>Inscrição<b>Grátis</b></div><div>Bater recorde<b>${fmt(250+S.level*60)}</b></div></div>`:`<div class="vals"><div>Prêmio<b style="color:var(--ac)">${e.ghostOnly?fmt(e.prize):'até '+fmt(rivalPrize(e,[{pi:tg*1.04}]).prize)}</b></div><div>${e.mode==='racha'?'Aposta até':'Inscrição'}<b>${fmt(e.mode==='racha'?e.maxBet:e.entry)}</b></div><div>Rivais<b>PI ~${tg}</b></div></div>`}
    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;color:${e.ghostOnly?'#9fd4ff':dl[1]}">${e.ghostOnly?'Você contra você':dl[0]}</span><button class="btn sm pri" ${lock?'disabled':''} data-act="ev" data-v="${e.id}">Correr</button></div></div>`}).join('')}</div>`;
 }
-function openEvent(id){
-  const e=EVENTS.find(x=>x.id===id),car=activeCar(),model=CAR[car.model],pf=perf(model,car.up);
+let PEND=null;
+function openEvent(id,reroll){
+  const e0=EVENTS.find(x=>x.id===id),car=activeCar(),model=CAR[car.model],pf=perf(model,car.up);
+  if(!e0.ghostOnly&&(reroll||!PEND||PEND.id!==id||PEND.uid!==car.uid||PEND.cpi!==pf.pi)){const rv=[...Array(e0.mode==='rua'?3:1)].map(()=>makeRival(e0,car));PEND={id,uid:car.uid,cpi:pf.pi,rivals:rv,...rivalPrize(e0,rv)}}
+  const e=e0.ghostOnly?e0:{...e0,prize:PEND.prize,rep:PEND.rep};
   const brk=isBroken(car),can=S.money>=e.entry&&!brk;
   const betMax=Math.max(0,Math.min(e.maxBet||0,S.money));
-  const help={drag:'Segure ACELERAR para segurar o giro na faixa verde (launch armado), solte a embreagem com MARCHA na luz verde e troque quando a shift light acender toda. Bater no corte esquenta o motor.',racha:'Um contra um no trânsito. Passar de raspão rende dinheiro; bater custa funilaria e tempo.',rua:'Quatro carros. Freie antes das curvas fechadas: velocidade demais te joga pra fora.'}[e.mode];
+  const help={drag:'Segure EMBREAGEM e ACELERE até o giro na faixa verde, solte no verde (dá pra antecipar no 3º amarelo) e troque quando a shift light acender toda. Bater no corte esquenta o motor.',racha:'Um contra um no trânsito. Passar de raspão rende dinheiro; bater custa funilaria e tempo.',rua:'Quatro carros. Freie antes das curvas fechadas: velocidade demais te joga pra fora.'}[e.mode];
   modal(`<h2>${e.name}</h2><p class="sub">${MODES[e.mode].n} · ${e.place}</p>
-   ${e.ghostOnly?`<div class="kpis"><div class="kpi"><b>${pf.pi}</b><small>Seu PI</small></div><div class="kpi"><b style="color:#9fd4ff">${car.ghost?car.ghost.t.toFixed(2)+'s':'—'}</b><small>Recorde do carro</small></div><div class="kpi"><b style="color:var(--ac)">${fmt(250+S.level*60)}</b><small>Bônus ao bater</small></div></div><p class="sub" style="margin-top:10px">${car.ghost?'Seu fantasma larga junto e faz exatamente a sua melhor passada. Passe ele na pista.':'Faça a primeira passada para gravar o recorde. Depois o fantasma corre com você.'} Também aparece nas arrancadas normais.</p>`:`<div class="kpis"><div class="kpi"><b>${pf.pi}</b><small>Seu PI</small></div><div class="kpi"><b>~${e.pi}</b><small>Rivais</small></div><div class="kpi"><b style="color:var(--ac)">${fmt(e.prize)}</b><small>Prêmio</small></div></div>`}
+   ${e.ghostOnly?`<div class="kpis"><div class="kpi"><b>${pf.pi}</b><small>Seu PI</small></div><div class="kpi"><b style="color:#9fd4ff">${car.ghost?car.ghost.t.toFixed(2)+'s':'—'}</b><small>Recorde do carro</small></div><div class="kpi"><b style="color:var(--ac)">${fmt(250+S.level*60)}</b><small>Bônus ao bater</small></div></div><p class="sub" style="margin-top:10px">${car.ghost?'Seu fantasma larga junto e faz exatamente a sua melhor passada. Passe ele na pista.':'Faça a primeira passada para gravar o recorde. Depois o fantasma corre com você.'} Também aparece nas arrancadas normais.</p>`:`<div class="kpis"><div class="kpi"><b>${pf.pi}</b><small>Seu PI</small></div><div class="kpi"><b>${Math.max(...PEND.rivals.map(r=>r.pi))}</b><small>${PEND.rivals.length>1?'Rival mais forte':'PI do rival'}</small></div><div class="kpi"><b style="color:var(--ac)">${fmt(e.prize)}</b><small>Prêmio</small></div></div>
+   <div class="rivals">${PEND.rivals.map((r,i)=>`<div class="rv"><canvas data-rv="${i}"></canvas><div><b>${r.model.name}</b> <span class="cls" style="background:${classOf(r.pi).color}">${classOf(r.pi).name}<span style="opacity:.75">${r.pi}</span></span><small style="color:#ff8a3d">${r.build} · ~${r.hp} cv</small><small>${rivalParts(r).join(' · ')||'Original de motor'}</small><small style="color:var(--mu)">${rivalVisList(r.vis).join(' · ')}</small></div></div>`).join('')}</div>
+   <button class="btn sm" style="margin-top:6px" data-act="reroll" data-v="${e.id}">Procurar outro rival</button>`}
    <p class="sub" style="margin-top:12px">${help}</p>
    ${e.mode==='racha'?`<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-weight:700"><span>Aposta</span><span id="betv">${fmt(0)}</span></div><input type="range" id="bet" min="0" max="${betMax}" step="${Math.max(50,Math.round(betMax/20/50)*50)}" value="0"><p class="sub" style="margin:4px 0 0">Ganhou, leva o dobro. Perdeu, fica com o rival.</p></div>`:`<div class="lines"><div><span>Inscrição</span><span>${fmt(e.entry)}</span></div><div><span>Funilaria por batida</span><span>${fmt(repairUnit(model))}</span></div></div>`}
    <div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" ${can?'':'disabled'} data-act="go" data-v="${e.id}">${brk?'Carro quebrado':can?'Largar':'Sem dinheiro'}</button></div>${brk?'<p class="sub" style="color:var(--rd);margin:8px 0 0">Motor ou câmbio quebrado. Conserte na Oficina.</p>':''}`);
   const b=$('#bet');if(b)b.addEventListener('input',()=>$('#betv').textContent=fmt(+b.value));
+  document.querySelectorAll('canvas[data-rv]').forEach(cv=>{const r=PEND.rivals[+cv.dataset.rv];drawPreview(cv,r.model,r.vis,true)});
 }
 function vPatro(m){
   const dOK=S.daily.last!==today();
@@ -1781,10 +1805,11 @@ const ACT={
   sell:d=>{const car=S.cars.find(c=>c.uid==d.v);if(!car||S.cars.length<2)return;modal(`<h2>Vender ${CAR[car.model].name}?</h2><p class="sub">Você recebe ${fmt(carValue(car))}. Peças e visual vão junto.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn warn" data-act="sellok" data-v="${car.uid}">Vender</button></div>`)},
   sellok:d=>{const car=S.cars.find(c=>c.uid==d.v);if(!car||S.cars.length<2)return;S.money+=carValue(car);S.cars=S.cars.filter(c=>c!==car);if(S.active===car.uid)S.active=S.cars[0].uid;save();closeModal();Snd.cash();render()},
   ev:d=>openEvent(d.v),
-  go:d=>{const e=EVENTS.find(x=>x.id===d.v);const b=$('#bet');const bet=b?+b.value:0;if(S.money<e.entry+bet)return;closeModal();Game.start(e,bet)},
+  reroll:d=>openEvent(d.v,true),
+  go:d=>{let e=EVENTS.find(x=>x.id===d.v);if(!e.ghostOnly&&PEND&&PEND.id===e.id){e={...e,rivals:PEND.rivals,prize:PEND.prize,rep:PEND.rep};PEND=null}const b=$('#bet');const bet=b?+b.value:0;if(S.money<e.entry+bet)return;closeModal();Game.start(e,bet)},
   close:()=>closeModal(),
   pause:()=>Game.pause(),resume:()=>Game.resume(),quit:()=>Game.quit(),leave:()=>Game.leave(),
-  again:()=>{const e=Game.ev,bet=Game.bet;closeModal();cancelAnimationFrame(Game.raf);Game.dispose();Game.scene=null;$('#race').style.display='none';render();if(S.money>=e.entry+bet&&(e.mode!=='racha'||bet<=S.money))Game.start(e,bet);else{toast('Dinheiro insuficiente');}},
+  again:()=>{let e=Game.ev;if(e.rivals){const b0=EVENTS.find(x=>x.id===e.id);const rv=e.rivals.map(()=>makeRival(b0,Game.car));e={...b0,rivals:rv,...rivalPrize(b0,rv)}}const bet=Game.bet;closeModal();cancelAnimationFrame(Game.raf);Game.dispose();Game.scene=null;$('#race').style.display='none';render();if(S.money>=e.entry+bet&&(e.mode!=='racha'||bet<=S.money))Game.start(e,bet);else{toast('Dinheiro insuficiente');}},
   claim:d=>{const x=S.missions.find(m=>m.id==d.v);if(!x||x.p<x.n)return;S.money+=x.cash;const ups=addXP(x.rep);S.missions=S.missions.filter(m=>m!==x);save();Snd.cash();toast(`${x.sp} pagou ${fmt(x.cash)}`+(ups.length?` · nível ${S.level}!`:''));render()},
   gift:()=>{if(S.gift80)return;S.gift80=1;S.money+=GIFT;save();closeModal();Snd.cash();toast(fmt(GIFT)+' na conta! Boas compras');TAB='loja';render();scrollTo(0,0)},
   daily:()=>{if(S.daily.last===today())return;const y=new Date(Date.now()-864e5).toISOString().slice(0,10);S.daily.streak=S.daily.last===y?S.daily.streak+1:1;const a=dailyAmount();S.money+=a;S.daily.last=today();save();Snd.cash();toast('Bônus diário: '+fmt(a));render()},
