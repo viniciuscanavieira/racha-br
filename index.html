@@ -120,6 +120,7 @@ h2{font-family:'Russo One','Arial Black',sans-serif;font-size:22px;margin-bottom
 .g3host{position:relative}.g3host canvas{touch-action:pan-y;cursor:grab}.g3btns{position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:2}.g3b{padding:6px 11px;border-radius:9px;border:1px solid var(--ln);background:rgba(13,16,20,.85);color:#eef1f5;font:700 13px Rajdhani,Arial;letter-spacing:.5px}.g3b.on{border-color:var(--ac);color:var(--ac)}
 .g3hint{position:absolute;left:10px;bottom:8px;font:600 12px Rajdhani,Arial;color:#8b95a4;pointer-events:none}
 #roamUI{position:absolute;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top));z-index:6;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(360px,calc(100% - 140px))}
+#ytbox{position:fixed;left:10px;top:228px;z-index:60;width:200px;background:rgba(8,10,13,.9);border:1px solid var(--ac);border-radius:12px;overflow:hidden;display:none}#ytbox .yh{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font:700 13px Rajdhani,Arial;color:#eef1f5}#ytbox .yh button{background:none;border:0;color:#eef1f5;font-size:16px;cursor:pointer}#ytbox #ytp{width:200px;height:200px;display:block}.rbtn.som{border-color:#ff9d00;margin-left:6px}
 .rbtn{padding:8px 14px;border-radius:12px;border:1px solid var(--ac);background:rgba(8,10,13,.82);color:#eef1f5;font:700 15px Rajdhani,Arial;white-space:nowrap}
 .rpanel{width:100%;max-height:46vh;overflow:auto;background:rgba(10,12,15,.94);border:1px solid var(--ln);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}
 .rrow{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--p2);border-radius:10px;padding:8px}.rrow b{display:block;font-size:15px}.rrow small{color:#9aa3ae;font-weight:600;font-size:12.5px}
@@ -431,7 +432,25 @@ const TUNE0=()=>({pops:true,twostep:true,als:false,flutter:false});
 const tuneOf=car=>{const m=car&&CAR[car.model],st=(m&&m.stockTune)||{},t={...TUNE0(),...st,...(car&&car.tune||{})},rm=car?Math.min(car.up.remap||0,remapMax(m,car.up)):0;return{rm,st,pops:t.pops&&(rm>=2||st.pops),twostep:t.twostep&&(rm>=1||st.twostep),flat:rm>=3,als:t.als&&rm>=4,flutter:t.flutter&&(rm>=2||st.flutter)}};
 const VIS0=c=>({color:c,wheel:0,wheelColor:'#c9ccd1',height:0,tint:0,stripe:0,stripeColor:'#111111',spoiler:0,neon:0,neonColor:'#3db8ff',hood:0,front:0,skirt:0,roof:0,lights:0,decal:0,exhaust:0,paredao:0});
 const VCATS=['wheel','height','tint','stripe','spoiler','neon','hood','front','skirt','roof','lights','decal','exhaust','paredao'];
-const PAR_URL='/models/paredao.glb',PAR_LEN=3.4;
+const PAR_URL='/models/paredao.glb',PAR_LEN=3.4,SOM_R=80;
+const SOM={id:null,t0:0,mode:null,peer:null,pl:null,ready:null,
+  vol(){return S.settings.somVol==null?80:S.settings.somVol},
+  parse(u){u=String(u||'').trim();let m=u.match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/|\/live\/)([\w-]{11})/);if(m)return m[1];if(/^[\w-]{11}$/.test(u))return u;return null},
+  api(){if(this.ready)return this.ready;this.ready=new Promise((res,rej)=>{if(window.YT&&YT.Player)return res();const prev=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{prev&&prev();res()};const sc=document.createElement('script');sc.src='https://www.youtube.com/iframe_api';sc.onerror=()=>{this.ready=null;rej()};document.head.appendChild(sc)});return this.ready},
+  box(){let b=document.getElementById('ytbox');if(!b){b=document.createElement('div');b.id='ytbox';b.innerHTML='<div class="yh"><span id="ytlbl">🔊 Paredão</span><button data-act="somstop" title="Parar">✕</button></div><div id="ytp"></div>';document.body.appendChild(b)}return b},
+  async start(id,sec,vol,lbl){try{await this.api()}catch(e){toast('Não deu pra carregar o YouTube');return}const b=this.box();b.style.display='block';document.getElementById('ytlbl').textContent=lbl;
+    if(this.pl&&this.pl.loadVideoById){this.pl.loadVideoById({videoId:id,startSeconds:sec});this.pl.setVolume(vol);this.pl.unMute&&this.pl.unMute();return}
+    this.pl=new YT.Player('ytp',{width:200,height:200,videoId:id,playerVars:{autoplay:1,start:Math.floor(sec),playsinline:1,controls:1,rel:0,modestbranding:1},events:{onReady:e=>{e.target.setVolume(vol);e.target.unMute&&e.target.unMute();e.target.playVideo()},onError:()=>{toast('Esse vídeo não pode tocar fora do YouTube');if(this.mode==='own')this.stop()}}})},
+  own(id){this.mode='own';this.id=id;this.t0=Date.now();this.peer=null;this.start(id,0,this.vol(),'🔊 Seu paredão');NET.set({yt:{id,t0:this.t0}})},
+  remote(p,yt,vol){if(this.mode==='own')return;if(this.mode==='remote'&&this.peer===p.peer&&this.id===yt.id){this.pl&&this.pl.setVolume&&this.pl.setVolume(vol);return}
+    this.mode='remote';this.peer=p.peer;this.id=yt.id;this.start(yt.id,Math.max(0,(Date.now()-yt.t0)/1000),vol,'🔊 Paredão de '+NET.nameOf(p))},
+  stop(){const wasOwn=this.mode==='own';this.mode=null;this.id=null;this.peer=null;try{this.pl&&this.pl.stopVideo&&this.pl.stopVideo()}catch(e){}const b=document.getElementById('ytbox');if(b)b.style.display='none';if(wasOwn)NET.set({yt:null})},
+  tick(sc){if(!sc||sc.mode!=='roam'){if(this.mode)this.stop();return}
+    if(this.mode==='own'){if(!hasPar(sc.model,sc.car.vis))this.stop();return}
+    if(S.settings.somOuvir===false){if(this.mode)this.stop();return}
+    let best=null,bd=1e9;for(const p of sc.peers()){const y=p.presence.yt;if(!y||!y.id)continue;const f=p.presence.fr,d=Math.hypot(f.x-sc.x,f.z-sc.z);if(d<bd){bd=d;best=p}}
+    if(best&&bd<SOM_R)this.remote(best,best.presence.yt,Math.round(this.vol()*clamp(1-bd/SOM_R,.08,1)));else if(this.mode==='remote')this.stop()}};
+setInterval(()=>{try{SOM.tick(Game.scene)}catch(e){}},700);
 const hasPar=(model,vis)=>!!(model&&(model.paredao||(vis&&vis.paredao&&model.cat==='Rebaixado')));
 const vMax=k=>k==='height'?4:k==='tint'?3:VIS[k].length-1;
 const newPid=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');
@@ -1784,10 +1803,11 @@ class Roam{
       if(this.map==='rodovia')t.s+=t.vt*dt*(t.lane<0?-1:1);else{t.p+=t.vt*dt*t.dir;if(t.p>250)t.p=-250;if(t.p<-250)t.p=250}
       const dx=this.x-t.x,dz=this.z-t.z,d=Math.hypot(dx,dz);if(d<2.4){const k=(2.4-d)/(d||1);this.x+=dx*k;this.z+=dz*k;if(Math.abs(vs)>5&&this.hitT<=0){this.hitT=.7;this.shake=.35;Snd.noise(.3,.2,420);this.msg('BATEU!','#ff4d5a')}this.r.v*=.5;this.back*=.5;t.stopT=2}}}
   peers(){return NET.room?NET.others().filter(p=>{const f=p.presence.fr;return f&&f.m===this.map&&p.presence.st!=='race'&&isFinite(f.x)&&isFinite(f.z)}):[]}
-  drawUI(){const ps=this.peers(),sig=ps.map(p=>p.peer+Math.round(Math.hypot(p.presence.fr.x-this.x,p.presence.fr.z-this.z)/10)).join()+this.panel+(NET.connected?1:0)+(NET.myInv?1:0);if(sig===this.uiSig)return;this.uiSig=sig;
+  drawUI(){const ps=this.peers(),sig=ps.map(p=>p.peer+Math.round(Math.hypot(p.presence.fr.x-this.x,p.presence.fr.z-this.z)/10)).join()+this.panel+(NET.connected?1:0)+(NET.myInv?1:0)+(SOM.mode||'');if(sig===this.uiSig)return;this.uiSig=sig;
     const on=NET.mode==='p2p';const head=`<button class="rbtn" data-act="roampanel">${on?(NET.connected?`👥 ${ps.length} piloto${ps.length===1?'':'s'} aqui`:'Conectando…'):'Offline'}</button>`;
     let list='';if(this.panel){list=`<div class="rpanel">${ps.length?ps.map(p=>{const f=p.presence.fr,c=CAR[p.presence.car.m],d=Math.round(Math.hypot(f.x-this.x,f.z-this.z));return`<div class="rrow"><div><b>${escapeHtml(NET.nameOf(p))}</b><small>${c?c.name:''} · PI ${p.presence.car.pi|0} · ${d} m</small></div><button class="btn sm pri" data-act="roamch" data-v="${p.peer}" ${NET.myInv?'disabled':''}>Desafiar</button></div>`}).join(''):`<p class="sub" style="margin:0">Ninguém por aqui ainda. Chame os amigos: quem entrar neste mapa aparece pra você na hora.</p>`}<small style="color:var(--mu)">Desafio = arrancada padrão de 402 m, lado a lado.</small></div>`}
-    this.ui.innerHTML=head+list}
+    const som=hasPar(this.model,this.car.vis)?`<button class="rbtn som" data-act="somopen">${SOM.mode==='own'?'🔊 SOM ligado':'🔊 SOM'}</button>`:'';
+    this.ui.innerHTML=head+som+list}
   draw(ctx,W,H){ctx.clearRect(0,0,W,H);try{this.v3.render(W,H)}catch(e){console.warn(e)}this.drawHUD(ctx,W,H)}
   drawHUD(ctx,W,H){const r=this.r,sp=this.spec,port=H>W*1.1;
     drawCluster(this,ctx,W,H,r,{gear:this.back>0?'R':r.gear,zone:[.86,.975],rf:r.v/gearTop(sp,r.gear),gas:!!Input.k.gas});
@@ -1884,7 +1904,7 @@ class Roam3D{
     rc.traffic.forEach((t,i)=>{const m=this.tr[i];if(t.x==null)return;m.position.set(t.x,0,t.z);m.rotation.y=-t.h;setBrake(m,t.vt<t.v*.6)});
     this.syncRemote(dt);
     const fwd=new THREE.Vector3(Math.sin(rc.h),0,-Math.cos(rc.h)),P=new THREE.Vector3(rc.x,0,rc.z),port=clamp((1.2-cam.aspect)*1.1,0,.75);
-    const back=(6.6+Math.abs(vs)*.03)*(1+port*1.1),up=(2.5+Math.abs(vs)*.01)*(1+port*.7);const des=P.clone().addScaledVector(fwd,-back);des.y=up;
+    const tr=pm.userData.trailer?1:0,back=(6.6+tr*5+Math.abs(vs)*.03)*(1+port*1.1),up=(2.5+tr*2.6+Math.abs(vs)*.01)*(1+port*.7);const des=P.clone().addScaledVector(fwd,-back);des.y=up;
     if(this.first){cam.position.copy(des);this.first=false}else cam.position.lerp(des,1-Math.exp(-dt*5));
     if(rc.shake>0){cam.position.x+=(Math.random()-.5)*rc.shake;cam.position.y+=(Math.random()-.5)*rc.shake*.5}
     const look=P.clone().addScaledVector(fwd,9-port*7);look.y=1.1-port*.6;cam.lookAt(look);
@@ -1980,7 +2000,9 @@ const Game={scene:null,raf:0,last:0,paused:false,ev:null,car:null,
     const{ctx,w,h}=fit($('#rc'));this.scene.draw(ctx,w,h);
     this.raf=requestAnimationFrame(tt=>this.loop(tt));
   },
-  startRoam(map,traffic){const car=activeCar();if(isBroken(car)){toast('Seu carro está quebrado. Conserte na Oficina.');TAB='oficina';render();return}
+  startRoam(map,traffic,ld){const car=activeCar();if(isBroken(car)){toast('Seu carro está quebrado. Conserte na Oficina.');TAB='oficina';render();return}
+    if(!ld&&window.THREE&&THREE.GLTFLoader){const m=CAR[car.model],ps=[];if(m.glb&&!glbReady(m.glb))ps.push(loadGLB(m.glb));if(hasPar(m,car.vis)&&!glbReady(PAR_URL)){parScene();ps.push(GLB[PAR_URL].p)}
+      if(ps.length){toast('Carregando o carro…');Promise.race([Promise.all(ps),new Promise(r=>setTimeout(r,8000))]).then(()=>this.startRoam(map,traffic,1));return}}
     if(!window.THREE||!R3.get()){toast('Seu navegador não abriu o 3D. A rodagem precisa de WebGL.');return}
     this.ev={mode:'roam',name:'Rodagem',entry:0};this.car=car;this.bet=0;this.net=null;this.test=false;
     try{this.scene=new Roam(map,traffic,car)}catch(e){console.warn(e);toast('Não deu pra abrir o mapa 3D');this.scene=null;return}
@@ -2296,6 +2318,16 @@ const ACT={
     if(d.k==='susp'){const mh=Math.max(l,(model.preset&&model.preset.height)||0);if(car.vis.height>mh){car.vis.height=mh;toast('Rebaixamento ajustado para a suspensão')}if(VD&&VD.uid===car.uid&&VD.vis.height>mh)VD.vis.height=mh}
     Snd.noise(.1,.08,700);save();toast(`${PARTS[d.k].name} ${lvName(d.k,l)} instalado · sem custo`);render()},
   vdiscard:()=>{VD=null;render()},
+  somopen:()=>{const sc=Game.scene;if(!sc||sc.mode!=='roam'||!hasPar(sc.model,sc.car.vis)){toast('Só com paredão equipado, na Rodagem');return}
+    modal(`<h2>🔊 Som do paredão</h2><p class="sub">Cole o link de uma música do YouTube. Quem estiver perto de você no mapa também escuta, mais alto quanto mais perto.</p>
+    <input id="ytlink" class="inp" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #333;background:#0d1014;color:#fff;font-size:16px" placeholder="https://youtube.com/watch?v=..." value="${SOM.mode==='own'&&SOM.id?'https://youtu.be/'+SOM.id:''}">
+    <label class="sub" style="display:flex;align-items:center;gap:8px;margin-top:12px">Volume <input type="range" id="ytvol" min="0" max="100" value="${SOM.vol()}" style="flex:1"></label>
+    <label class="sub" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="ytouvir" ${S.settings.somOuvir===false?'':'checked'}> Ouvir o paredão de outros pilotos</label>
+    <div class="acts">${SOM.mode==='own'?'<button class="btn warn" data-act="somstop">Parar</button>':''}<button class="btn" data-act="close">Fechar</button><button class="btn pri" data-act="somplay">Tocar</button></div>`);
+    const vr=document.getElementById('ytvol');vr&&vr.addEventListener('input',()=>{S.settings.somVol=+vr.value;save();if(SOM.mode==='own'&&SOM.pl&&SOM.pl.setVolume)SOM.pl.setVolume(+vr.value)});
+    const ck=document.getElementById('ytouvir');ck&&ck.addEventListener('change',()=>{S.settings.somOuvir=ck.checked;save()})},
+  somplay:()=>{const id=SOM.parse((document.getElementById('ytlink')||{}).value);if(!id){toast('Link do YouTube inválido');return}closeModal();SOM.own(id);const sc=Game.scene;if(sc){sc.uiSig='';sc.drawUI()}},
+  somstop:()=>{SOM.stop();closeModal();const sc=Game.scene;if(sc&&sc.mode==='roam'){sc.uiSig='';sc.drawUI()}},
   roam:d=>Game.startRoam(d.v,d.t==='1'),roampanel:()=>{const sc=Game.scene;if(sc&&sc.mode==='roam'){sc.panel=!sc.panel;sc.uiSig='';sc.drawUI()}},
   roamch:d=>{const sc=Game.scene;if(sc&&sc.mode==='roam'){sc.panel=false;sc.uiSig=''}NET.challenge(d.v,'drag',0)},
   roamexit:()=>{closeModal();Game.roamBack=null;Game.leave();NET.exitRoam()},
