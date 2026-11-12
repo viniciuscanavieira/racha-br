@@ -105,6 +105,13 @@ h2{font-family:'Russo One','Arial Black',sans-serif;font-size:22px;margin-bottom
 .vleft{align-self:start;position:sticky;top:calc(var(--hh,62px) + 12px);display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - var(--hh,62px) - 24px);overflow:auto;scrollbar-width:thin}
 .vleft .cart{margin-top:0;border-top:0;padding-top:0}
 .cartbar{display:none}
+.refbox{margin:0 0 16px;padding:14px 16px;border-radius:14px;border:1px solid #25d366;background:linear-gradient(110deg,rgba(37,211,102,.16),rgba(37,211,102,.03) 60%),var(--p1)}
+.reftop{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.reftop b{display:block;font-family:"Russo One","Arial Black",sans-serif;font-size:18px;color:#25d366}.reftop span{color:#cfd6df;font-weight:600}
+.btn.wa{background:#25d366;color:#05210f;border-color:#25d366;display:inline-flex;align-items:center;gap:8px;font-size:15px;padding:10px 18px;text-decoration:none}
+.refrow{display:flex;gap:8px;margin-top:10px}.refrow input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;border:1px solid var(--ln);background:var(--p2);color:#cfd6df;font:600 13px Rajdhani,Arial}
+.refst{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.refst div{background:var(--p2);border-radius:9px;padding:6px;text-align:center}.refst b{display:block;font-size:17px}.refst small{color:var(--mu);font-size:11.5px;font-weight:600}
+.reflist{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.reflist span{font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px;background:var(--p2);color:#9aa3ae}.reflist span.ok{color:#25d366}
+@media(max-width:520px){.refst{grid-template-columns:repeat(2,1fr)}.btn.wa{width:100%;justify-content:center}}
 .credits{margin-top:28px;opacity:.75}.credits summary{cursor:pointer;color:var(--mu);font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;list-style:none;text-align:center;padding:8px}.credits summary::-webkit-details-marker{display:none}.credits[open]{opacity:1}.cred{background:var(--p1);border:1px solid var(--ln);border-radius:12px;padding:12px 14px;font-size:13px;color:#aeb6c1;line-height:1.55}.cred h4{margin:4px 0 6px;color:#eef1f5;font-size:14px}.cred ul{margin:0 0 8px;padding-left:18px}.cred a{color:var(--ac)}
 .tunebox{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px;margin-top:10px}.tsw{display:flex;gap:10px;align-items:center;text-align:left;background:var(--p2);border:1px solid var(--ln);border-radius:10px;padding:8px 10px;color:#eef1f5}
 .tsw i{flex:none;width:34px;height:20px;border-radius:12px;background:#3a414c;position:relative}.tsw i:after{content:'';position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#cfd6df;transition:left .15s}
@@ -448,7 +455,7 @@ function migrate(d){
   d.uidc=Math.max(d.uidc||1,...d.cars.map(c=>c.uid+1));
   return d;
 }
-function loadState(){try{const raw=localStorage.getItem(SAVE_KEY);if(raw)return migrate(JSON.parse(raw))}catch(e){}return newState()}
+var FRESH=false;function loadState(){try{const raw=localStorage.getItem(SAVE_KEY);if(raw)return migrate(JSON.parse(raw))}catch(e){}FRESH=true;return newState()}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}try{if(NET.room&&!Game.scene)NET.pushLobby()}catch(e){}}
 let S=loadState();
 const activeCar=()=>S.cars.find(c=>c.uid===S.active)||S.cars[0];
@@ -458,6 +465,7 @@ const xpNeed=l=>400+(l-1)*350;
 function addXP(n){
   S.xp+=n;let ups=[];
   while(S.xp>=xpNeed(S.level)&&S.level<40){S.xp-=xpNeed(S.level);S.level++;const bonus=800*S.level;S.money+=bonus;ups.push([S.level,bonus])}
+  if(ups.length&&S.refBy)REF.report();
   return ups;
 }
 function partCost(model,part,lvl){return Math.round(PARTS[part].base[lvl]*(.75+model.price/120000)/10)*10}
@@ -2116,11 +2124,28 @@ function setDraft(k,val){const car=activeCar(),v=draftVis(car);const model=CAR[c
   v[k]=val;const y=scrollY;render();scrollTo(0,y)}
 function buyCart(){const car=activeCar();if(!VD||VD.uid!==car.uid)return;const cd=cartDiff(car,VD.vis);if(!cd.items.length)return;if(S.money<cd.total){toast('Dinheiro insuficiente');return}
   S.money-=cd.total;car.spent+=cd.total;markOwned(car,VD.vis);car.vis={...VD.vis};VD=null;if(cd.total){track('style');Snd.cash()}save();toast(cd.total?`Visual instalado · ${fmt(cd.total)}`:'Visual trocado de graça');render()}
+const REF_BONUS=30000,REF_LVL=5;
+const REF={rows:null,
+  link(){return location.origin+'/?ref='+S.pid},
+  msg(){return `Bora tirar racha comigo no Racha BR! 🏁🔥 Jogo de carro brasileiro com arrancada, turbo, pops and bangs e corrida ao vivo com os amigos. Grátis no navegador, sem instalar nada. Entra pelo meu link e já ganha R$ 80 mil pra montar teu primeiro projeto: ${this.link()}`},
+  wa(){return 'https://wa.me/?text='+encodeURIComponent(this.msg())},
+  report(){if(!S.refBy||NET.mode!=='p2p')return;if((S.refRep||0)>=Math.min(S.level,REF_LVL))return;
+    fetch('/api/ref',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({ref:S.refBy,pid:S.pid,lvl:S.level,nick:S.settings.nick||'Piloto'})}).then(r=>{if(r.ok){S.refRep=S.level;save()}}).catch(()=>{})},
+  async check(){if(NET.mode!=='p2p')return;try{const r=await fetch('/api/ref?pid='+S.pid);const j=await r.json();this.rows=j.rows||[];S.refPaid=S.refPaid||[];let n=0;
+      for(const row of this.rows)if(row.ok&&!S.refPaid.includes(row.pid)){S.refPaid.push(row.pid);S.money+=REF_BONUS;n++}
+      if(n){save();Snd.cash();modal(`<div class="big" style="color:var(--ac)">+${fmt(REF_BONUS*n)}</div><h2 style="text-align:center">Bônus de indicação!</h2><p class="sub" style="text-align:center">${n} amigo${n>1?'s':''} que você indicou passou do nível ${REF_LVL}. O dinheiro já está na sua conta.</p><div class="acts"><button class="btn pri" data-act="close">Valeu!</button></div>`)}
+      if(TAB==='loja'&&!Game.scene){const el=$('#refbox');if(el)el.outerHTML=refHTML()}}catch(e){}}};
+function refHTML(){const rows=REF.rows||[],ok=rows.filter(r=>r.ok).length,pend=rows.length-ok;
+  return`<div class="refbox" id="refbox"><div class="reftop"><div><b>INDIQUE E GANHE ${fmt(REF_BONUS)}</b><span>Por amigo novo que entrar pelo seu link e passar do nível ${REF_LVL}.</span></div>
+  <a class="btn wa" href="${REF.wa()}" target="_blank" rel="noopener" data-act="refwa"><svg viewBox="0 0 32 32" width="20" height="20"><path fill="currentColor" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm0 23.6c-2 0-3.9-.5-5.6-1.5l-.4-.2-3.9 1 1-3.8-.3-.4A10.6 10.6 0 1 1 16 26.6zm5.8-7.9c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.6 3.6 0 0 0-1.1 2.7 6.3 6.3 0 0 0 1.3 3.3 14.4 14.4 0 0 0 5.5 4.9c2 .9 2.8.9 3.8.8a3.2 3.2 0 0 0 2.1-1.5 2.6 2.6 0 0 0 .2-1.5c-.1-.2-.3-.3-.6-.4z"/></svg>Chamar no WhatsApp</a></div>
+  <div class="refrow"><input readonly value="${REF.link()}" id="reflink"><button class="btn sm" data-act="refcopy">Copiar link</button></div>
+  <div class="refst"><div><b>${rows.length}</b><small>entraram</small></div><div><b>${pend}</b><small>abaixo do nível ${REF_LVL}</small></div><div><b style="color:var(--ac)">${ok}</b><small>bônus liberados</small></div><div><b style="color:var(--ac)">${fmt(ok*REF_BONUS)}</b><small>ganho total</small></div></div>
+  ${rows.length?`<div class="reflist">${rows.slice(0,12).map(r=>`<span class="${r.ok?'ok':''}">${escapeHtml(r.nick)} · nv ${r.lvl}${r.ok?' ✓':''}</span>`).join('')}</div>`:''}</div>`}
 const GIFT=80000;
 function giftHTML(){return S.gift80?'':`<div class="gift"><div><b>PRESENTE DE BOAS-VINDAS</b><span>${fmt(GIFT)} grátis pra montar seu primeiro projeto</span></div><button class="btn pri" data-act="gift">Resgatar</button></div>`}
 function giftModal(){if(S.gift80)return;modal(`<div class="big" style="color:var(--ac)">${fmt(GIFT)}</div><h2 style="text-align:center;margin-top:4px">Bem-vindo ao Racha BR!</h2><p class="sub" style="text-align:center">Presente de boas-vindas pra todo mundo: ${fmt(GIFT)} pra comprar seu carro, preparar e deixar no estilo. Resgate uma vez, na hora.</p><div class="acts"><button class="btn" data-act="close">Depois</button><button class="btn pri" data-act="gift">Resgatar</button></div>`)}
 function vLoja(m){
-  m.innerHTML=`<h2>Concessionária</h2><p class="sub">10 projetos do cenário nacional. Carros comprados podem ser vendidos por 70% do valor + 50% do que foi investido.</p>${giftHTML()}
+  m.innerHTML=`<h2>Concessionária</h2><p class="sub">Projetos do cenário nacional. Carros comprados podem ser vendidos por 70% do valor + 50% do que foi investido.</p>${giftHTML()}${NET.mode==='p2p'?refHTML():''}
   <div class="grid g3">${CARS.map(c=>{const pf=perf(c,UP0());const own=S.cars.filter(x=>x.model===c.id);
    return`<div class="card"><canvas data-car="${c.id}" data-small="1"></canvas><div class="cb"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><h3>${c.name}</h3>${clsBadge(pf.pi)}</div><div class="tags" style="margin:0"><span class="tag a">${c.cat}</span><span class="tag">${c.drive}</span>${c.turbo&&c.cat!=='Turbo'?'<span class="tag">Turbo</span>':''}${own.length?`<span class="tag" style="color:var(--ac2)">Na garagem ×${own.length}</span>`:''}</div><p>${c.desc}</p>
    <div class="mini"><div><b>${c.hp} cv</b>potência</div><div><b>${pf.t100.toFixed(1)}s</b>0-100</div><div><b>${pf.t402.toFixed(1)}s</b>402m</div></div>
@@ -2206,6 +2231,8 @@ const ACT={
   pause:()=>Game.pause(),resume:()=>Game.resume(),quit:()=>Game.quit(),leave:()=>Game.leave(),
   again:()=>{let e=Game.ev;if(e.rivals){const b0=EVENTS.find(x=>x.id===e.id);const rv=e.rivals.map(()=>makeRival(b0,Game.car));e={...b0,rivals:rv,...rivalPrize(b0,rv)}}const bet=Game.bet;closeModal();cancelAnimationFrame(Game.raf);Game.dispose();Game.scene=null;$('#race').style.display='none';render();if(S.money>=e.entry+bet&&(e.mode!=='racha'||bet<=S.money))Game.start(e,bet);else{toast('Dinheiro insuficiente');}},
   claim:d=>{const x=S.missions.find(m=>m.id==d.v);if(!x||x.p<x.n)return;S.money+=x.cash;const ups=addXP(x.rep);S.missions=S.missions.filter(m=>m!==x);save();Snd.cash();toast(`${x.sp} pagou ${fmt(x.cash)}`+(ups.length?` · nível ${S.level}!`:''));render()},
+  refcopy:()=>{const v=REF.link();(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('Link copiado')).catch(()=>{const el=$('#reflink');if(el){el.select();try{document.execCommand('copy');toast('Link copiado')}catch(e){}}})},
+  refwa:()=>{},
   redeem:async()=>{const el=$('#rcode'),code=(el&&el.value||'').trim();if(!code){toast('Digite o código');return}if(NET.mode!=='p2p'){toast('Resgate só funciona no site');return}
     try{const r=await fetch('/api/redeem',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({code,pid:S.pid})});const j=await r.json().catch(()=>({}));
       if(!r.ok||!j.amount){toast(j.error||'Não deu pra resgatar');return}S.money+=j.amount;save();Snd.cash();toast(fmt(j.amount)+' adicionados à conta');render()}catch(e){toast('Sem conexão')}},
@@ -2466,6 +2493,8 @@ function netWaitHUD(ctx,W,H,n){ctx.fillStyle='rgba(8,10,13,.82)';const tw=Math.m
   ctx.fillStyle='#ffd23d';ctx.font='22px "Russo One","Arial Black",sans-serif';ctx.fillText('AGUARDANDO SEU AMIGO',W/2,H*.32+38);
   ctx.fillStyle='#eef1f5';ctx.font='700 16px Rajdhani,Arial,sans-serif';ctx.fillText(n.oppName+' está carregando a pista…',W/2,H*.32+66)}
 if(/^#sala-/i.test(location.hash))TAB='online';
+{const mr=/[?&#]ref=([a-z0-9]{10,24})/i.exec(location.search+location.hash);if(mr){const r=mr[1].toLowerCase();if(FRESH&&r!==S.pid&&!S.refBy){S.refBy=r;S.refRep=0;save()}try{history.replaceState(null,'',location.pathname+location.hash.replace(/[#&]?ref=[a-z0-9]+/i,''))}catch(e){}}}
+setTimeout(()=>{REF.report();REF.check()},2500);setInterval(()=>{if(!Game.scene)REF.check()},180000);
 var PEND_CODE='';{const mc=/codigo=([A-Za-z0-9-]+)/i.exec(location.hash+location.search);if(mc){PEND_CODE=mc[1].toUpperCase();TAB='conta'}}
 if(/resgat|presente|gift/i.test(location.hash+location.search)&&!S.gift80&&!PEND_CODE)TAB='loja';
 render();
