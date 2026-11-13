@@ -2519,7 +2519,7 @@ function myStats(){const st=S.stats;return{wins:st.wins|0,races:st.races|0,best:
 const NET={room:null,user:null,db:null,myId:null,isOwner:false,myPeer:null,peers:[],names:{},rank:[],pres:{},sent:0,shown:{},myInv:null,err:null,connected:false,lastRank:{},
   async init(){
     if(window.Peer&&!(window.claude&&typeof claude.use==='function')){this.mode='p2p';this.myId=S.pid;
-      const h=(location.hash.match(/^#sala-([a-z0-9]{4,12})$/i)||[])[1];const code=(h||S.settings.room||'').toLowerCase();if(code)this.joinRoom(code);
+      const h=(location.hash.match(/^#sala-([a-z0-9]{4,12})$/i)||[])[1];const code=(h||S.settings.room||'').toLowerCase();if(code&&code!==PUB_ROOM)this.joinRoom(code);else this.joinPublic();
       this.loadRank();setInterval(()=>{if(TAB==='online'&&!Game.scene)this.loadRank()},30000);refreshOnline();return}
     if(!window.claude||typeof claude.use!=='function'){refreshOnline();return}
     try{
@@ -2542,9 +2542,10 @@ const NET={room:null,user:null,db:null,myId:null,isOwner:false,myPeer:null,peers
     room.onPeers(ch=>{if(this.room!==room)return;this.peers=ch.peers;const me=ch.peers.find(p=>p.sameTab);if(me)this.myPeer=me.peer;this.onPeers()});
     room.onConnection(c=>{if(this.room!==room)return;this.connected=c;refreshOnline()});
     this.pushLobby();refreshOnline()},
+  joinPublic(){if(this.mode!=='p2p'||this.roamCode)return;if(this.roomCode===PUB_ROOM&&this.room)return;this.joinRoom(PUB_ROOM,true)},
   enterRoam(map){if(this.mode!=='p2p')return;const code='rod'+map;if(this.roamCode===code&&this.room)return;if(!this.roamCode)this.prevRoom=this.roomCode||'';this.roamCode=code;this.joinRoom(code,true)},
-  exitRoam(){if(!this.roamCode)return;const pr=this.prevRoom;this.roamCode=null;this.prevRoom=null;if(pr)this.joinRoom(pr);else{if(this.room&&this.room.leave)this.room.leave();this.room=null;this.peers=[];this.roomCode='';refreshOnline()}},
-  leaveRoom(){if(this.room&&this.room.leave)this.room.leave();this.room=null;this.peers=[];this.roomCode='';S.settings.room='';save();try{history.replaceState(null,'',location.pathname)}catch(e){}refreshOnline()},
+  exitRoam(){if(!this.roamCode)return;const pr=this.prevRoom;this.roamCode=null;this.prevRoom=null;if(pr&&pr!==PUB_ROOM)this.joinRoom(pr);else{if(this.room&&this.room.leave)this.room.leave();this.room=null;this.peers=[];this.roomCode='';this.joinPublic();refreshOnline()}},
+  leaveRoom(){if(this.room&&this.room.leave)this.room.leave();this.room=null;this.peers=[];this.roomCode='';S.settings.room='';save();try{history.replaceState(null,'',location.pathname)}catch(e){}this.joinPublic();refreshOnline()},
   roomLink(){return location.origin+location.pathname+'#sala-'+this.roomCode},
   async loadRank(){try{const r=await fetch('/api/rank',{cache:'no-store'});if(!r.ok)return;const d=await r.json();this.rank=Array.isArray(d.rows)?d.rows:[];refreshOnline()}catch(e){}},
   postT:0,
@@ -2645,6 +2646,7 @@ const NET={room:null,user:null,db:null,myId:null,isOwner:false,myPeer:null,peers
   ownerRank(os){if(this.mode==='p2p')return;for(const p of os){if(!p.by)continue;const pr=p.presence;this.write(p.by,this.row(pr.nick,pr.lvl,pr.car.m,pr.car.pi,pr.stt||{}))}},
 };
 let netRefreshT=0;
+const PUB_ROOM='publico';
 function refreshOnline(){
   const dot=document.querySelector('nav [data-v=online]');
   if(dot){const has=NET.others().some(p=>p.presence.inv&&p.presence.inv.to===NET.myPeer);dot.innerHTML='Online'+(NET.others().length?` <span style="opacity:.7">(${NET.others().length})</span>`:'')+(has?'<span class="dot"></span>':'')}
@@ -2659,16 +2661,17 @@ function netLiveHTML(){
   if(!NET.room){
     return`<div class="panel"><h2 style="font-size:18px">Online indisponível nesta tela</h2><p class="sub" style="margin:6px 0 0">O modo com amigos funciona quando o jogo é aberto pelo link do claude.ai, com sessão iniciada. Compartilhe o jogo pelo botão de compartilhar da página e peça para seus amigos abrirem pelo link. Enquanto isso, o jogo solo continua normal.</p></div>`+rankHTML();
   }
-  const os=NET.others();
+  const os=NET.others(),pub=NET.roomCode===PUB_ROOM;
   const list=os.length?os.map(p=>{const pr=p.presence,m=CAR[pr.car.m],busy=pr.st==='race';
     return`<div class="ev"><div style="display:flex;gap:12px;align-items:center"><canvas data-netpeer="${p.peer}" style="width:150px;height:62px;border-radius:8px;background:#0d1014;flex:none"></canvas>
-      <div style="min-width:0"><h3 data-netname="${p.peer}"></h3><div class="pl">${m.name} · PI ${pr.car.pi|0} · Nível ${pr.lvl|0}${p.guest?' · convidado':''}</div><div class="pl" style="color:${busy?'var(--ac2)':'var(--gr)'}">${busy?'Correndo agora':'Na garagem'}</div></div></div>
+      <div style="min-width:0"><h3 data-netname="${p.peer}"></h3><div class="pl">${m.name} · PI ${pr.car.pi|0} · Nível ${pr.lvl|0}${p.guest?' · convidado':''}</div><div class="pl" style="color:${busy?'var(--ac2)':'var(--gr)'}">● ${busy?'Correndo agora':'Online · disponível'}</div></div></div>
       <div style="display:flex;justify-content:flex-end"><button class="btn sm pri" ${busy||NET.myInv?'disabled':''} data-act="netch" data-v="${p.peer}">Desafiar</button></div></div>`}).join('')
-    :`<div class="empty panel">Nenhum amigo na sala agora.<br>${NET.mode==='p2p'?'Mande o link da sala para a galera. Quem abrir aparece aqui na hora.':'Quando alguém abrir pelo link compartilhado, aparece aqui na hora.'}</div>`;
-  const share=NET.mode==='p2p'?`<div class="panel" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><div style="flex:1;min-width:200px"><div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--mu);font-weight:700">Sala ${NET.roomCode}</div><div style="font-weight:700;word-break:break-all" id="roomLink"></div></div>
-     <button class="btn sm pri" data-act="roomshare">Convidar</button><a class="btn sm" id="waLink" target="_blank" rel="noopener">WhatsApp</a><button class="btn sm" data-act="roomcopy">Copiar link</button><button class="btn sm warn" data-act="roomleave">Sair da sala</button></div>`+(NET.netErr?`<p class="sub" style="color:var(--ac2)">${NET.netErr}</p>`:''):'';
-  return share+grpHTML(os)+`<div class="sub" style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:${NET.connected?'var(--gr)':'var(--ac2)'};display:inline-block"></span>${NET.connected?'Conectado':'Conectando…'} · ${os.length} amigo${os.length===1?'':'s'} online</div>
-    <div class="grid g3">${list}</div>`+rankHTML();
+    :pub?`<div class="empty panel">Ninguém online agora.<br>Assim que outro piloto abrir o jogo, ele aparece aqui na hora. Chame a galera pelo WhatsApp!</div>`:`<div class="empty panel">Nenhum amigo na sala agora.<br>${NET.mode==='p2p'?'Mande o link da sala para a galera. Quem abrir aparece aqui na hora.':'Quando alguém abrir pelo link compartilhado, aparece aqui na hora.'}</div>`;
+  const share=pub?`<div class="panel" style="margin-bottom:12px"><h2 style="font-size:18px;margin:0 0 4px">🌐 Jogadores online agora</h2><p class="sub" style="margin:0 0 10px">Todo mundo que está com o jogo aberto aparece aqui em tempo real. Toque em Desafiar para chamar alguém para um racha.</p>
+     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn sm" data-act="roomcreate">Criar sala privada</button><input id="roomCode" maxlength="12" placeholder="código da sala" style="width:150px;background:var(--p2);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:7px 10px;font:inherit;font-weight:700;text-transform:lowercase"><button class="btn sm" data-act="roomjoin">Entrar</button></div></div>`+(NET.netErr?`<p class="sub" style="color:var(--ac2)">${NET.netErr}</p>`:''):NET.mode==='p2p'?`<div class="panel" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><div style="flex:1;min-width:200px"><div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--mu);font-weight:700">Sala ${NET.roomCode}</div><div style="font-weight:700;word-break:break-all" id="roomLink"></div></div>
+     <button class="btn sm pri" data-act="roomshare">Convidar</button><a class="btn sm" id="waLink" target="_blank" rel="noopener">WhatsApp</a><button class="btn sm" data-act="roomcopy">Copiar link</button><button class="btn sm warn" data-act="roomleave">Sair da sala</button><span class="sub" style="width:100%;margin:0">Sala privada · ao sair você volta para a lista de jogadores online.</span></div>`+(NET.netErr?`<p class="sub" style="color:var(--ac2)">${NET.netErr}</p>`:''):'';
+  return share+`<div class="sub" style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:${NET.connected?'var(--gr)':'var(--ac2)'};display:inline-block"></span>${NET.connected?'Conectado':'Conectando…'} · ${os.length} ${pub?'jogador':'amigo'}${os.length===1?'':'es'.slice(pub?0:1)} online</div>
+    <div class="grid g3" style="margin-bottom:14px">${list}</div>`+grpHTML(os)+rankHTML();
 }
 function grpHTML(os){
   const row=(name,car,st,col)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--ln)"><div style="min-width:0"><b>${escapeHtml(name)}</b><div class="pl">${car}</div></div><b style="color:${col};white-space:nowrap">${st}</b></div>`;
