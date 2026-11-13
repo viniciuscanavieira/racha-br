@@ -440,13 +440,15 @@ function wheelFit(m,v){if(!m||!v||(!v.rim&&!v.tire))return WFIT0;if(noRims(m))re
   const st=stockTire(m),a=v.rim?RIMS[v.rim]:st.a,P=v.tire?TIRES[v.tire]:st.P;if(!a||!P)return WFIT0;
   const D0=st.a*25.4+2*st.W*st.P/100,D=a*25.4+2*st.W*P/100,s=D/D0,rf=clamp(a*25.4/D,.5,.88);
   const r0=m.glb?((m.glbCfg&&m.glbCfg.r)||.31):(BODIES[m.body]?BODIES[m.body].r:.31),d=r0*(s-1),low=(v.height||0)*.032,gap=m.glb?.05:.07;
-  const o={s,rf,d,a,P,ok:true};
+  const o={s,rf,d,a,P,ok:true,custom:true};
   if(d>gap+.015)return{...o,ok:false,why:`Aro ${a} perfil ${P} é maior que a caixa de roda`};
   if(d>gap+.07-low)return{...o,ok:false,why:`Aro ${a} perfil ${P} bate na lataria com esse rebaixamento`};
   if(d<-.06)return{...o,ok:false,why:`Aro ${a} perfil ${P} fica pequeno demais: o carro arrasta`};
   if(a*25.4/D>.86)return{...o,ok:false,why:`Perfil ${P} é baixo demais pro aro ${a}`};
   return o}
-const wfit=(m,v)=>{const f=wheelFit(m,v);return f.ok?f:WFIT0};
+// aro de fábrica proporcional ao pneu (ex.: Chevette 165/70 R13 = aro pequeno, pneu alto)
+function stockRf(m){if(!m)return .64;const t=stockTire(m);return clamp(t.a*25.4/(t.a*25.4+2*t.W*t.P/100),.55,.72)}
+const wfit=(m,v)=>{const f=wheelFit(m,v);return f.ok&&f.custom?f:{...WFIT0,rf:stockRf(m)}};
 const PALETTE=['#e8e0c8','#f5f5f5','#15181d','#8a8f98','#d7263d','#ff7a00','#f2c200','#2bb673','#1e5bd8','#00c2c7','#7b2ff7','#ff4fa3','#5a3a22','#0f3d2e'];
 const WHEEL_COLORS=['#c9ccd1','#1a1a1c','#d4af37','#b87333','#ffffff','#d7263d','#3db8ff'];
 const EVENTS=[
@@ -1664,10 +1666,12 @@ function makeWheel(st,r,w,col,side,opt={}){const G=wheelGeos(st,r,w,opt.rf),g=ne
   let cal=null;if(opt.caliper!==false){cal=new THREE.Mesh(G.cal,mat('wcal'+(opt.calCol||'#c8202e'),()=>new THREE.MeshStandardMaterial({color:lin(opt.calCol||'#c8202e'),roughness:.4,metalness:.3})));if(side<0)cal.rotation.y=Math.PI}
   return{g,cal}}
 // troca as rodas de um modelo importado (grupos wheel_FL/FR/RL/RR) pela roda escolhida
-function swapGlbWheels(inner,wheels,vis,F){F=F||WFIT0;const st=vis.wheel|0;if(!st&&!F.rf)return;const col=vis.wheelColor||'#d9dde2';
+function swapGlbWheels(inner,wheels,vis,F,cfg){F=F||WFIT0;const st=vis.wheel|0;if(!st&&!F.custom)return;const col=vis.wheelColor||'#d9dde2';
   for(const wg of wheels){if(wg.userData.swapped)continue;const bb=new THREE.Box3();wg.updateMatrixWorld(true);
     const inv=new THREE.Matrix4().copy(wg.matrixWorld).invert();wg.traverse(o=>{if(o.isMesh){const b=new THREE.Box3().setFromBufferAttribute(o.geometry.attributes.position);b.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv,o.matrixWorld));bb.union(b)}});
-    const sz=bb.getSize(new THREE.Vector3()),r=Math.max(.24,Math.min(.42,Math.max(sz.y,sz.z)/2)),w=clamp(sz.x,r*.58,r*.9),cx=(bb.min.x+bb.max.x)/2,side=Math.sign(wg.position.x)||1;
+    const sz=bb.getSize(new THREE.Vector3()),rb=Math.max(sz.y,sz.z)/2,cr=cfg&&cfg.r,bad=cr&&Math.abs(rb/cr-1)>.12,r=bad?cr:Math.max(.24,Math.min(.42,rb)),w=clamp(bad?r*.7:sz.x,r*.58,r*.9),cx=bad?0:(bb.min.x+bb.max.x)/2,side=Math.sign(wg.position.x)||1;
+    if(bad&&wg.parent){// origem do grupo fora do centro da roda: recentra pelo chão (pneu encostando em y=0)
+      const wp=wg.getWorldPosition(new THREE.Vector3()),ps=wg.parent.getWorldScale(new THREE.Vector3());wg.position.y+=(cr-wp.y)/(ps.y||1)}
     wg.traverse(o=>{if(o.isMesh){o.visible=false;o.userData.hideW=true}});
     const W=makeWheel(st,r*F.s,w,st?col:'#8d939b',side,{rf:F.rf||.71});W.g.position.x=cx;wg.add(W.g);wg.userData.swapped=true;
     if(W.cal){W.cal.position.copy(wg.position);W.cal.position.x+=cx;W.cal.name='wheel_cal';wg.parent.add(W.cal)}}}
@@ -1773,7 +1777,7 @@ function buildGlbCar(src,vis,o,cfg){cfg=cfg||GOL_CFG;
     if(m.name==='exhaust'){if(vis.exhaust===2)m.visible=false;else if(vis.exhaust===1)m.scale.set(1,1.6,1.6)}});
   addAcc3D(bodyG,vis,{W,L,front,rear,bmp,hood:cfg.hood,roofY:cfg.roofY,roofZ:cfg.roofZ,wheelZ:cfg.wheelZ,r:cfg.r},o);
   if(cfg.spacer)wheels.forEach(w=>{w.position.x+=Math.sign(w.position.x)*cfg.spacer});
-  const WF=wfit(o.model,vis);swapGlbWheels(inner,wheels,vis,WF);const dW=(cfg.r||.31)*(WF.s-1);
+  const WF=wfit(o.model,vis);swapGlbWheels(inner,wheels,vis,WF,cfg);const dW=(cfg.r||.31)*(WF.s-1);
   const root=inner.children.length===1?inner.children[0]:inner;root.children.forEach(c=>{if(!/^wheel_/.test(c.name||''))c.position.y-=low});
   if(vis.spoiler&&cfg.roles){const lipS=vis.spoiler===1;const sp=lipS?new THREE.BoxGeometry(W*.8,.04,.22).translate(0,cfg.roofY-.02,cfg.spoilerZ):null;if(sp)bodyG.add(new THREE.Mesh(sp,paint))}
   if(vis.spoiler===2){const sz=cfg.spoilerZ,sy=cfg.roofY+.13;const sp=mergeGeos([new THREE.BoxGeometry(W*.96,.05,.4).translate(0,sy,sz),...[-1,1].map(s=>new THREE.BoxGeometry(.05,.26,.12).translate(s*W*.3,sy-.12,sz))]);bodyG.add(new THREE.Mesh(sp,mat('spo',()=>new THREE.MeshStandardMaterial({color:lin('#15171b'),metalness:.4,roughness:.35}))))}
