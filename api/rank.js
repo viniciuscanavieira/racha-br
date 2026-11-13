@@ -35,7 +35,8 @@ export default async function handler(req, res) {
     if (req.method !== 'GET') return res.status(405).json({ error: 'método' });
     const { blobs } = await list({ prefix: 'rank/', limit: 500 });
     if (req.query && req.query.debug) {
-      const t = blobs[0] ? await fetch(`${blobs[0].url}?v=${Date.now()}`, { cache: 'no-store' }).then(r => r.status).catch(e => 'err ' + e.message) : null;
+      const f = u => fetch(u, { cache: 'no-store' }).then(async r => r.status + ' ' + (await r.text()).slice(0, 160)).catch(e => 'err ' + e.message);
+      const t = blobs[0] ? { q: await f(`${blobs[0].url}?v=${Date.now()}`), plain: await f(blobs[0].url), dl: await f(blobs[0].downloadUrl) } : null;
       return res.status(200).json({ blobs: blobs.length, firstStatus: t, firstPath: blobs[0] && blobs[0].pathname });
     }
     const rows = (await Promise.all(blobs.map(b =>
