@@ -1,3 +1,5 @@
+// Temporada 2 (zerada em 13/11/2026). A temporada 1 continua salva em 'rank'.
+const RK = process.env.RANK_KEY || 'rank:s2';
 import { put, list } from '@vercel/blob';
 import { hasKV, kv, pairs } from './_kv.js';
 
@@ -27,7 +29,7 @@ export default async function handler(req, res) {
         best: best >= 7 && best < 40 ? Math.round(best * 1000) / 1000 : null,
         ts: Date.now(),
       };
-      if (hasKV) { await kv('HSET', 'rank', id, JSON.stringify(row)); return res.status(200).json({ ok: true }); }
+      if (hasKV) { await kv('HSET', RK, id, JSON.stringify(row)); return res.status(200).json({ ok: true }); }
       await put(`rank/${id}.json`, JSON.stringify(row), {
         access: 'public', addRandomSuffix: false, allowOverwrite: true,
         contentType: 'application/json', cacheControlMaxAge: 60,
@@ -36,7 +38,7 @@ export default async function handler(req, res) {
     }
     if (req.method !== 'GET') return res.status(405).json({ error: 'método' });
     if (hasKV) {
-      const o = pairs(await kv('HGETALL', 'rank'));
+      const o = pairs(await kv('HGETALL', RK));
       const rows = Object.values(o).map(v => { try { return JSON.parse(v) } catch { return null } }).filter(r => r && r.id);
       rows.sort((a, b) => (b.ow - a.ow) || (b.wins - a.wins) || ((a.best || 99) - (b.best || 99)));
       return res.status(200).json({ rows: rows.slice(0, 100), kv: true });

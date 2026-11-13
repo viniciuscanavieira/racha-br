@@ -200,9 +200,40 @@ input[type=range]{width:100%;accent-color:var(--ac)}
 .empty{color:var(--mu);padding:20px;text-align:center}
 a.btn{text-decoration:none;color:var(--tx)}
 .foot{color:var(--mu);font-size:13px;text-align:center;padding:24px 0 10px}
+#boot{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 50% 120%,#1b2a12 0%,#0b0d10 55%,#050607 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:opacity .6s,transform .6s}
+#boot.out{opacity:0;transform:scale(1.06);pointer-events:none}
+#boot .bt-road{position:absolute;left:50%;bottom:-10%;width:220%;height:70%;transform:translateX(-50%) perspective(420px) rotateX(62deg);background:repeating-linear-gradient(90deg,transparent 0 48.6%,rgba(255,255,255,.55) 48.6% 49.4%,transparent 49.4% 100%),repeating-linear-gradient(0deg,#15181c 0 60px,#121417 60px 120px);animation:btroad .45s linear infinite;opacity:.9;mask-image:linear-gradient(to top,#000 40%,transparent)}
+@keyframes btroad{from{background-position:0 0,0 0}to{background-position:0 0,0 120px}}
+#boot .bt-lines{position:absolute;inset:0;background:repeating-linear-gradient(100deg,transparent 0 46px,rgba(198,255,61,.06) 46px 48px);animation:btlines 1.2s linear infinite}
+@keyframes btlines{from{background-position:0 0}to{background-position:-480px 0}}
+#boot .bt-logo{position:relative;font:900 clamp(46px,11vw,96px)/1 Rajdhani,Arial;letter-spacing:.04em;color:#eef1f5;font-style:italic;text-shadow:0 0 30px rgba(198,255,61,.25);animation:btin 1s cubic-bezier(.2,1.4,.4,1) both}
+#boot .bt-logo b{color:var(--ac);text-shadow:0 0 26px rgba(198,255,61,.7)}
+@keyframes btin{from{transform:translateX(-120vw) skewX(-25deg)}70%{transform:translateX(3vw) skewX(8deg)}to{transform:none}}
+#boot .bt-tag{position:relative;color:#9aa3ae;font:700 15px Rajdhani,Arial;letter-spacing:.35em;margin:6px 0 22px;animation:btfade 1s .6s both}
+@keyframes btfade{from{opacity:0}to{opacity:1}}
+#boot .bt-tach{position:relative;width:170px;height:96px;margin-bottom:34px;animation:btfade .8s .3s both}
+#boot .bt-tach svg{width:100%;height:100%}
+#boot #btneedle{transform-origin:85px 85px;transform:rotate(-120deg);transition:transform .45s cubic-bezier(.3,1.6,.5,1)}
+#boot .bt-pct{position:absolute;left:0;right:0;bottom:-26px;text-align:center;font:800 20px Rajdhani,Arial;color:#eef1f5}
+#boot .bt-bar{position:relative;width:min(340px,78vw);height:6px;border-radius:6px;background:#1d2228;overflow:hidden;margin-top:10px}
+#boot .bt-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7bd400,var(--ac));box-shadow:0 0 14px var(--ac);transition:width .35s}
+#boot .bt-txt{position:relative;color:#9aa3ae;font:600 14px Rajdhani,Arial;margin-top:10px;min-height:18px}
+#boot .bt-act{position:relative;margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;transform:translateY(12px);transition:.5s;pointer-events:none;width:min(320px,86vw)}
+#boot .bt-act.on{opacity:1;transform:none;pointer-events:auto}
+#boot .bt-go{font-size:22px;padding:14px 46px;letter-spacing:.08em;animation:btpulse 1.4s ease-in-out infinite}
+@keyframes btpulse{50%{box-shadow:0 0 28px rgba(198,255,61,.6)}}
+#boot .bt-guest{width:100%;max-width:300px}
+.bt-note{color:#c9ced6;font:600 14px Rajdhani,Arial;margin:0;text-align:center}.bt-note.small{color:#7d8794;font-size:12px}
+.logbtns{display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0}.gbtn{min-height:44px;display:flex;justify-content:center;width:100%;max-width:300px}
+.fbb{background:#1877f2!important;color:#fff!important;border-color:#1877f2!important;width:100%;max-width:300px;border-radius:999px!important;font-weight:700}.fbb b{font:900 20px Arial;margin-right:6px}
 </style>
 </head>
 <body>
+<div id="boot"><div class="bt-lines"></div><div class="bt-road"></div>
+<div class="bt-logo">RACHA<b>BR</b></div><div class="bt-tag">RACHAS DE RUA BRASILEIROS</div>
+<div class="bt-tach"><svg viewBox="0 0 170 96"><path d="M12 85 A73 73 0 0 1 158 85" fill="none" stroke="#252b33" stroke-width="10" stroke-linecap="round"/><path d="M120 22 A73 73 0 0 1 158 85" fill="none" stroke="#ff4d5a" stroke-width="10" stroke-linecap="round"/><g id="btneedle"><line x1="85" y1="85" x2="85" y2="22" stroke="#c6ff3d" stroke-width="4" stroke-linecap="round"/></g><circle cx="85" cy="85" r="8" fill="#eef1f5"/></svg><div class="bt-pct" id="btpct">0%</div></div>
+<div class="bt-bar"><i id="btbar"></i></div><div class="bt-txt" id="bttxt">Ligando a ignição…</div>
+<div class="bt-act" id="btact"></div></div>
 <header>
   <div class="logo">RACHA<b>BR</b></div>
   <div class="hstats" id="hstats"></div>
@@ -253,7 +284,7 @@ const BODIES={
   truck:{L:5.4,pts:[[.03,.55],[0,1.25],[2.2,1.25],[2.3,1.9],[3.75,1.92],[4.15,1.35],[5.3,1.2],[5.4,.8],[5.35,.5]],win:[[2.4,1.33],[2.45,1.82],[3.7,1.84],[4.0,1.33]],wheels:[1.05,4.3],r:.42,spoiler:[2.3,1.9],w:2.0,cda:1.25,fg:[.26,.36],rg:[.55,.58],bed:[.6,.97]},
 };
 const CARS=[
-  {id:'golturbao',brand:'V',rl:7500,name:'Gol GTI Turbão',year:1994,cat:'Modificado',body:'hothatch',L:3.84,hp:300,wt:980,grip:.92,handling:.66,drive:'FWD',turbo:true,price:0,tune:1.0,color:'#1f6fe0',glb:'/models/gol-turbao.glb',preset:{stripe:1,stripeColor:'#f4f5f7',wheel:5,wheelColor:'#d9dde2',spoiler:1},desc:'Projeto de rua pronto: 300cv, turbina grande e lag de respeito. Presente da concessionária, sai de graça.'},
+  {id:'golturbao',brand:'V',rl:7500,name:'Gol GTI Turbão',year:1994,cat:'Modificado',body:'hothatch',L:3.84,hp:200,wt:980,grip:.92,handling:.66,drive:'FWD',turbo:true,price:0,tune:1.0,color:'#1f6fe0',glb:'/models/gol-turbao.glb',preset:{stripe:1,stripeColor:'#f4f5f7',wheel:5,wheelColor:'#d9dde2',spoiler:1},desc:'Projeto de rua pronto: 300cv, turbina grande e lag de respeito. Presente da concessionária, sai de graça.'},
   {id:'chevette',brand:'T',rl:6000,name:'Chevette 1.6',year:1988,cat:'Clássico',body:'sedan70',L:4.2,hp:73,wt:880,grip:.80,handling:.45,drive:'RWD',turbo:false,price:12000,tune:.95,color:'#e8e0c8',glb:'/models/chevette-sl76.glb',glbCfg:{prep:true,len:4.12,rotY:0,r:.3,wheelMats:['Pneu','Rodas'],roles:{ChevetteMaterialLataria:'tint',Vidros:'glass'}},desc:'Tração traseira, leve e honesto. O primeiro carro de muito piloto de rua.'},
   {id:'saveiro',brand:'V',rl:6200,name:'Saveiro Rebaixada',year:1996,cat:'Rebaixado',body:'pickup',L:4.4,hp:99,wt:1000,grip:.83,handling:.6,drive:'FWD',turbo:false,price:20000,tune:1.0,color:'#f2f2f2',preset:{height:3,wheel:3,wheelColor:'#d9dde2'},desc:'Já vem no chão e com roda. Projeto de estilo que rende muita reputação.'},
   {id:'golgti',brand:'V',rl:6800,name:'Gol Quadrado GTI',year:1989,cat:'Clássico',body:'box80',L:3.8,hp:120,wt:940,grip:.84,handling:.55,drive:'FWD',turbo:false,price:24000,tune:1.1,color:'#d7263d',desc:'Ícone do AP 2.0. Leve, nervoso e aceita muita preparação.'},
@@ -451,7 +482,7 @@ const MTPL=[
 ];
 
 /* ---------- 4. ESTADO / SAVE ---------- */
-const SAVE_KEY='rachabr_save_v1';
+const SAVE_KEY='rachabr_save_v2'; // v2 = contas zeradas em 13/11/2026
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 const UP0=()=>({motor:0,turbo:0,cambio:0,pneus:0,susp:0,peso:0,nitro:0,remap:0});
 const TUNE0=()=>({pops:true,twostep:true,als:false,flutter:false});
@@ -486,6 +517,9 @@ function newState(){
     missions:[],daily:{last:'',streak:0},settings:{sound:true,autoShift:false,autoGas:false,view3d:true,nick:'',room:''}};
   s.pid=newPid();addCar(s,'chevette');s.active=s.cars[0].uid;return s;
 }
+const GUEST_CARS=['jetta','mustang','unofirma'];
+function newGuestState(){const s=newState();s.cars=[];s.uidc=1;s.guest=1;for(const id of GUEST_CARS){const c=addCar(s,id);c.preview=1}s.active=s.cars[0].uid;return s}
+function accountFromGuest(g){const s=newState();for(const k of['level','xp','stats','settings','pid','refBy','refRep','daily'])if(g[k]!==undefined)s[k]=g[k];s.guest=0;return s}
 function addCar(s,id){
   const m=CAR[id];const car={uid:s.uidc++,model:id,health:{motor:100,turbo:100,cambio:100},up:UP0(),vis:VIS0(m.color),paid:m.price,spent:0};
   if(m.preset)Object.assign(car.vis,m.preset);car.own={up:UP0(),vis:{}};car.ghost=null;s.cars.push(car);return car;
@@ -512,8 +546,8 @@ function migrate(d){
   d.uidc=Math.max(d.uidc||1,...d.cars.map(c=>c.uid+1));
   return d;
 }
-var FRESH=false;function loadState(){try{const raw=localStorage.getItem(SAVE_KEY);if(raw)return migrate(JSON.parse(raw))}catch(e){}FRESH=true;return newState()}
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}try{if(NET.room&&!Game.scene)NET.pushLobby()}catch(e){}}
+var FRESH=false;function loadState(){try{const raw=localStorage.getItem(SAVE_KEY);if(raw)return migrate(JSON.parse(raw))}catch(e){}FRESH=true;return newGuestState()}
+function save(){S.savedAt=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}try{AUTH.push()}catch(e){}try{if(NET.room&&!Game.scene)NET.pushLobby()}catch(e){}}
 let S=loadState();
 const activeCar=()=>S.cars.find(c=>c.uid===S.active)||S.cars[0];
 
@@ -2236,7 +2270,7 @@ const G3={cv:null,r:null,scene:null,cam:null,key:'',car:null,ex:null,yaw:-.7,pit
 
 /* --- 9c. LOOP --- */
 const Game={scene:null,raf:0,last:0,paused:false,ev:null,car:null,
-  start(ev,bet,net,opt){
+  start(ev,bet,net,opt){if(!net&&!guestCanRace(ev)){loginModal();return}
     if(this.scene&&this.scene.mode==='roam'){this.roamBack={map:this.scene.map,traffic:this.scene.trafficOn};cancelAnimationFrame(this.raf);this.dispose();this.scene=null;NET.set({fr:null})}
     let car=activeCar();if(isBroken(car)&&!(opt&&opt.test)){toast('Seu carro está quebrado. Conserte na Oficina.');TAB='oficina';render();return}
     this.test=!!(opt&&opt.test);if(this.test){car={...car,vis:{...opt.vis},health:{motor:100,turbo:100,cambio:100}};ev={...ev,test:true,entry:0,prize:0,rep:0,name:'Test drive · '+ev.name}}
@@ -2410,6 +2444,64 @@ async function payCheck(quiet){const list=(S.orders||[]).filter(o=>!o.done&&Date
     if(j.status==='paid'&&j.code){o.done=1;S.paid=S.paid||[];if(!S.paid.some(p=>p.code===j.code))S.paid.push({name:o.name,code:j.code,ts:Date.now()});save();clearInterval(PAY.poll);closeModal();await ACT.redeem({code:j.code});return}
     if(j.status==='failed'){o.done=1;save();if(!quiet)toast('Pagamento cancelado ou expirado')}}catch(e){}}
   if(!quiet)toast('Ainda não caiu. Pode levar alguns segundos.');}
+// ===== Contas: login Google/Facebook + progresso na nuvem (api/auth.js, api/save.js) =====
+const AUTH={cfg:null,s:'',name:'',uid:'',t:0,busy:false,
+  get on(){return!!(this.cfg&&this.cfg.on)},
+  load(){try{const a=JSON.parse(localStorage.getItem('rachabr_auth')||'null');if(a&&a.s){this.s=a.s;this.name=a.name||'';this.uid=a.uid||''}}catch(e){}},
+  store(){try{localStorage.setItem('rachabr_auth',JSON.stringify({s:this.s,name:this.name,uid:this.uid}))}catch(e){}},
+  clear(){this.s='';this.name='';this.uid='';try{localStorage.removeItem('rachabr_auth')}catch(e){}},
+  async config(){try{const r=await fetch('/api/auth?config=1',{cache:'no-store'});this.cfg=r.ok?await r.json():{on:false}}catch(e){this.cfg={on:false}}},
+  async pull(){if(!this.s)return null;try{const r=await fetch('/api/save',{headers:{authorization:'Bearer '+this.s},cache:'no-store'});if(r.status===401){this.clear();return null}return r.ok?await r.json():null}catch(e){return null}},
+  push(now){if(!this.s||S.guest)return;clearTimeout(this.t);const go=()=>{const body=JSON.stringify({save:S});fetch('/api/save',{method:'POST',keepalive:body.length<60000,headers:{'content-type':'application/json',authorization:'Bearer '+this.s},body}).then(r=>{if(r.status===401){this.clear();render()}}).catch(()=>{})};if(now)go();else this.t=setTimeout(go,4000)},
+  async finish(provider,token){if(this.busy)return;this.busy=true;toast('Entrando…');
+    try{const r=await fetch('/api/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({provider,token,pid:S.pid})});const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.session){toast(j.error||'Não deu pra entrar');return}
+      this.s=j.session;this.name=j.name||'Piloto';this.uid=j.uid;this.store();
+      let ns;if(j.save)ns=migrate(j.save);else if(!S.guest)ns=S;else ns=accountFromGuest(S);
+      ns.guest=0;ns.pid=j.pid||ns.pid;if(!ns.settings.nick)ns.settings.nick=this.name.slice(0,16);S=ns;save();this.push(true);
+      closeModal();bootClose();toast('Bem-vindo, '+this.name+'!');Snd.cash&&Snd.cash();
+      NET.myId=S.pid;NET.started=1;NET.init();
+      TAB='garagem';render();scrollTo(0,0);if(!S.gift80)setTimeout(giftModal,600)}
+    catch(e){toast('Sem conexão')}finally{this.busy=false}},
+  logout(){const t=this.s;if(t)fetch('/api/auth',{method:'DELETE',headers:{authorization:'Bearer '+t}}).catch(()=>{});this.clear();
+    try{NET.room&&NET.room.leave&&NET.room.leave();NET.room=null;NET.roomCode='';NET.peers=[]}catch(e){}
+    S=newGuestState();save();TAB='eventos';render();toast('Você saiu da conta')}
+};
+const guestLocked=()=>AUTH.on&&!AUTH.s;
+const guestCanRace=ev=>!guestLocked()||(ev&&ev.id==='d0'&&S.level<2);
+const LOCK_TABS=['rodagem','online','loja','premium','patro'];
+function loadScript(src,id){return new Promise((ok,no)=>{if(id&&document.getElementById(id))return ok();const e=document.createElement('script');e.src=src;e.async=true;if(id)e.id=id;e.onload=()=>ok();e.onerror=()=>no();document.head.appendChild(e)})}
+async function gisReady(){if(!AUTH.cfg||!AUTH.cfg.google)return false;if(window.google&&google.accounts&&google.accounts.id)return true;try{await loadScript('https://accounts.google.com/gsi/client','gsi');return true}catch(e){return false}}
+let GIS_INIT=false;
+async function renderGoogleBtn(el){if(!el||!await gisReady())return;if(!GIS_INIT){google.accounts.id.initialize({client_id:AUTH.cfg.google,callback:r=>r&&r.credential&&AUTH.finish('google',r.credential),ux_mode:'popup'});GIS_INIT=true}
+  el.innerHTML='';google.accounts.id.renderButton(el,{theme:'filled_black',size:'large',shape:'pill',text:'continue_with',locale:'pt-BR',width:Math.min(300,el.clientWidth||300)})}
+async function fbReady(){if(!AUTH.cfg||!AUTH.cfg.facebook)return false;if(window.FB)return true;window.fbAsyncInit=()=>{FB.init({appId:AUTH.cfg.facebook,cookie:false,xfbml:false,version:'v19.0'})};try{await loadScript('https://connect.facebook.net/pt_BR/sdk.js','fbsdk');for(let i=0;i<40&&!window.FB;i++)await new Promise(r=>setTimeout(r,100));return!!window.FB}catch(e){return false}}
+function fbLogin(){if(!window.FB){toast('Carregando Facebook…');fbReady();return}FB.login(r=>{if(r&&r.authResponse&&r.authResponse.accessToken)AUTH.finish('facebook',r.authResponse.accessToken);else toast('Login cancelado')},{scope:'public_profile'})}
+function loginBtnsHTML(){const c=AUTH.cfg||{};return`<div class="logbtns">${c.google?'<div class="gbtn"></div>':''}${c.facebook?'<button class="btn fbb" data-act="fblogin"><b>f</b> Continuar com Facebook</button>':''}</div>`}
+function mountLoginBtns(root){(root||document).querySelectorAll('.gbtn').forEach(el=>renderGoogleBtn(el));if(AUTH.cfg&&AUTH.cfg.facebook)fbReady()}
+function loginModal(msg){modal(`<div class="big" style="color:var(--ac)">🔒</div><h2 style="text-align:center">Entre pra continuar</h2><p class="sub" style="text-align:center">${msg||'Crie sua conta grátis com Google ou Facebook pra liberar o jogo completo: rachas, rodagem, online, concessionária e seu progresso salvo em qualquer aparelho.'}</p>${loginBtnsHTML()}<p class="sub" style="text-align:center;font-size:13px;margin-top:10px">Ao entrar, os 3 carros da prévia saem da garagem e você começa sua carreira com o carro inicial. Seu nível continua.</p><div class="acts"><button class="btn" data-act="close">Agora não</button></div>`);mountLoginBtns($('#modalRoot'))}
+function accountHTML(){if(AUTH.s)return`<div class="panel" style="margin:10px 0 16px;display:flex;justify-content:space-between;align-items:center;gap:10px"><div><b>Conectado como ${escapeHtml(AUTH.name)}</b><p class="sub" style="margin:2px 0 0">Seu progresso é salvo na nuvem automaticamente.</p></div><button class="btn sm" data-act="logout">Sair</button></div>`;
+  if(!AUTH.on)return'';return`<div class="panel" style="margin:10px 0 16px;border-color:var(--ac)"><b>Você está jogando como convidado</b><p class="sub" style="margin:4px 0 8px">Até o nível 2 dá pra testar a arrancada solo com 3 carros da prévia. Entre pra liberar tudo e salvar seu progresso.</p>${loginBtnsHTML()}</div>`}
+// ===== Abertura animada: carrega tudo antes de entrar =====
+const BOOT={p:0,shown:true,set(p,t){this.p=Math.max(this.p,p);const b=$('#btbar'),n=$('#btneedle'),x=$('#bttxt'),pc=$('#btpct');if(b)b.style.width=(this.p*100)+'%';if(n)n.style.transform=`rotate(${-120+this.p*240}deg)`;if(pc)pc.textContent=Math.round(this.p*100)+'%';if(t&&x)x.textContent=t}};
+function bootClose(){const b=$('#boot');if(!b||!BOOT.shown)return;BOOT.shown=false;try{Snd.init()}catch(e){}b.classList.add('out');setTimeout(()=>b.remove(),700)}
+async function bootRun(){const t0=performance.now();
+  BOOT.set(.05,'Ligando a ignição…');await AUTH.config();AUTH.load();BOOT.set(.18,'Conferindo a garagem…');
+  if(AUTH.s){const j=await AUTH.pull();if(j){if(j.name)AUTH.name=j.name;if(j.save&&!(S.savedAt>(j.save.savedAt||0)&&!S.guest)){S=migrate(j.save);S.guest=0}else if(S.guest){S=accountFromGuest(S)}if(j.pid)S.pid=j.pid;S.guest=0;save();AUTH.push(true)}}
+  if(!AUTH.on&&S.guest){S=accountFromGuest(S);save()}
+  if(guestLocked()&&!S.guest&&S.level<2&&FRESH){S=newGuestState();save()}
+  BOOT.set(.25,'Carregando os carros…');
+  const urls=[...new Set(S.cars.map(c=>CAR[c.model]&&CAR[c.model].glb).filter(Boolean))].slice(0,8);let done=0;
+  const tick=()=>{done++;BOOT.set(.25+.65*done/Math.max(1,urls.length+1),'Carregando os carros… '+done+'/'+(urls.length+1))};
+  const one=u=>Promise.race([Promise.resolve(window.THREE&&THREE.GLTFLoader?loadGLB(u):null).catch(()=>{}),new Promise(r=>setTimeout(r,15000))]).then(tick);
+  const par=S.cars.some(c=>hasPar(CAR[c.model],c.vis))?Promise.resolve(parScene()).catch(()=>{}):null;
+  await Promise.all([...urls.map(one),Promise.race([Promise.resolve(par),new Promise(r=>setTimeout(r,8000))]).then(tick)]);
+  if(guestLocked())mountLoginBtns($('#boot'));
+  const wait=2600-(performance.now()-t0);if(wait>0){BOOT.set(.95,'Aquecendo os pneus…');await new Promise(r=>setTimeout(r,wait))}
+  BOOT.set(1,'Pronto!');render();
+  const a=$('#btact');if(a){a.innerHTML=guestLocked()?`<p class="bt-note">Entre pra jogar tudo e salvar seu progresso</p>${loginBtnsHTML()}<button class="btn bt-guest" data-act="bootgo">Jogar como convidado</button><p class="bt-note small">Convidado: arrancada solo até o nível 2, com 3 carros da prévia</p>`:`<button class="btn pri bt-go" data-act="bootgo">ACELERAR ▸</button>${AUTH.s?`<p class="bt-note">Bem-vindo de volta, ${escapeHtml(AUTH.name)}</p>`:''}`;a.classList.add('on');if(guestLocked())mountLoginBtns(a)}
+}
+function afterBoot(){if(!NET.started){NET.started=1;NET.init()}if(!S.gift80&&!PEND_CODE&&!guestLocked()&&!/^#sala-/i.test(location.hash))setTimeout(giftModal,500)}
 const TABS=[['eventos','Eventos'],['rodagem','Rodagem'],['online','Online'],['garagem','Garagem'],['oficina','Oficina'],['visual','Visual'],['loja','Concessionária'],['premium','💎 Loja'],['patro','Patrocínios'],['conta','Conta']];
 function clsBadge(pi){const c=classOf(pi);return`<span class="cls" style="background:${c.color}">${c.name}<span style="opacity:.75">${pi}</span></span>`}
 function render(){
@@ -2417,9 +2509,11 @@ function render(){
   const need=xpNeed(S.level);
   $('#hstats').innerHTML=`<div class="money">${fmt(S.money)}</div><div class="lvl"><span class="badge">NV ${S.level}</span><div class="xpbar" title="${S.xp}/${need} XP"><div style="width:${S.xp/need*100}%"></div></div></div><button class="icbtn" data-act="snd" title="Som">${S.settings.sound?'🔊':'🔇'}</button>`;
   const claim=S.missions.some(m=>m.p>=m.n)||S.daily.last!==today();
-  $('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-v="${k}">${n}${(k==='patro'&&claim)||(k==='loja'&&!S.gift80)?'<span class="dot"></span>':''}</button>`).join('');
+  $('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-v="${k}">${guestLocked()&&LOCK_TABS.includes(k)?'🔒 ':''}${n}${(k==='patro'&&claim)||(k==='loja'&&!S.gift80)?'<span class="dot"></span>':''}</button>`).join('');
   const m=$('#main');
+  if(guestLocked()&&LOCK_TABS.includes(TAB))TAB='eventos';
   ({rodagem:vRodagem,online:vOnline,eventos:vEventos,garagem:vGaragem,oficina:vOficina,visual:vVisual,loja:vLoja,premium:vPremium,patro:vPatro,conta:vConta})[TAB](m);
+  if(guestLocked()&&m.querySelector('.gbtn'))mountLoginBtns(m);
   requestAnimationFrame(drawCanvases);
   try{refreshOnline()}catch(e){}
 }
@@ -2556,10 +2650,11 @@ function vEventos(m){
   const evs=EVENTS.filter(e=>e.mode===MODE);
   m.innerHTML=`<h2>Eventos</h2><p class="sub">Correndo com <b>${CAR[car.model].name}</b> · ${clsBadge(pf.pi)}</p>
   <div class="modes">${Object.entries(MODES).map(([k,v])=>`<button class="mode ${MODE===k?'on':''}" data-act="mode" data-v="${k}"><b>${v.n}</b><span>${v.d}</span></button>`).join('')}</div>
-  <div class="grid g3">${evs.map(e=>{const lock=S.level<e.lvl;const tg=e.ghostOnly?0:rivalTarget(e,car),diff=pf.pi-tg;const dl=diff>60?['Fácil','var(--gr)']:diff>-30?['Equilibrado','var(--ac2)']:diff>-110?['Difícil','#ff8a3d']:['Muito difícil','var(--rd)'];
+  ${guestLocked()?`<div class="panel" style="margin:0 0 12px;border-color:var(--ac)"><b>${S.level>=2?'Você chegou ao nível 2! 🎉':'Modo convidado'}</b><p class="sub" style="margin:4px 0 8px">${S.level>=2?'Crie sua conta grátis pra continuar jogando e liberar tudo.':'Teste a arrancada solo com os carros da prévia. Entre com Google ou Facebook pra liberar rachas, online e salvar seu progresso.'}</p><button class="btn sm pri" data-act="login">Entrar / criar conta</button></div>`:''}
+  <div class="grid g3">${evs.map(e=>{const glk=!guestCanRace(e),lock=S.level<e.lvl;const tg=e.ghostOnly?0:rivalTarget(e,car),diff=pf.pi-tg;const dl=diff>60?['Fácil','var(--gr)']:diff>-30?['Equilibrado','var(--ac2)']:diff>-110?['Difícil','#ff8a3d']:['Muito difícil','var(--rd)'];
    return`<div class="ev ${lock?'lock':''}">${lock?`<span class="lk">Nível ${e.lvl}</span>`:''}<h3>${e.name}</h3><div class="pl">${e.sky?({night:'Noite',dusk:'Entardecer',rain:'Chuva',day:'Dia'})[e.sky]+' · ':''}${e.place}${e.dist?` · ${(e.dist/1000).toFixed(1)} km`:' · 402 m'}</div>
    ${e.ghostOnly?`<div class="vals"><div>Seu recorde<b style="color:var(--ac)">${car.ghost?car.ghost.t.toFixed(2)+'s':'—'}</b></div><div>Inscrição<b>Grátis</b></div><div>Bater recorde<b>${fmt(250+S.level*60)}</b></div></div>`:`<div class="vals"><div>Prêmio<b style="color:var(--ac)">${e.ghostOnly?fmt(e.prize):'até '+fmt(rivalPrize(e,[{pi:tg*1.04}]).prize)}</b></div><div>${e.mode==='racha'?'Aposta até':'Inscrição'}<b>${fmt(e.mode==='racha'?e.maxBet:e.entry)}</b></div><div>Rivais<b>PI ~${tg}</b></div></div>`}
-   <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;color:${e.ghostOnly?'#9fd4ff':dl[1]}">${e.ghostOnly?'Você contra você':dl[0]}</span><button class="btn sm pri" ${lock?'disabled':''} data-act="ev" data-v="${e.id}">Correr</button></div></div>`}).join('')}</div>`;
+   <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;color:${e.ghostOnly?'#9fd4ff':dl[1]}">${e.ghostOnly?'Você contra você':dl[0]}</span><button class="btn sm pri" ${lock?'disabled':''} data-act="ev" data-v="${e.id}">${glk&&!lock?'🔒 Entrar':'Correr'}</button></div></div>`}).join('')}</div>`;
 }
 let PEND=null;
 function openEvent(id,reroll){
@@ -2588,7 +2683,7 @@ function vPatro(m){
 function vConta(m){
   const st=S.stats;
   const tg=(k,label,desc)=>`<div class="tgl"><div>${label}<div style="color:var(--mu);font-size:13px;font-weight:500">${desc}</div></div><button class="${S.settings[k]?'on':''}" data-act="set" data-v="${k}"></button></div>`;
-  m.innerHTML=`<h2>Conta${S.vip?'<span class="vipbadge">VIP</span>':''}${S.pass?'<span class="passbadge">PASSE</span>':''}</h2><p class="sub">Configurações, estatísticas e backup do progresso.</p><div class="panel" style="margin:10px 0 16px;border-color:var(--ac)"><h3 style="margin:0 0 6px;font-size:16px">Código de resgate</h3><div style="display:flex;gap:8px"><input id="rcode" placeholder="Digite o código" value="${escapeHtml(PEND_CODE||'')}" autocomplete="off" style="flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--ln);background:var(--p2);color:#eef1f5;font:600 15px Rajdhani,Arial;text-transform:uppercase"><button class="btn pri" data-act="redeem">Resgatar</button></div></div>
+  m.innerHTML=`<h2>Conta${S.vip?'<span class="vipbadge">VIP</span>':''}${S.pass?'<span class="passbadge">PASSE</span>':''}</h2><p class="sub">Configurações, estatísticas e backup do progresso.</p>${accountHTML()}<div class="panel" style="margin:10px 0 16px;border-color:var(--ac)"><h3 style="margin:0 0 6px;font-size:16px">Código de resgate</h3><div style="display:flex;gap:8px"><input id="rcode" placeholder="Digite o código" value="${escapeHtml(PEND_CODE||'')}" autocomplete="off" style="flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--ln);background:var(--p2);color:#eef1f5;font:600 15px Rajdhani,Arial;text-transform:uppercase"><button class="btn pri" data-act="redeem">Resgatar</button></div></div>
   <div class="grid g2"><div class="panel">${tg('sound','Som','Motor, turbo e efeitos')}${tg('autoShift','Câmbio automático','Vale para todos os modos. Mais fácil, mas sem troca perfeita e sem controle de redução')}${tg('autoGas','Acelerador automático na rua/racha','Recomendado no celular')}${tg('view3d','Câmera 3D na rua/racha','Visão atrás do carro. Desligue para a visão de cima (mais leve)')}
    <h2 style="font-size:18px;margin-top:16px">Estatísticas</h2><div class="kpis"><div class="kpi"><b>${st.races}</b><small>Corridas</small></div><div class="kpi"><b>${st.wins}</b><small>Vitórias</small></div><div class="kpi"><b>${st.best402?st.best402.toFixed(2)+'s':'—'}</b><small>Melhor 402m</small></div><div class="kpi"><b>${fmt(st.earned)}</b><small>Faturado</small></div><div class="kpi"><b>${st.nearMiss}</b><small>Raspões</small></div><div class="kpi"><b>${st.perfect}</b><small>Trocas perfeitas</small></div></div></div>
   <div class="panel"><h2 style="font-size:18px">Backup</h2><p class="sub">O progresso fica salvo neste navegador. Copie o código para levar para outro aparelho.</p>
@@ -2600,7 +2695,8 @@ function vConta(m){
 <h4>Jogo</h4><p>Racha BR · feito com three.js (MIT) e PeerJS (MIT).</p></div></details>`;
 }
 const ACT={
-  tab:d=>{TAB=d.v;render();scrollTo(0,0)},mode:d=>{MODE=d.v;render()},
+  tab:d=>{if(guestLocked()&&LOCK_TABS.includes(d.v)){loginModal();return}TAB=d.v;render();scrollTo(0,0)},
+  login:()=>loginModal(),bootgo:()=>{bootClose();afterBoot()},fblogin:()=>fbLogin(),logout:()=>modal(`<h2>Sair da conta?</h2><p class="sub">Seu progresso continua salvo na nuvem. Pra jogar de novo é só entrar.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn warn" data-act="logoutok">Sair</button></div>`),logoutok:()=>{closeModal();AUTH.logout()},mode:d=>{MODE=d.v;render()},
   sel:d=>{S.active=+d.v;save();render()},
   snd:()=>{S.settings.sound=!S.settings.sound;save();render()},
   set:d=>{S.settings[d.v]=!S.settings[d.v];save();render()},
@@ -2644,9 +2740,9 @@ const ACT={
   viphelp:()=>{TAB='premium';render();scrollTo(0,0);toast('Libere o VIP aqui na Loja 💎')},
   buy:d=>{const c=CAR[d.v];if(c.vip&&!S.vip){toast('Carro exclusivo VIP');return}if(c.pass&&!S.pass){toast('Carro exclusivo PASSE');return}if(S.money<c.price)return;if(!c.price&&S.cars.some(x=>x.model===c.id)){toast('Você já pegou esse');return}modal(`<h2>Comprar ${c.name}?</h2><p class="sub">${c.price?fmt(c.price):'De graça'} · ele vira seu carro ativo.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="buyok" data-v="${c.id}">Comprar</button></div>`)},
   buyok:d=>{const c=CAR[d.v];if(c.pass&&!S.pass)return;if(S.money<c.price)return;if(!c.price&&S.cars.some(x=>x.model===c.id))return;S.money-=c.price;const car=addCar(S,c.id);S.active=car.uid;save();closeModal();Snd.cash();toast(c.name+' na garagem!');TAB='garagem';render()},
-  sell:d=>{const car=S.cars.find(c=>c.uid==d.v);if(!car||S.cars.length<2)return;modal(`<h2>Vender ${CAR[car.model].name}?</h2><p class="sub">Você recebe ${fmt(carValue(car))}. Peças e visual vão junto.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn warn" data-act="sellok" data-v="${car.uid}">Vender</button></div>`)},
+  sell:d=>{const car=S.cars.find(c=>c.uid==d.v);if(!car||S.cars.length<2)return;if(car.preview){toast('Carro da prévia não pode ser vendido');return}modal(`<h2>Vender ${CAR[car.model].name}?</h2><p class="sub">Você recebe ${fmt(carValue(car))}. Peças e visual vão junto.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn warn" data-act="sellok" data-v="${car.uid}">Vender</button></div>`)},
   sellok:d=>{const car=S.cars.find(c=>c.uid==d.v);if(!car||S.cars.length<2)return;S.money+=carValue(car);S.cars=S.cars.filter(c=>c!==car);if(S.active===car.uid)S.active=S.cars[0].uid;save();closeModal();Snd.cash();render()},
-  ev:d=>openEvent(d.v),
+  ev:d=>{const e=EVENTS.find(x=>x.id===d.v);if(!guestCanRace(e)){loginModal(S.level>=2&&guestLocked()?'Você chegou ao nível 2! Pra continuar jogando, crie sua conta grátis com Google ou Facebook.':'Como convidado você joga a arrancada solo. Entre pra liberar rachas e eventos.');return}openEvent(d.v)},
   reroll:d=>openEvent(d.v,true),
   go:d=>{let e=EVENTS.find(x=>x.id===d.v);if(!e.ghostOnly&&PEND&&PEND.id===e.id){e={...e,rivals:PEND.rivals,prize:PEND.prize,rep:PEND.rep};PEND=null}const b=$('#bet');const bet=b?+b.value:0;if(S.money<e.entry+bet)return;closeModal();Game.start(e,bet)},
   close:()=>closeModal(),
@@ -2775,7 +2871,7 @@ function cleanVis(v,model){
 function myStats(){const st=S.stats;return{wins:st.wins|0,races:st.races|0,best:st.best402||null,ow:st.onW|0,ol:st.onL|0}}
 const NET={room:null,user:null,db:null,myId:null,isOwner:false,myPeer:null,peers:[],names:{},rank:[],pres:{},sent:0,shown:{},myInv:null,err:null,connected:false,lastRank:{},
   async init(){
-    if(window.Peer&&!(window.claude&&typeof claude.use==='function')){this.mode='p2p';this.myId=S.pid;await loadIce();
+    if(window.Peer&&!(window.claude&&typeof claude.use==='function')){this.mode='p2p';this.myId=S.pid;if(guestLocked()){refreshOnline();return}await loadIce();
       const h=(location.hash.match(/^#sala-([a-z0-9]{4,12})$/i)||[])[1];const code=(h||S.settings.room||'').toLowerCase();if(code&&code!==PUB_ROOM)this.joinRoom(code);else this.joinPublic();
       this.loadRank();setInterval(()=>{if(TAB==='online'&&!Game.scene)this.loadRank()},30000);refreshOnline();return}
     if(!window.claude||typeof claude.use!=='function'){refreshOnline();return}
@@ -2806,7 +2902,7 @@ const NET={room:null,user:null,db:null,myId:null,isOwner:false,myPeer:null,peers
   roomLink(){return location.origin+location.pathname+'#sala-'+this.roomCode},
   async loadRank(){try{const r=await fetch('/api/rank',{cache:'no-store'});if(!r.ok)return;const d=await r.json();this.rank=Array.isArray(d.rows)?d.rows:[];refreshOnline()}catch(e){}},
   postT:0,
-  postRank(row){clearTimeout(this.postT);this.postT=setTimeout(async()=>{try{await fetch('/api/rank',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:this.myId,...row})});setTimeout(()=>this.loadRank(),1500)}catch(e){}},2500)},
+  postRank(row){if(guestLocked())return;clearTimeout(this.postT);this.postT=setTimeout(async()=>{try{await fetch('/api/rank',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:this.myId,...row})});setTimeout(()=>this.loadRank(),1500)}catch(e){}},2500)},
   set(patch){if(!this.room)return;Object.assign(this.pres,patch);this.room.presence(patch).catch(()=>{})},
   pushLobby(){const c=activeCar();this.set({v:1,u:this.myId,nick:S.settings.nick||'Piloto',lvl:S.level,car:{m:c.model,vis:c.vis,pi:perf(CAR[c.model],c.up).pi},stt:myStats(),st:Game.scene&&Game.scene.mode!=='roam'?'race':'idle'});this.saveRank()},
   others(){return this.peers.filter(p=>!p.isMe&&p.kind==='viewer'&&p.presence&&p.presence.v===1&&CAR[p.presence.car&&p.presence.car.m])},
@@ -2906,7 +3002,7 @@ let netRefreshT=0;
 const PUB_ROOM='publico';
 function refreshOnline(){
   const dot=document.querySelector('nav [data-v=online]');
-  if(dot){const has=NET.others().some(p=>p.presence.inv&&p.presence.inv.to===NET.myPeer);dot.innerHTML='Online'+(NET.others().length?` <span style="opacity:.7">(${NET.others().length})</span>`:'')+(has?'<span class="dot"></span>':'')}
+  if(dot){const has=NET.others().some(p=>p.presence.inv&&p.presence.inv.to===NET.myPeer);dot.innerHTML=(guestLocked()?'🔒 ':'')+'Online'+(NET.others().length?` <span style="opacity:.7">(${NET.others().length})</span>`:'')+(has?'<span class="dot"></span>':'')}
   if(TAB!=='online'||Game.scene)return;
   clearTimeout(netRefreshT);netRefreshT=setTimeout(()=>{const el=document.getElementById('netLive');if(el){el.innerHTML=netLiveHTML();bindNetCanvases()}},60);
 }
@@ -2993,10 +3089,8 @@ setTimeout(()=>{REF.report();REF.check()},2500);setInterval(()=>{if(!Game.scene)
 var PEND_CODE='';{const mc=/codigo=([A-Za-z0-9-]+)/i.exec(location.hash+location.search);if(mc){PEND_CODE=mc[1].toUpperCase();TAB='conta'}}
 if(/resgat|presente|gift/i.test(location.hash+location.search)&&!S.gift80&&!PEND_CODE)TAB='loja';
 render();
-if(!S.gift80&&!PEND_CODE&&!/^#sala-/i.test(location.hash))setTimeout(giftModal,500);
-NET.init();
+bootRun().catch(e=>{console.error(e);BOOT.set(1,'Pronto!');const a=$('#btact');if(a){a.innerHTML='<button class="btn pri bt-go" data-act="bootgo">ACELERAR ▸</button>';a.classList.add('on')}});
 setTimeout(()=>{if((S.orders||[]).some(o=>!o.done&&Date.now()-o.ts<36e5))payCheck(true)},4000);
-try{if(window.THREE&&THREE.GLTFLoader){S.cars.forEach(c=>{const m=CAR[c.model];m&&m.glb&&loadGLB(m.glb)});if(S.cars.some(c=>hasPar(CAR[c.model],c.vis)))parScene()}}catch(e){}
 if(S.daily.last!==today()&&S.stats.races>0)setTimeout(()=>toast('Bônus diário disponível em Patrocínios'),800);
 </script>
 </body>
