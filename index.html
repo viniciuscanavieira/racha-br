@@ -1105,7 +1105,7 @@ class DragRace{
     const bw=Math.min(420,W*.5),bx=(W-bw)/2;hudBar(ctx,bx,14,bw,6,p.x/402,'#c6ff3d','');
     if(!this.solo){ctx.fillStyle='#ff4d5a';ctx.fillRect(bx+bw*clamp(this.o.x/402,0,1)-2,10,4,14)}
     if(this.ghost){ctx.fillStyle='#9fd4ff';ctx.fillRect(bx+bw*clamp(this.gx/402,0,1)-2,10,4,14)}
-    ctx.fillStyle='#eef1f5';ctx.font='700 13px Rajdhani,Arial';ctx.textAlign='right';if(W>=640)ctx.fillText(this.ev.test?'TEST DRIVE':this.solo?(this.ghost?`FANTASMA · ${this.ghost.t.toFixed(2)}s`:'PRIMEIRA PASSADA · SEM RECORDE'):this.net?`${this.net.oppName.toUpperCase()} · ${this.om.name}`:`${this.om.name.toUpperCase()} · ${this.obuild?this.obuild.toUpperCase()+' · ':''}PI ${this.opi}`,W-60,24);
+    ctx.fillStyle='#eef1f5';ctx.font='700 13px Rajdhani,Arial';ctx.textAlign='right';if(W>=640)ctx.fillText(this.ev.test?'TEST DRIVE':this.solo?(this.ghost?`FANTASMA · ${this.ghost.t.toFixed(2)}s`:'PRIMEIRA PASSADA · SEM RECORDE'):this.net?(this.net.group?`RACHA EM GRUPO · ${this.net.peers.length+1} PILOTOS`:`${this.net.oppName.toUpperCase()} · ${this.om.name}`):`${this.om.name.toUpperCase()} · ${this.obuild?this.obuild.toUpperCase()+' · ':''}PI ${this.opi}`,W-60,24);
     if(this.net&&!this.net.go)netWaitHUD(ctx,W,H,this.net);
     let hy=C.bottom+14;if(sp.nitro>0){hudBar(ctx,18,hy,Math.min(150,R*2),7,p.nitroLeft/sp.nitro,'#3db8ff','NITRO');hy+=30}
     if(this.react!=null){ctx.fillStyle='#eef1f5';ctx.font='700 15px Rajdhani,Arial';ctx.textAlign='left';ctx.fillText('Reação '+this.react.toFixed(3)+'s',18,hy+4)}
@@ -1135,8 +1135,9 @@ class StreetRace{
     for(let i=0;i<n;i++){const op=(ev.rivals&&ev.rivals[i])||makeRival(ev,car);
       const lane=racha?2:i;const d0=racha?0:8;const r=newRunner(op.spec);r.x=d0;
       this.rivals.push({model:op.model,spec:op.spec,pi:op.pi,vis:op.vis,r,lane,x:this.laneOff(lane),xv:0,L:op.model.L,W:BODIES[op.model.body].w,fin:null,brake:false,aggr:rnd(.9,1.0)})}
-    this.p.x=this.laneOff(net&&!net.host?2:1);pr.x=0;
-    if(net){const m=net.oppModel,sp=perf(m,UP0()).spec,lane=net.host?2:1;this.rivals.push({remote:true,model:m,spec:sp,pi:net.oppPi,vis:net.oppVis,r:newRunner(sp),lane,x:this.laneOff(lane),xv:0,L:m.L,W:BODIES[m.body].w,fin:null,brake:false})}
+    this.p.x=this.laneOff(net&&net.group?net.myIdx:net&&!net.host?2:1);pr.x=0;
+    if(net&&net.group){for(const e of net.peers){const sp=perf(e.model,UP0()).spec;this.rivals.push({remote:true,peer:e.peer,name:e.name,model:e.model,spec:sp,pi:e.pi,vis:e.vis,r:newRunner(sp),lane:e.idx,x:this.laneOff(e.idx),xv:0,L:e.model.L,W:BODIES[e.model.body].w,fin:null,brake:false})}}
+    else if(net){const m=net.oppModel,sp=perf(m,UP0()).spec,lane=net.host?2:1;this.rivals.push({remote:true,model:m,spec:sp,pi:net.oppPi,vis:net.oppVis,r:newRunner(sp),lane,x:this.laneOff(lane),xv:0,L:m.L,W:BODIES[m.body].w,fin:null,brake:false})}
     this.traffic=[];this.parts=new Particles();this.msgs=[];this.t=-3.2;this.cd=3;this.done=false;
     this.hits=0;this.nearMiss=0;this.nmCash=0;this.camX=this.p.x;this.zoom=9;this.H=700;this.shake=0;this.top=0;
     this.nmVal=Math.round(40+ev.pi*.12);this.density=ev.traffic;this.perfect=0;initWear(this);this.tn=tuneOf(car);{const x0=this.p.x;this.p.r=newRunner(this.spec);this.p.r.popMul=this.model.bigPops||1;this.p.x=x0}
@@ -1234,7 +1235,7 @@ class StreetRace{
     }
   }
   specOf(c){return c===this.p?this.spec:c.spec}
-  updateRemote(a,dt){const s=NET.remote(this.net);if(!s||s.d==null)return;const k=Math.min(1,dt*10);
+  updateRemote(a,dt){const s=a.peer?NET.remoteOf(a.peer,this.net.code):NET.remote(this.net);if(!s||s.d==null)return;const k=Math.min(1,dt*10);
     a.r.x+=((+s.d)+(+s.v||0)*.08-a.r.x)*k;a.x+=((+s.x||0)-a.x)*k;a.xv=+s.xv||0;a.r.v=+s.v||0;{const ng=s.g|0||1;if(ng>a.r.gear)pop(a.r,.8,false);a.r.gear=ng}if(a.r.popT>0)a.r.popT-=dt;a.r.nitroOn=!!s.n;a.brake=!!s.b;if(s.f!=null&&a.fin==null)a.fin=+s.f}
   updateAI(a,dt){
     const r=a.r,d=r.x,v=r.v;
@@ -2048,7 +2049,7 @@ const Game={scene:null,raf:0,last:0,paused:false,ev:null,car:null,
     if(net>0)Snd.cash();
     setTimeout(()=>{const el=document.getElementById('vsName');if(el&&this.net)el.textContent=this.net.oppName},0);
     const vsTxt=ev.online&&this.net?` contra <span id="vsName"></span>`:'';
-    const title=res.failed==='motor'?'MOTOR BATEU':res.dnf?'Abandonou':res.solo?(recBonus||recTxt.includes('Primeiro')?'NOVO RECORDE':res.jump?'QUEIMOU':'TREINO'):res.won?'VITÓRIA':ev.mode==='rua'?res.pos+'º LUGAR':'DERROTA';
+    const title=res.failed==='motor'?'MOTOR BATEU':res.dnf?'Abandonou':res.solo?(recBonus||recTxt.includes('Primeiro')?'NOVO RECORDE':res.jump?'QUEIMOU':'TREINO'):res.won?'VITÓRIA':ev.mode==='rua'||(this.net&&this.net.group)?res.pos+'º LUGAR':'DERROTA';
     const col=res.failed?'var(--rd)':res.solo?'var(--ac)':res.won?'var(--ac)':res.dnf?'var(--mu)':'var(--rd)';
     let det='';
     if(ev.mode==='drag'&&!res.dnf){det=`<div class="kpis"><div class="kpi"><b>${res.react!=null?res.react.toFixed(3)+'s':'—'}</b><small>Reação</small></div><div class="kpi"><b>${res.et?res.et.toFixed(2)+'s':'—'}</b><small>Tempo 402m</small></div><div class="kpi"><b>${Math.round(res.trap)}</b><small>km/h final</small></div></div>`;
@@ -2064,7 +2065,7 @@ const Game={scene:null,raf:0,last:0,paused:false,ev:null,car:null,
       if(parts.length)lines+=L('Desgaste',parts.join(' · '),Object.keys(sc.broken).length?'neg':'')}
     lines+=L(`Reputação${st?` (estilo +${Math.round(st*.3)}%)`:''}`,'+'+rep+' XP','pos');
     const upsTxt=ups.map(u=>`<p class="sub" style="color:var(--ac2);margin:6px 0 0">Subiu para o nível ${u[0]}! Bônus de ${fmt(u[1])}.</p>`).join('');
-    modal(`<div class="big" style="color:${col}">${title}</div><p class="sub" style="text-align:center">${ev.name}${vsTxt} · ${model.name}</p>${det}${recTxt}<div class="lines">${lines}</div>${upsTxt}${sc&&sc.dmg&&Object.keys(sc.broken).length?'<p class="sub" style="color:var(--ac2);margin:8px 0 0">Leve o carro na Oficina para consertar.</p>':''}${ev.online?`<div class="acts"><button class="btn" data-act="leave">Voltar</button>${this.net&&NET.peer(this.net.peer)?`<button class="btn pri" data-act="rematch" data-v="${this.net.peer}">Revanche</button>`:''}</div>`:`<div class="acts"><button class="btn" data-act="leave">Garagem</button><button class="btn pri" data-act="again">${res.solo?'Tentar de novo':'Correr de novo'}</button></div>`}`,true);
+    modal(`<div class="big" style="color:${col}">${title}</div><p class="sub" style="text-align:center">${ev.name}${vsTxt} · ${model.name}</p>${det}${recTxt}<div class="lines">${lines}</div>${upsTxt}${sc&&sc.dmg&&Object.keys(sc.broken).length?'<p class="sub" style="color:var(--ac2);margin:8px 0 0">Leve o carro na Oficina para consertar.</p>':''}${ev.online?`<div class="acts"><button class="btn" data-act="leave">Voltar</button>${this.net&&!this.net.group&&NET.peer(this.net.peer)?`<button class="btn pri" data-act="rematch" data-v="${this.net.peer}">Revanche</button>`:''}</div>`:`<div class="acts"><button class="btn" data-act="leave">Garagem</button><button class="btn pri" data-act="again">${res.solo?'Tentar de novo':'Correr de novo'}</button></div>`}`,true);
   },
   dispose(){if(this.scene&&this.scene.mode==='roam'){try{this.scene.dispose()}catch(e){}return}if(this.scene&&this.scene.v3){try{this.scene.v3.dispose()}catch(e){}this.scene.v3=null}},
   leave(){unlockPortrait();closeModal();cancelAnimationFrame(this.raf);this.dispose();this.scene=null;this.net=null;NET.end();Input.clear();$('#race').style.display='none';render();
@@ -2366,6 +2367,7 @@ const ACT={
   netch:d=>{if(isBroken(activeCar())){toast('Conserte o carro na Oficina antes de desafiar');return}openChallenge(d.v)},
   fix:d=>{const car=activeCar(),c=repairCost(car,d.v);if(!c||S.money<c)return;S.money-=c;car.health[d.v]=100;Snd.noise(.2,.12,900);save();toast(HEALTH_NAMES[d.v]+' novo em folha');render()},
   fixall:()=>{const car=activeCar();let tot=0;for(const k of['motor','turbo','cambio'])tot+=repairCost(car,k);if(!tot||S.money<tot)return;S.money-=tot;car.health={motor:100,turbo:100,cambio:100};Snd.cash();save();toast('Carro revisado');render()},
+  grpnew:()=>NET.grpCreate(),grpcancel:()=>NET.grpCancel(),grpjoin:d=>NET.grpJoin(d.v),grpleave:()=>NET.grpLeave(),grpready:()=>NET.grpReady(),grpstart:()=>NET.grpStart(),
   roomcreate:()=>{const c=Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join('');NET.joinRoom(c);toast('Sala criada! Mande o link para a galera.')},
   roomjoin:()=>{const v=($('#roomCode').value||'').trim();NET.joinRoom(v)},
   roomleave:()=>NET.leaveRoom(),
@@ -2494,6 +2496,7 @@ const NET={room:null,user:null,db:null,myId:null,isOwner:false,myPeer:null,peers
     if(this.myInv){const p=this.peer(this.myInv.to);
       if(!p){this.cancelInvite('Seu amigo saiu.')}
       else{const a=p.presence.acc;if(a&&a.to===this.myPeer&&a.code===this.myInv.code){if(a.no)this.cancelInvite(this.nameOf(p)+' recusou o desafio.');else{const inv=this.myInv;this.myInv=null;this.set({inv:null});closeModal();this.start(inv,p,true)}}}}
+    this.grpTick(os);
     if(this.isOwner)this.ownerRank(os);
     refreshOnline();
   },
@@ -2527,17 +2530,43 @@ const NET={room:null,user:null,db:null,myId:null,isOwner:false,myPeer:null,peers
     TAB='online';Game.start(ev,bet,net);this.set({st:'race',inv:null});
   },
   remote(net){const p=this.peer(net.peer);const s=p&&p.presence&&p.presence.rc;return s&&s.c===net.code?s:null},
+  remoteOf(id,code){const p=this.peer(id);const s=p&&p.presence&&p.presence.rc;return s&&s.c===code?s:null},
   send(rc,force){const now=performance.now();if(!force&&now-this.sent<50)return;this.sent=now;this.set({rc})},
   waitGo(scene,dt){
     const n=scene.net;if(n.go)return true;
     n.wait=(n.wait||0)+dt;
+    if(n.group){this.send({c:n.code,r:1});const rd=n.peers.filter(e=>{const x=this.remoteOf(e.peer,n.code);return x&&x.r}).length;n.readyN=rd;
+      if(rd>=n.peers.length||(n.wait>25&&rd>0)){n.go=true;Snd.beep(660,.12,.06);return true}
+      if(n.wait>40&&!scene.done){scene.done=true;toast('A galera não entrou na corrida.');setTimeout(()=>Game.leave(),300)}return false}
     const s=this.remote(n);this.send({c:n.code,r:1});
     if(s&&s.r){n.go=true;Snd.beep(660,.12,.06);return true}
     if(n.wait>40&&!scene.done){scene.done=true;toast('Seu amigo não entrou na corrida. Aposta devolvida.');S.money+=Game.bet;save();setTimeout(()=>Game.leave(),300)}
     return false;
   },
-  watch(scene,dt){const n=scene.net;if(this.peer(n.peer)){n.lost=0;return}n.lost+=dt;if(n.lost>4&&!n.left){n.left=true;scene.msg&&scene.msg('SEU AMIGO SAIU','#ffd23d')}},
-  end(){this.set({rc:null,st:'idle',acc:null,inv:null});this.pushLobby()},
+  watch(scene,dt){const n=scene.net;if(n.group){for(const a of scene.rivals){if(!a.peer||a.left)continue;if(this.peer(a.peer)){a.lost=0;continue}a.lost=(a.lost||0)+dt;if(a.lost>4){a.left=true;scene.msg&&scene.msg((a.name||'PILOTO').toUpperCase()+' SAIU','#ffd23d')}}return}if(this.peer(n.peer)){n.lost=0;return}n.lost+=dt;if(n.lost>4&&!n.left){n.left=true;scene.msg&&scene.msg('SEU AMIGO SAIU','#ffd23d')}},
+  end(){this.grp=null;this.gj=null;this.set({rc:null,st:'idle',acc:null,inv:null,grp:null,gj:null});this.pushLobby()},
+  // corrida em grupo (racha no trânsito, até 4)
+  grpCreate(){if(isBroken(activeCar())){toast('Seu carro está quebrado. Conserte na Oficina.');return}if(this.gj)this.grpLeave();const c='g'+Math.random().toString(36).slice(2,8);this.grp={c,mem:[],go:0};this.set({grp:{...this.grp}});refreshOnline()},
+  grpCancel(){this.grp=null;this.set({grp:null});refreshOnline()},
+  grpJoin(hostId){const h=this.peer(hostId),g=h&&h.presence.grp;if(!g||g.go){toast('Essa corrida já começou');return}if((g.mem||[]).length>=3){toast('Corrida cheia (4 pilotos)');return}
+    if(isBroken(activeCar())){toast('Seu carro está quebrado. Conserte na Oficina.');return}if(this.grp)this.grpCancel();this.gj={c:g.c,h:hostId,rd:0};this.set({gj:{c:g.c,rd:0}});refreshOnline()},
+  grpLeave(){this.gj=null;this.set({gj:null});refreshOnline()},
+  grpReady(){if(!this.gj)return;if(!this.gj.rd&&isBroken(activeCar())){toast('Seu carro está quebrado. Conserte na Oficina.');return}this.gj.rd=this.gj.rd?0:1;this.set({gj:{c:this.gj.c,rd:this.gj.rd}});refreshOnline()},
+  grpMembers(){const g=this.grp;if(!g)return[];return g.mem.map(id=>this.peer(id)).filter(Boolean)},
+  grpStart(){const g=this.grp;if(!g)return;const ms=this.grpMembers();if(!ms.length){toast('Espere alguém entrar');return}if(!ms.every(p=>p.presence.gj&&p.presence.gj.rd)){toast('Nem todos estão prontos');return}
+    if(isBroken(activeCar())){toast('Seu carro está quebrado. Conserte na Oficina.');return}
+    g.go=1;g.list=[this.myPeer,...ms.map(p=>p.peer)];this.set({grp:{...g}});const gg={...g};setTimeout(()=>{if(this.grp&&this.grp.c===gg.c)this.grp=null;this.set({grp:null})},15000);this.startGroup(gg)},
+  startGroup(g){const list=g.list,me=this.myPeer,myIdx=list.indexOf(me);if(myIdx<0)return;
+    const peers=[];list.forEach((id,i)=>{if(id===me)return;const p=this.peer(id);if(!p)return;const m=CAR[p.presence.car.m];if(!m)return;peers.push({peer:id,idx:i,model:m,vis:cleanVis(p.presence.car.vis,m),pi:p.presence.car.pi|0,name:this.nameOf(p),by:p.by})});
+    if(!peers.length){toast('A galera saiu da sala');return}
+    const seed=strHash(g.c),ev={...ONLINE_EV.racha,id:'on-grupo',name:'Racha em grupo',sky:['night','dusk','rain','day'][seed%4]};
+    const net={group:true,code:g.c,seed,host:myIdx===0,myIdx,peers,peer:peers[0].peer,oppName:peers.map(e=>e.name).join(', '),oppModel:peers[0].model,oppVis:peers[0].vis,oppPi:peers[0].pi,go:false,lost:0};
+    closeModal();TAB='online';Game.start(ev,0,net);this.set({st:'race',inv:null,gj:null})},
+  grpTick(os){
+    if(this.grp&&!this.grp.go){const mem=os.filter(p=>p.presence.gj&&p.presence.gj.c===this.grp.c&&p.presence.st!=='race').map(p=>p.peer).slice(0,3);if(JSON.stringify(mem)!==JSON.stringify(this.grp.mem)){this.grp.mem=mem;this.set({grp:{...this.grp}})}}
+    if(this.gj){const h=this.peer(this.gj.h),g=h&&h.presence.grp;
+      if(!g||g.c!==this.gj.c){this.gj=null;this.set({gj:null});if(!Game.scene)toast('O criador cancelou a corrida em grupo')}
+      else if(g.go&&Array.isArray(g.list)&&g.list.includes(this.myPeer)&&!this.shown[g.c]){this.shown[g.c]=1;this.gj=null;if(!Game.scene||Game.scene.mode==='roam'){if(Game.scene)Game.leave();this.startGroup(g)}}}},
   // ranking compartilhado
   subRank(){
     try{this.db.collection('rank').onSnapshot(s=>{this.rank=s.docs.filter(d=>d.exists).map(d=>({id:d.id,...d.data()}));const ids=this.rank.map(r=>r.id);this.resolveNames(ids);refreshOnline()},()=>{})}catch(e){}
@@ -2571,8 +2600,24 @@ function netLiveHTML(){
     :`<div class="empty panel">Nenhum amigo na sala agora.<br>${NET.mode==='p2p'?'Mande o link da sala para a galera. Quem abrir aparece aqui na hora.':'Quando alguém abrir pelo link compartilhado, aparece aqui na hora.'}</div>`;
   const share=NET.mode==='p2p'?`<div class="panel" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><div style="flex:1;min-width:200px"><div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--mu);font-weight:700">Sala ${NET.roomCode}</div><div style="font-weight:700;word-break:break-all" id="roomLink"></div></div>
      <button class="btn sm pri" data-act="roomshare">Convidar</button><a class="btn sm" id="waLink" target="_blank" rel="noopener">WhatsApp</a><button class="btn sm" data-act="roomcopy">Copiar link</button><button class="btn sm warn" data-act="roomleave">Sair da sala</button></div>`+(NET.netErr?`<p class="sub" style="color:var(--ac2)">${NET.netErr}</p>`:''):'';
-  return share+`<div class="sub" style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:${NET.connected?'var(--gr)':'var(--ac2)'};display:inline-block"></span>${NET.connected?'Conectado':'Conectando…'} · ${os.length} amigo${os.length===1?'':'s'} online</div>
+  return share+grpHTML(os)+`<div class="sub" style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:${NET.connected?'var(--gr)':'var(--ac2)'};display:inline-block"></span>${NET.connected?'Conectado':'Conectando…'} · ${os.length} amigo${os.length===1?'':'s'} online</div>
     <div class="grid g3">${list}</div>`+rankHTML();
+}
+function grpHTML(os){
+  const row=(name,car,st,col)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--ln)"><div style="min-width:0"><b>${escapeHtml(name)}</b><div class="pl">${car}</div></div><b style="color:${col};white-space:nowrap">${st}</b></div>`;
+  const me=activeCar(),myCar=`${CAR[me.model].name} · PI ${perf(CAR[me.model],me.up).pi}`;
+  const head=`<h2 style="font-size:18px;margin:0 0 4px">🚦 Racha no trânsito em grupo</h2><p class="sub" style="margin:0 0 10px">Até 4 pilotos na mesma pista. Todo mundo clica em Pronto e o criador da corrida larga.</p>`;
+  let body='';
+  if(NET.grp){const ms=NET.grpMembers(),allRd=ms.length&&ms.every(p=>p.presence.gj&&p.presence.gj.rd);
+    body=row((S.settings.nick||'Você')+' (criador)',myCar,'PRONTO','var(--gr)')+ms.map(p=>{const rd=p.presence.gj&&p.presence.gj.rd,c=CAR[p.presence.car.m];return row(NET.nameOf(p),`${c?c.name:''} · PI ${p.presence.car.pi|0}`,rd?'PRONTO':'ESPERANDO',rd?'var(--gr)':'var(--ac2)')}).join('')+
+      `<p class="sub" style="margin:8px 0 0">${ms.length+1}/4 pilotos${ms.length?'':' · espere a galera entrar'}</p><div class="acts"><button class="btn warn" data-act="grpcancel">Cancelar</button><button class="btn pri" data-act="grpstart" ${allRd?'':'disabled'}>Começar</button></div>`}
+  else if(NET.gj){const h=NET.peer(NET.gj.h),g=h&&h.presence.grp;if(g){const ids=g.mem||[],hc=CAR[h.presence.car.m];
+    body=row(NET.nameOf(h)+' (criador)',`${hc?hc.name:''} · PI ${h.presence.car.pi|0}`,'PRONTO','var(--gr)')+ids.map(id=>{if(id===NET.myPeer)return row((S.settings.nick||'Você')+' (você)',myCar,NET.gj.rd?'PRONTO':'ESPERANDO',NET.gj.rd?'var(--gr)':'var(--ac2)');const p=NET.peer(id);if(!p)return'';const rd=p.presence.gj&&p.presence.gj.rd,c=CAR[p.presence.car.m];return row(NET.nameOf(p),`${c?c.name:''} · PI ${p.presence.car.pi|0}`,rd?'PRONTO':'ESPERANDO',rd?'var(--gr)':'var(--ac2)')}).join('')+
+      (ids.includes(NET.myPeer)?'':'<p class="sub" style="margin:8px 0 0">Entrando na corrida…</p>')+`<p class="sub" style="margin:8px 0 0">${ids.length+1}/4 pilotos · o criador larga quando todos estiverem prontos</p><div class="acts"><button class="btn" data-act="grpleave">Sair</button><button class="btn ${NET.gj.rd?'':'pri'}" data-act="grpready">${NET.gj.rd?'Não estou pronto':'Pronto'}</button></div>`}}
+  else{const open=os.filter(p=>p.presence.grp&&!p.presence.grp.go&&p.presence.st!=='race');
+    body=(open.length?open.map(p=>{const n=(p.presence.grp.mem||[]).length+1,c=CAR[p.presence.car.m];return`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--ln)"><div style="min-width:0"><b>Corrida de ${escapeHtml(NET.nameOf(p))}</b><div class="pl">${n}/4 pilotos · ${c?c.name:''}</div></div><button class="btn sm pri" data-act="grpjoin" data-v="${p.peer}" ${n>=4?'disabled':''}>${n>=4?'Cheia':'Entrar'}</button></div>`}).join(''):'')+
+      `<div class="acts" style="justify-content:flex-start"><button class="btn pri" data-act="grpnew">Criar corrida em grupo</button></div>`}
+  return`<div class="panel" style="margin-bottom:12px">${head}${body}</div>`;
 }
 function rankHTML(){
   const rows=NET.rank.slice().sort((a,b)=>(b.ow|0)-(a.ow|0)||(b.wins|0)-(a.wins|0)||((a.best||99)-(b.best||99)));
@@ -2612,8 +2657,8 @@ function openChallenge(peerId){
 }
 
 function netWaitHUD(ctx,W,H,n){ctx.fillStyle='rgba(8,10,13,.82)';const tw=Math.min(520,W-30);ctx.fillRect((W-tw)/2,H*.32,tw,92);ctx.textAlign='center';
-  ctx.fillStyle='#ffd23d';ctx.font='22px "Russo One","Arial Black",sans-serif';ctx.fillText('AGUARDANDO SEU AMIGO',W/2,H*.32+38);
-  ctx.fillStyle='#eef1f5';ctx.font='700 16px Rajdhani,Arial,sans-serif';ctx.fillText(n.oppName+' está carregando a pista…',W/2,H*.32+66)}
+  ctx.fillStyle='#ffd23d';ctx.font='22px "Russo One","Arial Black",sans-serif';ctx.fillText(n.group?'AGUARDANDO A GALERA':'AGUARDANDO SEU AMIGO',W/2,H*.32+38);
+  ctx.fillStyle='#eef1f5';ctx.font='700 16px Rajdhani,Arial,sans-serif';ctx.fillText(n.group?`${n.readyN||0} de ${n.peers.length} pilotos prontos na pista…`:n.oppName+' está carregando a pista…',W/2,H*.32+66)}
 if(/^#sala-/i.test(location.hash))TAB='online';
 {const mr=/[?&#]ref=([a-z0-9]{10,24})/i.exec(location.search+location.hash);if(mr){const r=mr[1].toLowerCase();if(FRESH&&r!==S.pid&&!S.refBy){S.refBy=r;S.refRep=0;save()}try{history.replaceState(null,'',location.pathname+location.hash.replace(/[#&]?ref=[a-z0-9]+/i,''))}catch(e){}}}
 setTimeout(()=>{REF.report();REF.check()},2500);setInterval(()=>{if(!Game.scene)REF.check()},180000);
