@@ -15,8 +15,9 @@ export default async function handler(req, res) {
   const val = codes[code];
   const vip = val === 'vip' || !!(val && typeof val === 'object' && val.vip);
   const pass = !!(val && typeof val === 'object' && val.pass);
+  const cars = val && typeof val === 'object' && Array.isArray(val.cars) ? val.cars.map(String).slice(0, 20) : [];
   const amount = val && typeof val === 'object' ? Number(val.money) || 0 : (val === 'vip' ? 0 : Number(val));
-  if (!code || (!vip && !pass && !amount)) return res.status(404).json({ error: 'Código inválido' });
+  if (!code || (!vip && !pass && !amount && !cars.length)) return res.status(404).json({ error: 'Código inválido' });
   const h = createHash('sha256').update('rbr:' + code).digest('hex').slice(0, 32);
   if (hasKV) {
     try {
@@ -28,7 +29,7 @@ export default async function handler(req, res) {
       const ok = await kv('SET', 'redeem:' + h, JSON.stringify({ pid, ts: Date.now() }), 'NX');
       if (ok !== 'OK') return res.status(409).json({ error: 'Código já usado' });
     } catch (e) { return res.status(503).json({ error: 'Servidor ocupado, tente de novo' }); }
-    return res.status(200).json({ ok: true, amount, vip, pass });
+    return res.status(200).json({ ok: true, amount, vip, pass, cars });
   }
   try {
     const { blobs } = await list({ prefix: `redeem/${h}`, limit: 1 });
@@ -39,5 +40,5 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(409).json({ error: 'Código já usado' });
   }
-  return res.status(200).json({ ok: true, amount, vip, pass });
+  return res.status(200).json({ ok: true, amount, vip, pass, cars });
 }
