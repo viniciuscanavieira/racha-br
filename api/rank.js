@@ -34,6 +34,10 @@ export default async function handler(req, res) {
     }
     if (req.method !== 'GET') return res.status(405).json({ error: 'método' });
     const { blobs } = await list({ prefix: 'rank/', limit: 500 });
+    if (req.query && req.query.debug) {
+      const t = blobs[0] ? await fetch(`${blobs[0].url}?v=${Date.now()}`, { cache: 'no-store' }).then(r => r.status).catch(e => 'err ' + e.message) : null;
+      return res.status(200).json({ blobs: blobs.length, firstStatus: t, firstPath: blobs[0] && blobs[0].pathname });
+    }
     const rows = (await Promise.all(blobs.map(b =>
       fetch(`${b.url}?v=${new Date(b.uploadedAt).getTime()}`, { cache: 'no-store' })
         .then(r => (r.ok ? r.json() : null)).catch(() => null)
@@ -41,6 +45,6 @@ export default async function handler(req, res) {
     rows.sort((a, b) => (b.ow - a.ow) || (b.wins - a.wins) || ((a.best || 99) - (b.best || 99)));
     return res.status(200).json({ rows: rows.slice(0, 100) });
   } catch (e) {
-    return res.status(500).json({ error: 'falha no ranking' });
+    return res.status(500).json({ error: 'falha no ranking', detail: req.query && req.query.debug ? String(e && e.message || e) : undefined });
   }
 }
