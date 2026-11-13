@@ -1519,9 +1519,9 @@ function carGeo(body,L){
   const tail=mergeGeos([-1,1].map(s=>new THREE.BoxGeometry(.34,.13,.05).translate(s*W*.35,X.tl,rear)));
   const bmp=B.pts.reduce((m,p)=>Math.min(m,p[1]),9);
   const fwp=B.pts[X.fw[1]],mu=fwp[0]*sx,mv=fwp[1];
-  const bumper=(z,dir)=>{const s=new THREE.Shape(),bw=W*.47,bd=.16,cr=.075;s.moveTo(-bw+cr,0);s.lineTo(bw-cr,0);s.quadraticCurveTo(bw,0,bw,cr);s.lineTo(bw,bd-.01);s.lineTo(-bw,bd-.01);s.lineTo(-bw,cr);s.quadraticCurveTo(-bw,0,-bw+cr,0);
-    const g=new THREE.ExtrudeGeometry(s,{depth:.17,bevelEnabled:true,bevelThickness:.015,bevelSize:.015,bevelSegments:2,curveSegments:6});g.rotateX(-Math.PI/2);if(dir>0)g.rotateY(Math.PI);return g.translate(0,bmp-.015,z+dir*.0)};
-  const trimL=[bumper(rear-.11,1),bumper(front+.11,-1),
+  const bumper=(z,dir)=>{const s=new THREE.Shape(),bw=W*.46,bd=.12,cr=.06;s.moveTo(-bw+cr,0);s.lineTo(bw-cr,0);s.quadraticCurveTo(bw,0,bw,cr);s.lineTo(bw,bd-.01);s.lineTo(-bw,bd-.01);s.lineTo(-bw,cr);s.quadraticCurveTo(-bw,0,-bw+cr,0);
+    const g=new THREE.ExtrudeGeometry(s,{depth:.14,bevelEnabled:true,bevelThickness:.015,bevelSize:.015,bevelSegments:2,curveSegments:6});g.rotateX(-Math.PI/2);if(dir>0)g.rotateY(Math.PI);return g.translate(0,bmp-.015,z+dir*.0)};
+  const trimL=[bumper(rear-.045,1),bumper(front+.045,-1),
     new THREE.BoxGeometry(W*.38,.12,.04).translate(0,X.hl,front-.01),...liners];
   for(const s of[-1,1]){trimL.push(new THREE.BoxGeometry(.06,.05,.12).translate(s*(W/2+.03),mv+.04,Z(mu)+.18),new THREE.BoxGeometry(.09,.11,.19).translate(s*(W/2+.1),mv+.07,Z(mu)+.2),
     new THREE.BoxGeometry(.03,.07,L*.42).translate(s*(W/2+.004),bmp+.14,Z(L*.5)))}
