@@ -4,8 +4,8 @@ import { hasKV, kv } from './_kv.js';
 // Loja paga via Pix (Mercado Pago). Precisa da variável MP_ACCESS_TOKEN na Vercel.
 // O preço vem SEMPRE daqui (servidor), nunca do jogo. Pode trocar via variável PAY_CATALOG (mesmo formato).
 const DEFAULT_CATALOG = {
-  vip:      { n: 'VIP', d: 'Libera os carros VIP pra comprar na concessionária', price: 9.90, g: { vip: true } },
-  passe:    { n: 'PASSE', d: 'Uno "Da Firma" 6000 e Monoposto F1 na garagem', price: 14.90, g: { pass: true } },
+  vip:      { n: 'VIP', d: 'Carros VIP, Stage 4, pneu drag radial, nitro especial, swap de motor e +25% de XP', price: 9.90, g: { vip: true } },
+  passe:    { n: 'PASSE', d: 'Trilha PASSE da temporada (dinheiro, nitro e carros especiais) + Uno "Da Firma" e F1', price: 14.90, g: { pass: true } },
   vippasse: { n: 'VIP + PASSE', d: 'Os dois juntos, com desconto', price: 19.90, g: { vip: true, pass: true } },
   din2:     { n: 'R$ 2 milhões', d: 'Dinheiro do jogo', price: 4.90, g: { money: 2000000 } },
   din6:     { n: 'R$ 6 milhões', d: 'Dinheiro do jogo', price: 9.90, g: { money: 6000000 } },

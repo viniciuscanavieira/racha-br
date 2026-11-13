@@ -226,6 +226,13 @@ a.btn{text-decoration:none;color:var(--tx)}
 .bt-note{color:#c9ced6;font:600 14px Rajdhani,Arial;margin:0;text-align:center}.bt-note.small{color:#7d8794;font-size:12px}
 .logbtns{display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0}.gbtn{min-height:44px;display:flex;justify-content:center;width:100%;max-width:300px}
 .fbb{background:#1877f2!important;color:#fff!important;border-color:#1877f2!important;width:100%;max-width:300px;border-radius:999px!important;font-weight:700}.fbb b{font:900 20px Arial;margin-right:6px}
+.bpgrid{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+.bplab{display:grid;grid-template-rows:24px 150px 150px;gap:8px;min-width:58px;position:sticky;left:0;background:var(--bg,#0b0d10);z-index:2}.bplab span{display:flex;align-items:center;font:800 13px Rajdhani,Arial;color:var(--mu);text-transform:uppercase}
+.bpcol{display:grid;grid-template-rows:24px 150px 150px;gap:8px;min-width:122px;scroll-snap-align:center}
+.bpn{text-align:center;font:800 16px Rajdhani,Arial;color:var(--mu);border-bottom:3px solid #252b33}.bpcol.on .bpn{color:var(--ac);border-color:var(--ac)}
+.bpc{border:1px solid var(--ln);border-radius:12px;background:var(--p2);padding:10px 8px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;gap:2px;opacity:.55}
+.bpc.on{opacity:1}.bpc.prem{border-color:#5c4b12;background:linear-gradient(180deg,#2a2410,var(--p2))}.bpc.got{opacity:.6}.bpc.empty{background:transparent;border-style:dashed;opacity:.3}
+.bpc b{font:800 15px Rajdhani,Arial}.bpc small{color:var(--mu);font-size:12px}.bpi{font-size:30px;line-height:1.1}.bpt{font:700 12px Rajdhani,Arial;color:var(--mu)}.bpt.ok{color:var(--gr,#5bd16b)}
 </style>
 </head>
 <body>
@@ -321,13 +328,23 @@ const PARTS={
   motor:{name:'Motor',desc:'Comando, cabeçote e injeção. Pro e Monstro = motor forjado (libera Stage 4)',vals:[1,1.1,1.22,1.36,1.5],base:[0,900,2200,4800,9500]},
   turbo:{name:'Turbo',desc:'Kit turbo / turbina maior: mais força e mais lag',vals:[1,1.15,1.32,1.5,1.75],base:[0,1400,3200,6500,12500]},
   cambio:{name:'Câmbio',desc:'Trocas mais rápidas. Nível Sport ganha 6ª marcha',vals:[.45,.36,.28,.2,.12],base:[0,700,1800,3800,7500]},
-  pneus:{name:'Pneus',desc:'Tração na largada e aderência nas curvas',vals:[0,.06,.12,.2,.3],base:[0,500,1300,2900,6000]},
+  pneus:{name:'Pneus',desc:'Tração na largada e aderência nas curvas',vals:[0,.06,.12,.2,.3],base:[0,500,1300,2900,6000],lv:['Original','Rua','Esportivo','Semi-slick','Drag radial'],
+    ld:['Pneu de fábrica, feito pra durar e rodar macio.','Radial de rua com composto mais macio: segura melhor na largada sem perder durabilidade.','Alta performance (UHP): ombro rígido e muita aderência no seco e nas curvas.','Semi-slick de track day: borracha pegajosa, quase sem sulco. Excelente no seco, sofre na chuva.','Drag radial de arrancada: parede flexível que deforma na largada e crava no asfalto. O máximo de tração.']},
   susp:{name:'Suspensão',desc:'Estabilidade nas curvas e libera rebaixamento',vals:[0,.1,.2,.3,.4],base:[0,600,1500,3200,6500]},
   peso:{name:'Alívio de peso',desc:'Bancos concha, vidros leves, peças em fibra',vals:[1,.96,.92,.88,.84],base:[0,500,1400,3000,6200]},
-  nitro:{name:'Nitro',desc:'Segundos de óxido nitroso por corrida',vals:[0,2,3,4,5.5],base:[0,1200,2600,5200,9800]},
+  nitro:{name:'Nitro',desc:'Óxido nitroso: segundos de uso por corrida e força do jato',vals:[0,2.5,3.5,4.5,6],np:[1,1.25,1.32,1.4,1.5],base:[0,1200,2600,5200,9800],lv:['Sem nitro','Kit seco','Kit molhado','Placa dupla','Nitro especial'],
+    ld:['Sem kit de nitro.','Kit seco de entrada: 2,5 s com +25% de potência.','Kit molhado (injeta combustível junto): 3,5 s com +32%.','Placa dupla: 4,5 s com +40%.','Nitro especial: garrafa maior e bicos de competição, 6 s com +50%. Forte, mas dentro do que um carro de verdade aguenta.']},
+  swap:{name:'Swap de motor',desc:'Troca o motor original por um maior. Exclusivo VIP',vals:[1,1.12,1.22,1.32,1.42],base:[0,3000,6000,11000,18000],lv:['Original','1.8 8v','2.0 16v','2.0 Turbo','3.0 6 cilindros'],
+    ld:['Motor de fábrica.','Swap pra um 1.8 8v: +12% de potência.','2.0 16 válvulas: +22%.','2.0 turbo de fábrica: +32%.','3.0 de 6 cilindros em linha: +42%.']},
   remap:{name:'Remap (mapa)',desc:'Reprogramação da central. Libera pops and bangs, 2-step, flat shift e anti-lag',vals:[1,1.08,1.18,1.3,1.45],base:[0,1200,2800,5600,11000],lv:['Original','Stage 1','Stage 2','Stage 3','Stage 4']},
 };
 const lvName=(k,l)=>(PARTS[k].lv||LV_NAMES)[l];
+// níveis exclusivos VIP na oficina (pay to win assumido, mas com números realistas)
+const VIP_LV={remap:[4],pneus:[4],nitro:[4],swap:[1,2,3,4]};
+const vipLocked=(k,l)=>!S.vip&&(VIP_LV[k]||[]).includes(l);
+// nitro especial liberado por 1h (recompensa do Passe)
+const nitroBoost=()=>(S.nitroUntil||0)>Date.now();
+const playerUp=car=>nitroBoost()&&(car.up.nitro||0)<4?{...car.up,nitro:4}:car.up;
 function remapMax(model,up){let m=4;if((up.motor||0)<3)m=3;if((up.turbo||0)<2)m=Math.min(m,2);if((up.motor||0)<1)m=Math.min(m,1);return m}
 function remapNeed(l){return['','','Stage 2 exige Motor Rua ou mais (admissão e escape)','Stage 3 exige Turbo Sport ou mais (turbina maior)','Stage 4 exige motor forjado (Motor Pro ou Monstro)'][l]||''}
 const LV_NAMES=['Original','Rua','Sport','Pro','Monstro'];
@@ -338,11 +355,11 @@ const DRIVE_F={FWD:.6,RWD:.7,AWD:.92};
 function computeSpec(model,up,o={}){
   const t=model.tune, B=BODIES[model.body];
   const rm=Math.min(up.remap||0,remapMax(model,up)),tb=model.turbo||up.turbo>0;
-  const pm=(1+(PARTS.motor.vals[up.motor]-1)*t)*(1+(PARTS.remap.vals[rm]-1)*(tb?1:.45)), tm=(1+(PARTS.turbo.vals[up.turbo]-1)*t)*(tb?1+rm*.03:1);
+  const pm=(1+(PARTS.motor.vals[up.motor]-1)*t)*(1+(PARTS.remap.vals[rm]-1)*(tb?1:.45))*PARTS.swap.vals[up.swap||0], tm=(1+(PARTS.turbo.vals[up.turbo]-1)*t)*(tb?1+rm*.03:1);
   const s={hp:model.hp*pm*(o.hpScale||1),tm,turboStock:model.turbo,remap:rm,
     mass:model.wt*PARTS.peso.vals[up.peso]+80,grip:model.grip+PARTS.pneus.vals[up.pneus],
     handling:model.handling+PARTS.susp.vals[up.susp],shiftTime:PARTS.cambio.vals[up.cambio],
-    gearsN:up.cambio>=2?6:5,nitro:PARTS.nitro.vals[up.nitro],
+    gearsN:up.cambio>=2?6:5,nitro:PARTS.nitro.vals[up.nitro],nitroP:PARTS.nitro.np[up.nitro]||1.4,
     spool:(model.turbo||up.turbo>0)?3.2-up.turbo*.45:99,driveF:DRIVE_F[model.drive],
     cda:B.cda,L:model.L,W:B.w};
   s.ratios=s.gearsN===6?R6:R5;if(rm>=3)s.shiftTime*=.65;
@@ -366,7 +383,7 @@ function physStep(spec,r,dt,c){
   const tf=(spec.turboStock?.72+.28*r.boost:1)*(1+(spec.tm-1)*r.boost);
   let P=spec.hp*745.7*.85*tf*powerCurve(Math.min(rf,1))*(c.throttle?1:0)*(c.powerMul||1);
   r.nitroOn=false;
-  if(c.nitro&&r.nitroLeft>0&&c.throttle){r.nitroLeft=Math.max(0,r.nitroLeft-dt);P*=1.4;r.nitroOn=true}
+  if(c.nitro&&r.nitroLeft>0&&c.throttle){r.nitroLeft=Math.max(0,r.nitroLeft-dt);P*=spec.nitroP||1.4;r.nitroOn=true}
   r.limiter=rf>=1; if(r.limiter)P=0;
   if(r.shiftT>0){r.shiftT-=dt;P*=.05}
   let F=P/Math.max(r.v,2.5);
@@ -403,7 +420,7 @@ function makeOpponentSpec(targetPI,excludeId){
   if(!cand.length)cand=[pool.reduce((a,b)=>base(a)<base(b)?a:b)];
   const model=pick(cand);
   const lv=clamp(Math.round((targetPI-base(model))/160),0,4);
-  const up={};for(const k in PARTS)up[k]=clamp(lv+Math.round(rnd(-1,1)),0,4);
+  const up={};for(const k in PARTS)up[k]=k==='swap'?0:clamp(lv+Math.round(rnd(-1,1)),0,4);
   let lo=.3,hi=4;
   for(let i=0;i<14;i++){const m=(lo+hi)/2;if(perf(model,up,{hpScale:m}).pi<targetPI)lo=m;else hi=m}
   const hpScale=(lo+hi)/2;
@@ -486,7 +503,7 @@ const MTPL=[
 /* ---------- 4. ESTADO / SAVE ---------- */
 const SAVE_KEY='rachabr_save_v2'; // v2 = contas zeradas em 13/11/2026
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-const UP0=()=>({motor:0,turbo:0,cambio:0,pneus:0,susp:0,peso:0,nitro:0,remap:0});
+const UP0=()=>({motor:0,turbo:0,cambio:0,pneus:0,susp:0,peso:0,nitro:0,remap:0,swap:0});
 const TUNE0=()=>({pops:true,twostep:true,als:false,flutter:false});
 const tuneOf=car=>{const m=car&&CAR[car.model],st=(m&&m.stockTune)||{},t={...TUNE0(),...st,...(car&&car.tune||{})},rm=car?Math.min(car.up.remap||0,remapMax(m,car.up)):0;return{rm,st,pops:t.pops&&(rm>=2||st.pops),twostep:t.twostep&&(rm>=1||st.twostep),flat:rm>=3,als:t.als&&rm>=4,flutter:t.flutter&&(rm>=2||st.flutter)}};
 const VIS0=c=>({color:c,wheel:0,wheelColor:'#c9ccd1',height:0,tint:0,stripe:0,stripeColor:'#111111',spoiler:0,neon:0,neonColor:'#3db8ff',hood:0,front:0,skirt:0,roof:0,lights:0,decal:0,exhaust:0,paredao:0,rim:0,tire:0});
@@ -556,6 +573,7 @@ const activeCar=()=>S.cars.find(c=>c.uid===S.active)||S.cars[0];
 /* ---------- 5. ECONOMIA / PROGRESSÃO ---------- */
 const xpNeed=l=>400+(l-1)*350;
 function addXP(n){
+  if(S.vip)n=Math.round(n*1.25);bpAdd(n);
   S.xp+=n;let ups=[];
   while(S.xp>=xpNeed(S.level)&&S.level<40){S.xp-=xpNeed(S.level);S.level++;const bonus=800*S.level;S.money+=bonus;ups.push([S.level,bonus])}
   if(ups.length&&S.refBy)REF.report();
@@ -1071,7 +1089,7 @@ function makeRival1(ev,car,tgtIn){const tgt=tgtIn,b=pick(BUILDS);
   const pool=CARS.filter(c=>c.id!==car.model),base=c=>perf(c,UP0()).pi,top=c=>perf(c,{motor:4,turbo:4,cambio:4,pneus:4,susp:4,peso:4,nitro:4}).pi;
   let cand=pool.filter(c=>base(c)<=tgt+120);if(!cand.length)cand=[pool.reduce((a,c)=>base(c)<base(a)?c:a)];
   const model=pick(cand),lv=clamp((tgt-base(model))/170,0,4),up={};
-  for(const k in PARTS)up[k]=clamp(Math.round(lv+(b.w[k]||0)+rnd(-.6,.6)),0,4);if(!model.turbo&&up.turbo<2&&b.n!=='Aspirado bravo'&&Math.random()<.4)up.turbo=2;
+  for(const k in PARTS)up[k]=k==='swap'?0:clamp(Math.round(lv+(b.w[k]||0)+rnd(-.6,.6)),0,4);if(!model.turbo&&up.turbo<2&&b.n!=='Aspirado bravo'&&Math.random()<.4)up.turbo=2;
   let lo=.3,hi=6;for(let i=0;i<16;i++){const m=(lo+hi)/2;if(perf(model,up,{hpScale:m}).pi<tgt)lo=m;else hi=m}const hpScale=(lo+hi)/2;
   const pi=perf(model,up,{hpScale}).pi,vis=randVis(model,lv);
   const spec=computeSpec(model,up,{hpScale});return{id:model.id,model,up,hpScale,spec,pi,vis,build:b.n,hp:Math.round(spec.hp/10)*10}}
@@ -1105,7 +1123,7 @@ function drawTree(ctx,x,y,sc,st){
   ctx.restore();return{w,h}}
 class DragRace{
   constructor(ev,car,net){
-    this.mode='drag';this.ev=ev;this.car=car;this.model=CAR[car.model];this.spec=perf(this.model,car.up).spec;
+    this.mode='drag';this.ev=ev;this.car=car;this.model=CAR[car.model];this.spec=perf(this.model,playerUp(car)).spec;
     this.p=newRunner(this.spec);this.p.rev=.15;this.p.launched=false;
     const op=(ev.rivals&&ev.rivals[0])||makeRival(ev,car);this.om=op.model;this.ospec=op.spec;this.ovis=op.vis;this.opi=op.pi;this.obuild=op.build;
     this.o=newRunner(this.ospec);this.o.launched=false;
@@ -1246,7 +1264,7 @@ class DragRace{
 /* --- 9b. RUA / RACHA (top-down) --- */
 class StreetRace{
   constructor(ev,car,bet,net){
-    this.mode=ev.mode;this.ev=ev;this.car=car;this.model=CAR[car.model];this.spec=perf(this.model,car.up).spec;this.bet=bet||0;
+    this.mode=ev.mode;this.ev=ev;this.car=car;this.model=CAR[car.model];this.spec=perf(this.model,playerUp(car)).spec;this.bet=bet||0;
     const racha=ev.mode==='racha';
     this.lanes=racha?4:3;this.lw=3.6;this.halfW=this.lanes*this.lw/2;this.D=ev.dist;this.env=racha?'hwy':'city';
     this.net=net||null;const seed=net?(net.seed%100000)/100:Math.random()*1000;this.seed=seed;
@@ -1990,7 +2008,7 @@ function trCar(){const body=pick(TR_BODIES),B=BODIES[body];return{body,L:B.L*(bo
 function tagTex(txt,col){return R3.ctex(256,64,(c,w,h)=>{c.clearRect(0,0,w,h);c.font='700 30px Rajdhani,Arial';const tw=Math.min(w-8,c.measureText(txt).width+28);c.fillStyle='rgba(8,10,13,.72)';c.beginPath();c.roundRect((w-tw)/2,10,tw,42,12);c.fill();c.strokeStyle=col;c.lineWidth=3;c.stroke();c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,w/2,32)},true)}
 class Roam{
   constructor(map,traffic,car){
-    this.mode='roam';this.map=map;this.trafficOn=!!traffic;this.car=car;this.model=CAR[car.model];this.spec=perf(this.model,car.up).spec;this.ev={mode:'roam',sky:ROAM_MAPS[map].sky};
+    this.mode='roam';this.map=map;this.trafficOn=!!traffic;this.car=car;this.model=CAR[car.model];this.spec=perf(this.model,playerUp(car)).spec;this.ev={mode:'roam',sky:ROAM_MAPS[map].sky};
     this.r=newRunner(this.spec);this.r.popMul=this.model.bigPops||1;this.tn=tuneOf(car);this.r.rpm=.15;this.back=0;this.steer=0;this.t=0;this.heat=0;this.done=false;this.obs=[];this.traffic=[];this.msgs=[];this.sendT=0;this.uiT=0;this.hitT=0;
     this.buildMap();this.v3=new Roam3D(this);this.ui=document.createElement('div');this.ui.id='roamUI';$('#race').appendChild(this.ui);this.uiSig='';this.panel=false;
     this.msg(ROAM_MAPS[map].n.toUpperCase(),'#c6ff3d');
@@ -2377,7 +2395,7 @@ const ICON={
  shifter:`<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="51" fill="#eef1f5" stroke="#8a929c" stroke-width="3"/><path d="M33 34v42M55 34v42M77 34v42M33 55h44" stroke="#c3c9d1" stroke-width="4" stroke-linecap="round"/><rect x="51" y="44" width="8" height="34" rx="4" fill="#5d6570"/><circle cx="55" cy="38" r="14" fill="#1a1d22"/><circle cx="51" cy="34" r="4" fill="#5d6570"/><text x="55" y="97" text-anchor="middle" font-family="Rajdhani,Arial" font-weight="700" font-size="13" fill="#1a1d22">MARCHA</text></svg>`,
 };
 function buildControls(mode){
-  const c=$('#ctl'),k=$('#keys'),car=activeCar(),hasN=perf(CAR[car.model],car.up).spec.nitro>0,man=!S.settings.autoShift;
+  const c=$('#ctl'),k=$('#keys'),car=activeCar(),hasN=perf(CAR[car.model],playerUp(car)).spec.nitro>0,man=!S.settings.autoShift;
   const B=(key,cls,icon,lab)=>`<button class="cbtn ${cls}" data-key="${key}" aria-label="${lab||key}">${ICON[icon]}${lab?`<span class="lb">${lab}</span>`:''}</button>`;
   if(mode==='drag'){
     c.innerHTML=`<div class="rcl">${B('gas','pedal gas','gas','ACELERA')}${hasN?`<div class="paddles">${B('nitro','nitrob','nitro')}</div>`:''}</div>
@@ -2473,7 +2491,7 @@ const AUTH={cfg:null,s:'',name:'',uid:'',t:0,busy:false,
 };
 const guestLocked=()=>AUTH.on&&!AUTH.s;
 const guestCanRace=ev=>!guestLocked()||(ev&&ev.id==='d0'&&S.level<2);
-const LOCK_TABS=['rodagem','online','loja','premium','patro'];
+const LOCK_TABS=['rodagem','online','loja','premium','passe','patro'];
 function loadScript(src,id){return new Promise((ok,no)=>{if(id&&document.getElementById(id))return ok();const e=document.createElement('script');e.src=src;e.async=true;if(id)e.id=id;e.onload=()=>ok();e.onerror=()=>no();document.head.appendChild(e)})}
 async function gisReady(){if(!AUTH.cfg||!AUTH.cfg.google)return false;if(window.google&&google.accounts&&google.accounts.id)return true;try{await loadScript('https://accounts.google.com/gsi/client','gsi');return true}catch(e){return false}}
 let GIS_INIT=false;
@@ -2506,17 +2524,40 @@ async function bootRun(){const t0=performance.now();
   const a=$('#btact');if(a){a.innerHTML=guestLocked()?`<p class="bt-note">Entre pra jogar tudo e salvar seu progresso</p>${loginBtnsHTML()}<button class="btn bt-guest" data-act="bootgo">Jogar como convidado</button><p class="bt-note small">Convidado: arrancada solo até o nível 2, com 3 carros da prévia</p>`:`<button class="btn pri bt-go" data-act="bootgo">ACELERAR ▸</button>${AUTH.s?`<p class="bt-note">Bem-vindo de volta, ${escapeHtml(AUTH.name)}</p>`:''}`;a.classList.add('on');if(guestLocked())mountLoginBtns(a)}
 }
 function afterBoot(){if(!NET.started){NET.started=1;NET.init()}if(!S.gift80&&!PEND_CODE&&!guestLocked()&&!/^#sala-/i.test(location.hash))setTimeout(giftModal,500)}
-const TABS=[['eventos','Eventos'],['rodagem','Rodagem'],['online','Online'],['garagem','Garagem'],['oficina','Oficina'],['visual','Visual'],['loja','Concessionária'],['premium','💎 Loja'],['patro','Patrocínios'],['conta','Conta']];
+// ===== Passe de temporada (trilha grátis + trilha PASSE) =====
+const BP_SEASON=1,BP_TIERS=25,BP_STEP=500;
+const BP_SOON={10:'Carro especial #1',20:'Carro especial #2',25:'Carro especial #3'};
+function bpReward(track,t){if(track==='f'){if(t%5===0)return{nitro:1};if(t%2===1)return{money:2000+t*400};return null}
+  if(BP_SOON[t])return{soon:BP_SOON[t]};if([3,8,13,18,23].includes(t))return{nitro:1};return{money:5000+t*1000}}
+function bpState(){if(!S.bp||S.bp.season!==BP_SEASON)S.bp={season:BP_SEASON,pts:0,f:[],p:[]};return S.bp}
+function bpAdd(n){if(S.guest)return;const b=bpState(),before=Math.floor(b.pts/BP_STEP);b.pts+=Math.max(0,Math.round(n));const after=Math.min(BP_TIERS,Math.floor(b.pts/BP_STEP));if(after>before&&before<BP_TIERS)setTimeout(()=>toast(`Passe: nível ${after} liberado! Resgate na aba Passe`),1200)}
+const bpTier=()=>Math.min(BP_TIERS,Math.floor(bpState().pts/BP_STEP));
+const bpPending=()=>{const b=bpState(),t=bpTier();let n=0;for(let i=1;i<=t;i++){const f=bpReward('f',i);if(f&&!b.f.includes(i))n++;const p=bpReward('p',i);if(S.pass&&p&&!p.soon&&!b.p.includes(i))n++}return n};
+function bpCarSVG(){return`<svg viewBox="0 0 120 50" style="width:100%;height:46px"><path d="M8 36 Q10 26 24 24 L40 14 Q48 10 64 10 L80 11 Q90 13 98 22 L110 25 Q116 27 116 34 L116 38 L8 38 Z" fill="#2a3038" stroke="#4a5360"/><circle cx="32" cy="38" r="8" fill="#15181c" stroke="#4a5360"/><circle cx="94" cy="38" r="8" fill="#15181c" stroke="#4a5360"/><text x="62" y="31" text-anchor="middle" font-size="16" font-weight="900" fill="#c6ff3d" font-family="Rajdhani,Arial">?</text></svg>`}
+function bpCell(track,t){const b=bpState(),r=bpReward(track,t),reached=bpTier()>=t,got=b[track].includes(t),prem=track==='p';
+  if(!r)return`<div class="bpc empty"></div>`;
+  const body=r.soon?`${bpCarSVG()}<b>${r.soon}</b><small>em breve</small>`:r.nitro?`<div class="bpi">⚡</div><b>Nitro especial</b><small>1 hora</small>`:`<div class="bpi">💵</div><b>${fmt(r.money)}</b><small>dinheiro</small>`;
+  const st=r.soon?'<span class="bpt">Em breve</span>':got?'<span class="bpt ok">✓ Resgatado</span>':!reached?`<span class="bpt">Nível ${t}</span>`:prem&&!S.pass?`<button class="btn sm" data-act="passhelp">🔒 PASSE</button>`:`<button class="btn sm pri" data-act="bpclaim" data-v="${track}${t}">Resgatar</button>`;
+  return`<div class="bpc ${prem?'prem':''} ${reached?'on':''} ${got?'got':''}">${body}${st}</div>`}
+function vPasse(m){const b=bpState(),t=bpTier(),into=t>=BP_TIERS?BP_STEP:b.pts-t*BP_STEP;
+  m.innerHTML=`<h2>Passe · Temporada ${BP_SEASON}</h2><p class="sub">Toda corrida enche o passe (a mesma reputação que você ganha). Trilha grátis pra todo mundo; a trilha dourada é de quem tem o PASSE.${S.vip?' Como VIP, você ganha 25% a mais.':''}</p>
+  <div class="panel" style="margin:10px 0 14px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px">Nível ${t}<span style="color:var(--mu);font-size:15px"> / ${BP_TIERS}</span></b><div style="display:flex;gap:8px;align-items:center">${bpPending()?`<button class="btn sm pri" data-act="bpall">Resgatar tudo (${bpPending()})</button>`:''}${S.pass?'<span class="passbadge">PASSE</span>':`<button class="btn sm" data-act="passhelp">Liberar trilha PASSE</button>`}</div></div>
+   <div class="xpbar" style="height:10px;margin-top:8px;width:100%;max-width:none"><div style="width:${into/BP_STEP*100}%"></div></div><small style="color:var(--mu)">${t>=BP_TIERS?'Passe completo!':`${into} / ${BP_STEP} pontos pro nível ${t+1}`}</small>
+   ${nitroBoost()?`<div class="tneed" style="color:#3db8ff">⚡ Nitro especial ativo: mais ${Math.ceil((S.nitroUntil-Date.now())/6e4)} min</div>`:''}</div>
+  <div class="bpgrid"><div class="bplab"><span>Nível</span><span>Grátis</span><span style="color:#f2c200">PASSE</span></div>${Array.from({length:BP_TIERS},(_,i)=>i+1).map(i=>`<div class="bpcol ${t>=i?'on':''}"><div class="bpn">${i}</div>${bpCell('f',i)}${bpCell('p',i)}</div>`).join('')}</div>
+  <p class="sub" style="margin-top:12px">Os carros especiais chegam em atualizações da temporada. ⚡ Nitro especial: por 1 hora seu carro usa o nitro de nível máximo (6 s, +50%), mesmo sem ter comprado a peça.</p>`;
+  const g=m.querySelector('.bpgrid');const cur=g&&g.children[Math.max(1,t)];if(cur)setTimeout(()=>{g.scrollLeft=Math.max(0,cur.offsetLeft-g.clientWidth/2)},0)}
+const TABS=[['eventos','Eventos'],['rodagem','Rodagem'],['online','Online'],['garagem','Garagem'],['oficina','Oficina'],['visual','Visual'],['loja','Concessionária'],['premium','💎 Loja'],['passe','Passe'],['patro','Patrocínios'],['conta','Conta']];
 function clsBadge(pi){const c=classOf(pi);return`<span class="cls" style="background:${c.color}">${c.name}<span style="opacity:.75">${pi}</span></span>`}
 function render(){
   genMissions();
   const need=xpNeed(S.level);
   $('#hstats').innerHTML=`<div class="money">${fmt(S.money)}</div><div class="lvl"><span class="badge">NV ${S.level}</span><div class="xpbar" title="${S.xp}/${need} XP"><div style="width:${S.xp/need*100}%"></div></div></div><button class="icbtn" data-act="snd" title="Som">${S.settings.sound?'🔊':'🔇'}</button>`;
   const claim=S.missions.some(m=>m.p>=m.n)||S.daily.last!==today();
-  $('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-v="${k}">${guestLocked()&&LOCK_TABS.includes(k)?'🔒 ':''}${n}${(k==='patro'&&claim)||(k==='loja'&&!S.gift80)?'<span class="dot"></span>':''}</button>`).join('');
+  $('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-v="${k}">${guestLocked()&&LOCK_TABS.includes(k)?'🔒 ':''}${n}${(k==='patro'&&claim)||(k==='loja'&&!S.gift80)||(k==='passe'&&!guestLocked()&&bpPending())?'<span class="dot"></span>':''}</button>`).join('');
   const m=$('#main');
   if(guestLocked()&&LOCK_TABS.includes(TAB))TAB='eventos';
-  ({rodagem:vRodagem,online:vOnline,eventos:vEventos,garagem:vGaragem,oficina:vOficina,visual:vVisual,loja:vLoja,premium:vPremium,patro:vPatro,conta:vConta})[TAB](m);
+  ({rodagem:vRodagem,online:vOnline,eventos:vEventos,garagem:vGaragem,oficina:vOficina,visual:vVisual,loja:vLoja,premium:vPremium,passe:vPasse,patro:vPatro,conta:vConta})[TAB](m);
   if(guestLocked()&&m.querySelector('.gbtn'))mountLoginBtns(m);
   requestAnimationFrame(drawCanvases);
   try{refreshOnline()}catch(e){}
@@ -2557,15 +2598,15 @@ function maintHTML(car){
 function vOficina(m){
   const car=activeCar(),model=CAR[car.model],pf=perf(model,car.up);
   const rmx=remapMax(model,car.up),tn=tuneOf(car);
-  const rows=Object.entries(PARTS).map(([k,P])=>{const lv=car.up[k],ow=car.own.up[k],nx=ow+1;const cost=nx<=4?partCost(model,k,nx):0;const lockR=k==='remap'&&nx<=4&&nx>rmx;
+  const rows=Object.entries(PARTS).map(([k,P])=>{const lv=car.up[k],ow=car.own.up[k],nx=ow+1;const cost=nx<=4?partCost(model,k,nx):0;const lockR=k==='remap'&&nx<=4&&nx>rmx,lockV=nx<=4&&vipLocked(k,nx);
     let prev='';if(nx<=4){const u={...car.up,[k]:nx};const np=perf(model,u).pi;prev=`Próxima: PI ${pf.pi} → <b style="color:var(--ac)">${np}</b>`}
     const turboNote=k==='turbo'&&!model.turbo&&lv===0?' (instala kit turbo)':'';
     const N=l=>lvName(k,l);
-    const chips=[0,1,2,3,4].map(l=>l===lv?`<button class="opt on" disabled>${N(l)}<small>instalado</small></button>`:l<=ow?`<button class="opt own" data-act="pinst" data-k="${k}" data-v="${l}">${N(l)}<small>seu · trocar</small></button>`:l===nx?(lockR?`<button class="opt lock" disabled title="${remapNeed(l)}">${N(l)} · ${fmt(cost)}<small>🔒</small></button>`:`<button class="btn sm ${S.money>=cost?'pri':''}" ${S.money<cost?'disabled':''} data-act="part" data-v="${k}">${N(l)} · ${fmt(cost)}</button>`):`<button class="opt lock" disabled>${N(l)}</button>`).join('');
+    const chips=[0,1,2,3,4].map(l=>l===lv?`<button class="opt on" disabled>${N(l)}<small>instalado</small></button>`:l<=ow?`<button class="opt own" data-act="pinst" data-k="${k}" data-v="${l}">${N(l)}<small>seu · trocar</small></button>`:l===nx?(lockV?`<button class="opt lock" data-act="viphelp" title="Exclusivo VIP">${N(l)}<small>👑 só VIP</small></button>`:lockR?`<button class="opt lock" disabled title="${remapNeed(l)}">${N(l)} · ${fmt(cost)}<small>🔒</small></button>`:`<button class="btn sm ${S.money>=cost?'pri':''}" ${S.money<cost?'disabled':''} data-act="part" data-v="${k}">${N(l)} · ${fmt(cost)}</button>`):`<button class="opt lock" disabled>${N(l)}</button>`).join('');
     const extra=k!=='remap'?'':`${lockR?`<div class="tneed">🔒 ${remapNeed(nx)}</div>`:''}${lv>rmx?`<div class="tneed">Mapa limitado a ${N(rmx)}: ${remapNeed(lv)}</div>`:''}
       <div class="tunebox">${[['pops','Pops and bangs','estalos e fogo ao tirar o pé',2],['twostep','2-step (launch control)','segura o giro na largada da arrancada e enche o turbo',1],['flutter','Válvula aberta (flutter)','tutututu no lugar do pshhh da prioridade',2],['als','Anti-lag','turbo sempre cheio, explosões no escape',4]].map(([key,nm,ds,mn])=>{const t={...TUNE0(),...tn.st,...(car.tune||{})},ok=tn.rm>=mn||tn.st[key];const on=t[key]&&ok;return`<button class="tsw ${on?'on':''} ${!ok?'lock':''}" data-act="tune" data-v="${key}" ${!ok?'disabled':''}><i></i><span><b>${nm}</b><small>${!ok?'Precisa '+N(mn):tn.st[key]&&tn.rm<mn?'de fábrica neste carro':ds}</small></span></button>`}).join('')}
       <div class="tsw ${tn.flat?'on':'lock'}" style="cursor:default"><i></i><span><b>Flat shift</b><small>${tn.flat?'ativo: troca sem tirar o pé, 35% mais rápida':'automático a partir do Stage 3'}</small></span></div></div>`;
-    return`<div class="part" style="flex-wrap:wrap"><div style="flex:1;min-width:200px"><h4>${P.name} <span style="color:var(--mu);font-size:14px">· ${N(lv)}</span></h4><p>${P.desc}${turboNote}</p><div class="pips">${[1,2,3,4].map(i=>`<i class="${i<=lv?'f':i<=ow?'o':''}"></i>`).join('')}</div>${prev?`<div style="font-size:13px;color:var(--mu);margin-top:4px">${prev}</div>`:''}</div>
+    return`<div class="part" style="flex-wrap:wrap"><div style="flex:1;min-width:200px"><h4>${P.name} <span style="color:var(--mu);font-size:14px">· ${N(lv)}</span></h4><p>${P.desc}${turboNote}</p>${P.ld?`<p style="margin:4px 0 0;color:#c9ced6;font-size:14px"><b>${N(lv)}:</b> ${P.ld[lv]}${nx<=4?`<br><span style="color:var(--mu)"><b>${N(nx)}${(VIP_LV[k]||[]).includes(nx)?' 👑':''}:</b> ${P.ld[nx]}</span>`:''}</p>`:''}${k==='nitro'&&nitroBoost()?`<div class="tneed" style="color:#3db8ff">⚡ Nitro especial ativo por mais ${Math.ceil((S.nitroUntil-Date.now())/6e4)} min (Passe)</div>`:''}<div class="pips">${[1,2,3,4].map(i=>`<i class="${i<=lv?'f':i<=ow?'o':''}"></i>`).join('')}</div>${prev?`<div style="font-size:13px;color:var(--mu);margin-top:4px">${prev}</div>`:''}</div>
     <div class="lvchips" style="max-width:360px">${chips}</div>${extra?`<div style="flex-basis:100%">${extra}</div>`:''}</div>`}).join('');
   m.innerHTML=`<h2>Oficina de performance</h2><p class="sub">Peça comprada fica sua pra sempre neste carro: troque entre os níveis que já tem sem pagar de novo.</p><p class="sub">${model.name} · potencial de preparação ${model.tune>=1.3?'altíssimo':model.tune>=1.15?'alto':'normal'} · peças fortes desgastam mais</p>${maintHTML(car)}
   <div class="grid g2"><div>${rows}</div><div class="panel" style="align-self:start"><canvas class="stage" style="height:180px" data-car="${model.id}" data-uid="${car.uid}"></canvas><div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px"><h2 style="font-size:18px">${model.name}</h2>${clsBadge(pf.pi)}</div>${statBars(car)}</div></div>`;
@@ -2700,12 +2741,15 @@ function vConta(m){
 }
 const ACT={
   tab:d=>{if(guestLocked()&&LOCK_TABS.includes(d.v)){loginModal();return}TAB=d.v;render();scrollTo(0,0)},
-  login:()=>loginModal(),bootgo:()=>{bootClose();afterBoot()},fblogin:()=>fbLogin(),logout:()=>modal(`<h2>Sair da conta?</h2><p class="sub">Seu progresso continua salvo na nuvem. Pra jogar de novo é só entrar.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn warn" data-act="logoutok">Sair</button></div>`),logoutok:()=>{closeModal();AUTH.logout()},mode:d=>{MODE=d.v;render()},
+  login:()=>loginModal(),
+  bpall:()=>{const t=bpTier(),b=bpState();let money=0,nit=0;for(let i=1;i<=t;i++)for(const tr of['f','p']){if(tr==='p'&&!S.pass)continue;const r=bpReward(tr,i);if(!r||r.soon||b[tr].includes(i))continue;b[tr].push(i);if(r.money)money+=r.money;if(r.nitro)nit++}S.money+=money;if(nit)S.nitroUntil=Math.max(Date.now(),S.nitroUntil||0)+nit*36e5;Snd.cash();save();toast(`Resgatado: ${fmt(money)}${nit?` + ${nit}h de nitro especial`:''}`);render()},
+  bpclaim:d=>{const tr=d.v[0],t=+d.v.slice(1),b=bpState();if(bpTier()<t||b[tr].includes(t))return;if(tr==='p'&&!S.pass){ACT.passhelp();return}const r=bpReward(tr,t);if(!r||r.soon)return;
+    b[tr].push(t);if(r.money){S.money+=r.money;Snd.cash();toast(fmt(r.money)+' na conta')}if(r.nitro){S.nitroUntil=Math.max(Date.now(),S.nitroUntil||0)+36e5;Snd.cash();toast('⚡ Nitro especial liberado por 1 hora')}save();render()},bootgo:()=>{bootClose();afterBoot()},fblogin:()=>fbLogin(),logout:()=>modal(`<h2>Sair da conta?</h2><p class="sub">Seu progresso continua salvo na nuvem. Pra jogar de novo é só entrar.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn warn" data-act="logoutok">Sair</button></div>`),logoutok:()=>{closeModal();AUTH.logout()},mode:d=>{MODE=d.v;render()},
   sel:d=>{S.active=+d.v;save();render()},
   snd:()=>{S.settings.sound=!S.settings.sound;save();render()},
   set:d=>{S.settings[d.v]=!S.settings[d.v];save();render()},
   tune:d=>{const car=activeCar();car.tune={...TUNE0(),...(CAR[car.model].stockTune||{}),...(car.tune||{})};car.tune[d.v]=!car.tune[d.v];save();render()},
-  part:d=>{const car=activeCar(),model=CAR[car.model],nx=car.own.up[d.v]+1;if(nx>4)return;if(d.v==='remap'&&nx>remapMax(model,car.up)){toast(remapNeed(nx));return}const c=partCost(model,d.v,nx);if(S.money<c)return;S.money-=c;car.spent+=c;car.own.up[d.v]=nx;car.up[d.v]=nx;track('part');Snd.noise(.15,.1,900);save();toast(`${PARTS[d.v].name} ${lvName(d.v,nx)} instalado`);render()},
+  part:d=>{const car=activeCar(),model=CAR[car.model],nx=(car.own.up[d.v]||0)+1;if(nx>4)return;if(vipLocked(d.v,nx)){ACT.viphelp();return}if(d.v==='remap'&&nx>remapMax(model,car.up)){toast(remapNeed(nx));return}const c=partCost(model,d.v,nx);if(S.money<c)return;S.money-=c;car.spent+=c;car.own.up[d.v]=nx;car.up[d.v]=nx;track('part');Snd.noise(.15,.1,900);save();toast(`${PARTS[d.v].name} ${lvName(d.v,nx)} instalado`);render()},
   pinst:d=>{const car=activeCar(),model=CAR[car.model],l=+d.v;if(l>car.own.up[d.k])return;car.up[d.k]=l;
     if(d.k==='susp'){const mh=Math.max(l,(model.preset&&model.preset.height)||0);if(car.vis.height>mh){car.vis.height=mh;toast('Rebaixamento ajustado para a suspensão')}if(VD&&VD.uid===car.uid&&VD.vis.height>mh)VD.vis.height=mh}
     Snd.noise(.1,.08,700);save();toast(`${PARTS[d.k].name} ${lvName(d.k,l)} instalado · sem custo`);render()},
