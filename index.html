@@ -2456,9 +2456,11 @@ document.addEventListener('click',e=>{
 let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{if(!Game.scene)drawCanvases()},120)});
 document.fonts&&document.fonts.ready.then(()=>{if(!Game.scene)drawCanvases()});
 /* ---------- 11b. SALA P2P (WebRTC via PeerJS) — mesma interface do "room" ---------- */
+let ICE_EXTRA=[],ICE_P=null;
+function loadIce(){if(ICE_P)return ICE_P;ICE_P=Promise.race([fetch('/api/ice').then(r=>r.ok?r.json():[]).then(l=>{if(Array.isArray(l))ICE_EXTRA=l.filter(x=>x&&x.urls)}).catch(()=>{}),new Promise(r=>setTimeout(r,3500))]);return ICE_P}
 function makeP2PRoom(code){
-  const HOST_ID='rachabr-vc-'+code;const opts=Object.assign({debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}},window.PEER_OPTS||{});
-  const me=S.pid,mine={};let peer=null,isHost=false,conns=new Map(),hostConn=null,table={},alive=true,openT=0,fireT=0,connected=false;
+  const HOST_ID='rachabr-vc-'+code;const opts=Object.assign({debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},...ICE_EXTRA]}},window.PEER_OPTS||{});
+  const me=S.pid,mine={};let fails=0,peer=null,isHost=false,conns=new Map(),hostConn=null,table={},alive=true,openT=0,fireT=0,connected=false;
   const cbs=[],ccbs=[];
   const snap=()=>{const a=[{peer:me,by:me,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:JSON.parse(JSON.stringify(mine)),updatedAt:Date.now()}];
     for(const id in table)if(id!==me)a.push({peer:id,by:id,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:table[id].p,updatedAt:table[id].t});return a};
@@ -2484,12 +2486,13 @@ function makeP2PRoom(code){
   function client(){
     if(!alive)return;peer=new Peer(opts);
     peer.on('open',()=>{hostConn=peer.connect(HOST_ID,{reliable:true});clearTimeout(openT);
-      openT=setTimeout(()=>{if(!hostConn||!hostConn.open){NET.netErr='Não conectou à sala. A rede pode estar bloqueando conexão direta (tente no Wi-Fi). Tentando de novo…';refreshOnline();restart()}},12000);
-      hostConn.on('open',()=>{clearTimeout(openT);NET.netErr=null;setConn(true);try{hostConn.send(mineMsg())}catch(e){}});
+      openT=setTimeout(()=>{if(!hostConn||!hostConn.open){fails++;NET.netErr=ICE_EXTRA.length?'Conexão lenta com a sala. Tentando de novo…':'Não conectou à sala: a sua rede e a do outro jogador não deixam conexão direta (comum no 4G). Tentando de novo…';refreshOnline();retryClient()}},ICE_EXTRA.length?16000:12000);
+      hostConn.on('open',()=>{clearTimeout(openT);fails=0;NET.netErr=null;setConn(true);try{hostConn.send(mineMsg())}catch(e){}});
       hostConn.on('data',m=>onData(null,m));
       hostConn.on('close',()=>{setConn(false);table={};fire();setTimeout(restart,400+Math.random()*1600)})});
     peer.on('error',e=>{if(e.type==='peer-unavailable'){setTimeout(restart,500+Math.random()*1500)}else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){setConn(false);NET.netErr='Sem conexão com o servidor de salas. Tentando de novo…';refreshOnline();setTimeout(restart,4000)}});
   }
+  function retryClient(){clearTimeout(openT);try{peer&&peer.destroy()}catch(e){}if(alive)setTimeout(()=>{if(alive)client()},800+Math.random()*1200)}
   function restart(){clearTimeout(openT);try{peer&&peer.destroy()}catch(e){}if(alive)start()}
   addEventListener('beforeunload',()=>{try{peer&&peer.destroy()}catch(e){}});
   start();
@@ -2518,7 +2521,7 @@ function cleanVis(v,model){
 function myStats(){const st=S.stats;return{wins:st.wins|0,races:st.races|0,best:st.best402||null,ow:st.onW|0,ol:st.onL|0}}
 const NET={room:null,user:null,db:null,myId:null,isOwner:false,myPeer:null,peers:[],names:{},rank:[],pres:{},sent:0,shown:{},myInv:null,err:null,connected:false,lastRank:{},
   async init(){
-    if(window.Peer&&!(window.claude&&typeof claude.use==='function')){this.mode='p2p';this.myId=S.pid;
+    if(window.Peer&&!(window.claude&&typeof claude.use==='function')){this.mode='p2p';this.myId=S.pid;await loadIce();
       const h=(location.hash.match(/^#sala-([a-z0-9]{4,12})$/i)||[])[1];const code=(h||S.settings.room||'').toLowerCase();if(code&&code!==PUB_ROOM)this.joinRoom(code);else this.joinPublic();
       this.loadRank();setInterval(()=>{if(TAB==='online'&&!Game.scene)this.loadRank()},30000);refreshOnline();return}
     if(!window.claude||typeof claude.use!=='function'){refreshOnline();return}
