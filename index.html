@@ -2438,6 +2438,7 @@ const ACT={
   roomcreate:()=>{const c=Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join('');NET.joinRoom(c);toast('Sala criada! Mande o link para a galera.')},
   roomjoin:()=>{const v=($('#roomCode').value||'').trim();NET.joinRoom(v)},
   roomleave:()=>NET.leaveRoom(),
+  netretry:()=>{const c=NET.roomCode,pub=c===PUB_ROOM;if(!c)return;NET.room&&NET.room.leave&&NET.room.leave();NET.room=null;NET.roomCode='';if(pub)NET.joinPublic();else NET.joinRoom(c);toast('Reconectando…')},
   roomcopy:()=>{const l=NET.roomLink();try{navigator.clipboard.writeText(l).then(()=>toast('Link copiado'),()=>toast(l))}catch(e){toast(l)}},
   roomshare:()=>{const l=NET.roomLink();if(navigator.share)navigator.share({title:'Racha BR',text:'Bora um racha? Entra na minha sala:',url:l}).catch(()=>{});else{try{navigator.clipboard.writeText(l);toast('Link copiado')}catch(e){toast(l)}}},
   chmode:(d,b)=>{CHMODE=d.v;b.parentNode.querySelectorAll('.mode').forEach(x=>x.classList.toggle('on',x===b))},
@@ -2456,7 +2457,7 @@ document.addEventListener('click',e=>{
 let rT;addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{if(!Game.scene)drawCanvases()},120)});
 document.fonts&&document.fonts.ready.then(()=>{if(!Game.scene)drawCanvases()});
 /* ---------- 11b. SALA P2P (WebRTC via PeerJS) — mesma interface do "room" ---------- */
-let ICE_EXTRA=[],ICE_P=null;
+let ICE_EXTRA=[],ICE_P=null;const NETDIAG={role:'—',ice:'—',err:'',via:'',fails:0,since:0,swaps:0};
 function loadIce(){if(ICE_P)return ICE_P;ICE_P=Promise.race([fetch('/api/ice').then(r=>r.ok?r.json():[]).then(l=>{if(Array.isArray(l))ICE_EXTRA=l.filter(x=>x&&x.urls)}).catch(()=>{}),new Promise(r=>setTimeout(r,3500))]);return ICE_P}
 function makeP2PRoom(code){
   const HOST_ID='rachabr-vc-'+code;const opts=Object.assign({debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},...ICE_EXTRA]}},window.PEER_OPTS||{});
@@ -2475,22 +2476,24 @@ function makeP2PRoom(code){
   function start(){
     if(!alive)return;isHost=false;hostConn=null;conns.clear();table={};fire();
     peer=new Peer(HOST_ID,opts);
-    peer.on('open',()=>{isHost=true;setConn(true);fire()});
+    peer.on('open',()=>{isHost=true;NETDIAG.role='anfitrião';NETDIAG.swaps++;NETDIAG.since=Date.now();setConn(true);fire()});
     peer.on('connection',c=>{
       c.on('open',()=>{conns.set(c,1);try{c.send({t:'all',list:[{id:me,p:mine},...Object.entries(table).map(([id,v])=>({id,p:v.p}))]})}catch(e){}});
       c.on('data',m=>onData(c,m));
       const gone=()=>{if(!conns.has(c))return;conns.delete(c);if(c._pid){delete table[c._pid];relay({t:'bye',id:c._pid});fire()}};c.on('close',gone);c.on('error',gone)});
-    peer.on('error',e=>{if(e.type==='unavailable-id'){try{peer.destroy()}catch(_){}client()}else if(isHost&&(e.type==='network'||e.type==='server-error'||e.type==='socket-error')){setConn(false);setTimeout(restart,3000)}});
+    peer.on('error',e=>{NETDIAG.err=e.type+' (anfitrião)';if(e.type==='unavailable-id'){try{peer.destroy()}catch(_){}client()}else if(isHost&&(e.type==='network'||e.type==='server-error'||e.type==='socket-error')){setConn(false);setTimeout(restart,3000)}});
     peer.on('disconnected',()=>{if(alive&&peer&&!peer.destroyed)try{peer.reconnect()}catch(_){}});
   }
   function client(){
-    if(!alive)return;peer=new Peer(opts);
+    if(!alive)return;peer=new Peer(opts);NETDIAG.role='visitante (entrando)';
     peer.on('open',()=>{hostConn=peer.connect(HOST_ID,{reliable:true});clearTimeout(openT);
-      openT=setTimeout(()=>{if(!hostConn||!hostConn.open){fails++;NET.netErr=ICE_EXTRA.length?'Conexão lenta com a sala. Tentando de novo…':'Não conectou à sala: a sua rede e a do outro jogador não deixam conexão direta (comum no 4G). Tentando de novo…';refreshOnline();retryClient()}},ICE_EXTRA.length?16000:12000);
-      hostConn.on('open',()=>{clearTimeout(openT);fails=0;NET.netErr=null;setConn(true);try{hostConn.send(mineMsg())}catch(e){}});
+      const hc=hostConn;const watchIce=()=>{const pc=hc.peerConnection;if(!pc){setTimeout(watchIce,300);return}NETDIAG.ice=pc.iceConnectionState;pc.addEventListener('iceconnectionstatechange',()=>{NETDIAG.ice=pc.iceConnectionState;refreshOnline()});
+        pc.addEventListener('icecandidate',e=>{if(e.candidate&&/ typ relay/.test(e.candidate.candidate))NETDIAG.relayCand=true})};watchIce();
+      openT=setTimeout(()=>{if(!hostConn||!hostConn.open){fails++;NETDIAG.fails++;NETDIAG.err='tempo esgotado · ICE '+NETDIAG.ice;NET.netErr=ICE_EXTRA.length?'Conexão lenta com a sala. Tentando de novo…':'Não conectou à sala: a sua rede e a do outro jogador não deixam conexão direta (comum no 4G). Tentando de novo…';refreshOnline();retryClient()}},ICE_EXTRA.length?16000:12000);
+      hostConn.on('open',()=>{clearTimeout(openT);fails=0;NET.netErr=null;NETDIAG.role='visitante';NETDIAG.since=Date.now();setTimeout(async()=>{try{const st=await hostConn.peerConnection.getStats();st.forEach(r=>{if(r.type==='candidate-pair'&&r.state==='succeeded'&&r.nominated){const lc=st.get(r.localCandidateId);NETDIAG.via=lc&&lc.candidateType==='relay'?'servidor TURN':'direto'}});refreshOnline()}catch(e){}},1500);setConn(true);try{hostConn.send(mineMsg())}catch(e){}});
       hostConn.on('data',m=>onData(null,m));
       hostConn.on('close',()=>{setConn(false);table={};fire();setTimeout(restart,400+Math.random()*1600)})});
-    peer.on('error',e=>{if(e.type==='peer-unavailable'){setTimeout(restart,500+Math.random()*1500)}else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){setConn(false);NET.netErr='Sem conexão com o servidor de salas. Tentando de novo…';refreshOnline();setTimeout(restart,4000)}});
+    peer.on('error',e=>{NETDIAG.err=e.type+' (visitante)';if(e.type==='peer-unavailable'){setTimeout(restart,500+Math.random()*1500)}else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){setConn(false);NET.netErr='Sem conexão com o servidor de salas. Tentando de novo…';refreshOnline();setTimeout(restart,4000)}});
   }
   function retryClient(){clearTimeout(openT);try{peer&&peer.destroy()}catch(e){}if(alive)setTimeout(()=>{if(alive)client()},800+Math.random()*1200)}
   function restart(){clearTimeout(openT);try{peer&&peer.destroy()}catch(e){}if(alive)start()}
@@ -2674,6 +2677,7 @@ function netLiveHTML(){
      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn sm" data-act="roomcreate">Criar sala privada</button><input id="roomCode" maxlength="12" placeholder="código da sala" style="width:150px;background:var(--p2);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:7px 10px;font:inherit;font-weight:700;text-transform:lowercase"><button class="btn sm" data-act="roomjoin">Entrar</button></div></div>`+(NET.netErr?`<p class="sub" style="color:var(--ac2)">${NET.netErr}</p>`:''):NET.mode==='p2p'?`<div class="panel" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><div style="flex:1;min-width:200px"><div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--mu);font-weight:700">Sala ${NET.roomCode}</div><div style="font-weight:700;word-break:break-all" id="roomLink"></div></div>
      <button class="btn sm pri" data-act="roomshare">Convidar</button><a class="btn sm" id="waLink" target="_blank" rel="noopener">WhatsApp</a><button class="btn sm" data-act="roomcopy">Copiar link</button><button class="btn sm warn" data-act="roomleave">Sair da sala</button><span class="sub" style="width:100%;margin:0">Sala privada · ao sair você volta para a lista de jogadores online.</span></div>`+(NET.netErr?`<p class="sub" style="color:var(--ac2)">${NET.netErr}</p>`:''):'';
   return share+`<div class="sub" style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:${NET.connected?'var(--gr)':'var(--ac2)'};display:inline-block"></span>${NET.connected?'Conectado':'Conectando…'} · ${os.length} ${pub?'jogador':'amigo'}${os.length===1?'':'es'.slice(pub?0:1)} online</div>
+    <details class="sub" style="margin:4px 0 10px"><summary style="cursor:pointer">Diagnóstico da conexão</summary><div style="font-family:monospace;font-size:12px;line-height:1.6;margin-top:6px">papel: ${NETDIAG.role} · TURN carregado: ${ICE_EXTRA.length?'sim ('+ICE_EXTRA.length+')':'NÃO'} · candidato relay: ${NETDIAG.relayCand?'sim':'não'}<br>ICE: ${NETDIAG.ice} · via: ${NETDIAG.via||'—'} · falhas: ${NETDIAG.fails} · trocas de anfitrião: ${NETDIAG.swaps}<br>último erro: ${NETDIAG.err||'—'} · sala: ${NET.roomCode||'—'}</div><button class="btn sm" data-act="netretry" style="margin-top:6px">Reconectar</button></details>
     <div class="grid g3" style="margin-bottom:14px">${list}</div>`+grpHTML(os)+rankHTML();
 }
 function grpHTML(os){
