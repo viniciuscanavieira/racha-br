@@ -397,6 +397,25 @@ const VIS={
   paredao:[{n:'Sem',p:0},{n:'Paredão rebocado',p:15000}],
   paintP:300,customP:700,wheelColorP:250,
 };
+// ===== Aro e perfil do pneu (com checagem de caixa de roda) =====
+const RIMS=[0,13,14,15,16,17,18,19,20,21,22],TIRES=[0,75,70,65,60,55,50,45,40,35,30];
+VIS.rim=RIMS.map((a,i)=>({n:i?'Aro '+a:'Original',p:i?400+(a-13)*250:0}));
+VIS.tire=TIRES.map((a,i)=>({n:i?'Perfil '+a:'Original',p:i?450:0}));
+function stockTire(m){let a=m.aro;if(!a){const y=m.year||2000;a=y<1992?13:y<2000?14:y<2010?15:y<2018?16:17;if(/Esportivo|Turbo|Importado|Modificado|Drift|VIP/.test(m.cat)&&y>=1998)a++;if(m.price>200000)a++;a=clamp(a,13,19)}
+  const W=a<=13?165:a<=14?175:a<=15?185:a<=16?205:a<=17?215:235,P=a<=13?70:a<=14?65:a<=15?60:a<=16?55:a<=17?45:40;return{a,W,P}}
+const noRims=m=>!!(m&&(m.id==='f1'||m.openWheel));
+const WFIT0={ok:true,s:1,rf:null,d:0};
+function wheelFit(m,v){if(!m||!v||(!v.rim&&!v.tire))return WFIT0;if(noRims(m))return{ok:false,why:'Esse carro não aceita troca de aro/pneu',s:1,rf:null,d:0};
+  const st=stockTire(m),a=v.rim?RIMS[v.rim]:st.a,P=v.tire?TIRES[v.tire]:st.P;if(!a||!P)return WFIT0;
+  const D0=st.a*25.4+2*st.W*st.P/100,D=a*25.4+2*st.W*P/100,s=D/D0,rf=clamp(a*25.4/D,.5,.88);
+  const r0=m.glb?((m.glbCfg&&m.glbCfg.r)||.31):(BODIES[m.body]?BODIES[m.body].r:.31),d=r0*(s-1),low=(v.height||0)*.032,gap=m.glb?.05:.07;
+  const o={s,rf,d,a,P,ok:true};
+  if(d>gap+.015)return{...o,ok:false,why:`Aro ${a} perfil ${P} é maior que a caixa de roda`};
+  if(d>gap+.07-low)return{...o,ok:false,why:`Aro ${a} perfil ${P} bate na lataria com esse rebaixamento`};
+  if(d<-.06)return{...o,ok:false,why:`Aro ${a} perfil ${P} fica pequeno demais: o carro arrasta`};
+  if(a*25.4/D>.86)return{...o,ok:false,why:`Perfil ${P} é baixo demais pro aro ${a}`};
+  return o}
+const wfit=(m,v)=>{const f=wheelFit(m,v);return f.ok?f:WFIT0};
 const PALETTE=['#e8e0c8','#f5f5f5','#15181d','#8a8f98','#d7263d','#ff7a00','#f2c200','#2bb673','#1e5bd8','#00c2c7','#7b2ff7','#ff4fa3','#5a3a22','#0f3d2e'];
 const WHEEL_COLORS=['#c9ccd1','#1a1a1c','#d4af37','#b87333','#ffffff','#d7263d','#3db8ff'];
 const EVENTS=[
@@ -437,8 +456,8 @@ const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 const UP0=()=>({motor:0,turbo:0,cambio:0,pneus:0,susp:0,peso:0,nitro:0,remap:0});
 const TUNE0=()=>({pops:true,twostep:true,als:false,flutter:false});
 const tuneOf=car=>{const m=car&&CAR[car.model],st=(m&&m.stockTune)||{},t={...TUNE0(),...st,...(car&&car.tune||{})},rm=car?Math.min(car.up.remap||0,remapMax(m,car.up)):0;return{rm,st,pops:t.pops&&(rm>=2||st.pops),twostep:t.twostep&&(rm>=1||st.twostep),flat:rm>=3,als:t.als&&rm>=4,flutter:t.flutter&&(rm>=2||st.flutter)}};
-const VIS0=c=>({color:c,wheel:0,wheelColor:'#c9ccd1',height:0,tint:0,stripe:0,stripeColor:'#111111',spoiler:0,neon:0,neonColor:'#3db8ff',hood:0,front:0,skirt:0,roof:0,lights:0,decal:0,exhaust:0,paredao:0});
-const VCATS=['wheel','height','tint','stripe','spoiler','neon','hood','front','skirt','roof','lights','decal','exhaust','paredao'];
+const VIS0=c=>({color:c,wheel:0,wheelColor:'#c9ccd1',height:0,tint:0,stripe:0,stripeColor:'#111111',spoiler:0,neon:0,neonColor:'#3db8ff',hood:0,front:0,skirt:0,roof:0,lights:0,decal:0,exhaust:0,paredao:0,rim:0,tire:0});
+const VCATS=['wheel','rim','tire','height','tint','stripe','spoiler','neon','hood','front','skirt','roof','lights','decal','exhaust','paredao'];
 const PAR_URL='/models/paredao.glb',PAR_LEN=3.4,SOM_R=80;
 const SOM={id:null,t0:0,mode:null,peer:null,pl:null,ready:null,
   vol(){return S.settings.somVol==null?80:S.settings.somVol},
@@ -483,6 +502,7 @@ function migrate(d){
     const v0=VIS0(CAR[c.model].color);c.vis={...v0,...c.vis};
     for(const k of['color','wheelColor','stripeColor','neonColor'])if(!hx.test(c.vis[k]))c.vis[k]=v0[k];
     for(const k of VCATS)c.vis[k]=clamp(Math.floor(+c.vis[k]||0),0,vMax(k));
+    try{if(!wheelFit(CAR[c.model],c.vis).ok){c.vis.rim=0;c.vis.tire=0}}catch(e){}
     if(!c.own||typeof c.own!=='object'){c.own={up:{...c.up},vis:{}};markOwned(c,c.vis)}c.own.up={...UP0(),...c.own.up};for(const k in c.own.up)c.own.up[k]=clamp(Math.max(Math.floor(+c.own.up[k]||0),c.up[k]),0,4);c.own.vis=c.own.vis&&typeof c.own.vis==='object'?c.own.vis:{};
     if(c.ghost&&!(Array.isArray(c.ghost.trace)&&+c.ghost.t>5))c.ghost=null;
     c.paid=+c.paid||CAR[c.model].price;c.spent=+c.spent||0;c.uid=Math.floor(+c.uid)||0});
@@ -512,12 +532,12 @@ function styleScore(car){
   const v=car.vis,m=CAR[car.model];let s=0;
   if(v.wheel>0)s+=(v.wheel===5||v.wheel===10)?20:15; s+=v.height*8; if(v.tint>0)s+=6+v.tint*2;
   s+=[0,6,8][v.hood||0]+[0,6,8][v.front||0]+(v.skirt?6:0)+[0,4,4][v.roof||0]+[0,5,6][v.lights||0]+[0,6,6,10][v.decal||0]+[0,4,6][v.exhaust||0];
-  if(v.stripe>0)s+=10; s+=[0,8,12][v.spoiler]; if(v.neon)s+=12; if(v.color!==m.color)s+=6;
+  if(v.stripe>0)s+=10; if(v.rim)s+=5; if(v.tire)s+=3; s+=[0,8,12][v.spoiler]; if(v.neon)s+=12; if(v.color!==m.color)s+=6;
   return clamp(s,0,100);
 }
 function visLabel(k,v){if(k==='color')return'Pintura';if(k==='wheelColor')return'Cor da roda';if(k==='stripeColor')return'Cor da faixa';if(k==='neonColor')return'Cor do neon';
   if(k==='height')return'Rebaixamento: '+VIS.height[v];if(k==='tint')return'Insulfilm: '+VIS.tint[v];
-  const t={wheel:'Rodas',stripe:'Faixa',spoiler:'Aerofólio',neon:'Neon',hood:'Capô',front:'Dianteira',skirt:'Saia',roof:'Teto',lights:'Faróis',decal:'Adesivo',exhaust:'Escape',paredao:'Paredão'}[k];return t+': '+VIS[k][v].n}
+  const t={wheel:'Rodas',stripe:'Faixa',spoiler:'Aerofólio',neon:'Neon',hood:'Capô',front:'Dianteira',skirt:'Saia',roof:'Teto',lights:'Faróis',decal:'Adesivo',exhaust:'Escape',paredao:'Paredão',rim:'Aro',tire:'Pneu'}[k];return t+': '+VIS[k][v].n}
 function visKey(k,v){return k+':'+v}
 function visPrice(car,k,v){const m=CAR[car.model],pre=m.preset||{};
   if(k==='stripeColor'||k==='neonColor')return 0;
@@ -550,10 +570,10 @@ function shade(hex,amt){
   const f=v=>Math.round(amt<0?v*(1+amt):v+(255-v)*amt);return`rgb(${f(r)},${f(g)},${f(b)})`;
 }
 function rgba(hex,a){let c=String(hex).replace('#','');if(c.length===3)c=c.split('').map(x=>x+x).join('');return`rgba(${parseInt(c.substr(0,2),16)},${parseInt(c.substr(2,2),16)},${parseInt(c.substr(4,2),16)},${a})`}
-function drawWheel(ctx,cx,cy,R,style,color,ang){
+function drawWheel(ctx,cx,cy,R,style,color,ang,rf){
   ctx.fillStyle='#0c0d0f';ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.fill();
   ctx.strokeStyle='#24262b';ctx.lineWidth=Math.max(1,R*.07);ctx.beginPath();ctx.arc(cx,cy,R*.9,0,7);ctx.stroke();
-  const rr=R*wheelFrac(style);
+  const rr=R*(rf||wheelFrac(style));
   if(style===0){
     ctx.fillStyle='#8d939b';ctx.beginPath();ctx.arc(cx,cy,rr,0,7);ctx.fill();
     ctx.fillStyle='#5b6068';for(let i=0;i<6;i++){const a=ang+i*Math.PI/3;ctx.beginPath();ctx.arc(cx+Math.cos(a)*rr*.62,cy+Math.sin(a)*rr*.62,rr*.16,0,7);ctx.fill()}
@@ -593,7 +613,7 @@ function drawFlameSide(ctx,x,y,s,st){ctx.save();ctx.globalCompositeOperation='li
   ctx.fillStyle='rgba(255,170,60,.35)';ctx.beginPath();ctx.arc(x,y,s*.35*st,0,7);ctx.fill();ctx.restore()}
 /* --- Sprites 2D a partir dos modelos 3D --- */
 const SPR={r:null,cache:new Map(),busy:0,redraw:0};
-function sprKey(m,v){return m.id+'|'+['color','tint','height','spoiler','hood','front','skirt','roof','lights','decal','exhaust','stripe','stripeColor','neon','wheel','wheelColor'].map(k=>v[k]).join(',')}
+function sprKey(m,v){return m.id+'|'+['color','tint','height','spoiler','hood','front','skirt','roof','lights','decal','exhaust','stripe','stripeColor','neon','wheel','wheelColor','rim','tire'].map(k=>v[k]).join(',')}
 function carSprite(model,vis){if(!model.glb||!window.THREE)return null;if(!glbReady(model.glb)){if(!GLB[model.glb]){const p=loadGLB(model.glb);p&&p.then(()=>sprRedraw())}return null}
   const key=sprKey(model,vis);if(SPR.cache.has(key))return SPR.cache.get(key);if(SPR.busy>=1)return(sprRedraw(),null);SPR.busy++;
   let out=null;try{out=buildSprite(model,vis)}catch(e){console.warn('spr',e)}SPR.cache.set(key,out);if(SPR.cache.size>48)SPR.cache.delete(SPR.cache.keys().next().value);return out}
@@ -654,7 +674,7 @@ function drawAccSide(ctx,model,vis,x,gy,s,P,yb,arches,B,sx,L,bot,o){
 function drawCarSide(ctx,model,vis,x,gy,s,wa=0,o={}){
   if(hasPar(model,vis))drawTrailerSide(ctx,x,gy,s);
   if(model.glb){const sp=carSprite(model,vis);if(sp){drawSpriteCar(ctx,model,vis,sp,x,gy,s,wa,o);return}}
-  const B=BODIES[model.body],sx=model.L/B.L,low=(vis.height||0)*.032,L=model.L*s;
+  const WF=wfit(model,vis),B=BODIES[model.body],sx=model.L/B.L,low=(vis.height||0)*.032-WF.d,L=model.L*s;
   const P=(px,py)=>[x+px*sx*s,gy-(py-low)*s];
   const body=()=>{ctx.beginPath();B.pts.forEach((p,i)=>{const q=P(p[0],p[1]);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.closePath()};
   const arches=B.wheels.map(w=>({x:x+w*sx*s,y:gy-B.r*s+low*s,r:(B.r+.06)*s}));
@@ -663,7 +683,7 @@ function drawCarSide(ctx,model,vis,x,gy,s,wa=0,o={}){
   if(vis.neon){ctx.save();ctx.shadowColor=vis.neonColor;ctx.shadowBlur=s*.9;ctx.fillStyle=rgba(vis.neonColor,.65);ctx.beginPath();ctx.ellipse(x+L/2,gy-s*.04,L*.42,s*.07,0,0,7);ctx.fill();ctx.restore()}
   // wells
   ctx.save();body();ctx.clip();ctx.fillStyle='#060708';arches.forEach(a=>{ctx.beginPath();ctx.arc(a.x,a.y,a.r,0,7);ctx.fill()});ctx.restore();
-  B.wheels.forEach(w=>drawWheel(ctx,x+w*sx*s,gy-B.r*s,B.r*s,vis.wheel||0,vis.wheelColor||'#c9ccd1',wa));
+  B.wheels.forEach(w=>drawWheel(ctx,x+w*sx*s,gy-B.r*WF.s*s,B.r*WF.s*s,vis.wheel||0,vis.wheelColor||'#c9ccd1',wa,WF.rf));
   // body minus arches
   ctx.save();body();ctx.clip();ctx.beginPath();ctx.rect(-1e4,-1e4,2e4,2e4);arches.forEach(a=>{ctx.moveTo(a.x+a.r,a.y);ctx.arc(a.x,a.y,a.r,0,Math.PI*2,true)});ctx.clip('evenodd');
   const topY=gy-(Math.max(...B.pts.map(p=>p[1]))-low)*s,botY=gy-(.3-low)*s;
@@ -1153,7 +1173,7 @@ class DragRace{
     for(const q of this.parts.a){ctx.fillStyle=`rgba(200,200,205,${.35*q.life})`;ctx.beginPath();ctx.arc(X(q.x),yP-q.y*s,q.r*s*.6,0,7);ctx.fill()}
     // carros
     const dc=(m,vis,r,y,pl)=>{const x=X(r.x-m.L);if(x>W+50||x<-m.L*s-50)return;
-      const ey=(m.glbCfg&&m.glbCfg.ex&&m.glbCfg.ex[0]?m.glbCfg.ex[0][1]:.27)-(vis.height||0)*.032;
+      const ey=(m.glbCfg&&m.glbCfg.ex&&m.glbCfg.ex[0]?m.glbCfg.ex[0][1]:.27)-(vis.height||0)*.032+wfit(m,vis).d;
       if(r.nitroOn){ctx.save();ctx.globalCompositeOperation='lighter';ctx.fillStyle='rgba(80,170,255,.85)';ctx.beginPath();ctx.moveTo(x,y-s*(ey-.03));ctx.lineTo(x-s*rnd(.8,1.6),y-s*(ey+.03));ctx.lineTo(x,y-s*(ey+.09));ctx.fill();ctx.restore()}
       drawCarSide(ctx,m,vis,x,y,s,r.x/(BODIES[m.body].r),{lights:true});
       if(r.popT>0)drawFlameSide(ctx,x-s*.05,y-s*ey,s,r.popS||1);
@@ -1561,8 +1581,8 @@ function addAcc3D(bodyG,vis,D,o){
 // ===== Rodas 3D (servem em qualquer carro: procedural e modelos importados) =====
 const WGEO={};
 const wheelFrac=st=>st===5?.78:st===10?.8:st>=12?.74:.64;
-function wheelGeos(st,r,w){const key=st+'|'+r.toFixed(3)+'|'+w.toFixed(3);if(WGEO[key])return WGEO[key];
-  const rimR=r*.71,X=v=>v.rotateZ(-Math.PI/2),G={};
+function wheelGeos(st,r,w,rf){rf=rf||.71;const key=st+'|'+r.toFixed(3)+'|'+w.toFixed(3)+'|'+rf.toFixed(3);if(WGEO[key])return WGEO[key];
+  const rimR=r*rf,X=v=>v.rotateZ(-Math.PI/2),G={};
   // pneu com lateral arredondada (perfil girado no eixo X)
   const hw=w/2,sw=r-rimR,pts=[[rimR*.99,-hw*.86],[rimR+sw*.12,-hw],[rimR+sw*.7,-hw*1.0],[r-sw*.1,-hw*.92],[r,-hw*.7],[r,hw*.7],[r-sw*.1,hw*.92],[rimR+sw*.7,hw],[rimR+sw*.12,hw],[rimR*.99,hw*.86]];
   G.tire=X(new THREE.LatheGeometry(pts.map(p=>new THREE.Vector2(p[0],p[1])),40));
@@ -1596,7 +1616,7 @@ function wheelGeos(st,r,w){const key=st+'|'+r.toFixed(3)+'|'+w.toFixed(3);if(WGE
   return WGEO[key]=G}
 function wheelTex(st,col){return mat('wtx'+st+col,()=>{const f=wheelFrac(st),t=R3.ctex(256,256,c=>{c.clearRect(0,0,256,256);drawWheel(c,128,128,127,st,col,.4)});t.repeat.set(f,f);t.offset.set((1-f)/2,(1-f)/2);
   return new THREE.MeshStandardMaterial({map:t,transparent:true,metalness:.55,roughness:.3,alphaTest:.05})})}
-function makeWheel(st,r,w,col,side,opt={}){const G=wheelGeos(st,r,w),g=new THREE.Group(),inner=new THREE.Group();g.add(inner);if(side<0)inner.rotation.y=Math.PI;
+function makeWheel(st,r,w,col,side,opt={}){const G=wheelGeos(st,r,w,opt.rf),g=new THREE.Group(),inner=new THREE.Group();g.add(inner);if(side<0)inner.rotation.y=Math.PI;
   const rimM=mat('wr'+col,()=>new THREE.MeshStandardMaterial({color:lin(col),metalness:.75,roughness:.26})),
     chrome=mat('wchrome',()=>new THREE.MeshStandardMaterial({color:lin('#e6e9ed'),metalness:1,roughness:.12})),
     tireM=mat('wtire',()=>new THREE.MeshStandardMaterial({color:lin('#151619'),roughness:.88,metalness:0})),
@@ -1610,12 +1630,12 @@ function makeWheel(st,r,w,col,side,opt={}){const G=wheelGeos(st,r,w),g=new THREE
   let cal=null;if(opt.caliper!==false){cal=new THREE.Mesh(G.cal,mat('wcal'+(opt.calCol||'#c8202e'),()=>new THREE.MeshStandardMaterial({color:lin(opt.calCol||'#c8202e'),roughness:.4,metalness:.3})));if(side<0)cal.rotation.y=Math.PI}
   return{g,cal}}
 // troca as rodas de um modelo importado (grupos wheel_FL/FR/RL/RR) pela roda escolhida
-function swapGlbWheels(inner,wheels,vis){const st=vis.wheel|0;if(!st)return;const col=vis.wheelColor||'#d9dde2';
+function swapGlbWheels(inner,wheels,vis,F){F=F||WFIT0;const st=vis.wheel|0;if(!st&&!F.rf)return;const col=vis.wheelColor||'#d9dde2';
   for(const wg of wheels){if(wg.userData.swapped)continue;const bb=new THREE.Box3();wg.updateMatrixWorld(true);
     const inv=new THREE.Matrix4().copy(wg.matrixWorld).invert();wg.traverse(o=>{if(o.isMesh){const b=new THREE.Box3().setFromBufferAttribute(o.geometry.attributes.position);b.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv,o.matrixWorld));bb.union(b)}});
     const sz=bb.getSize(new THREE.Vector3()),r=Math.max(.24,Math.min(.42,Math.max(sz.y,sz.z)/2)),w=clamp(sz.x,r*.58,r*.9),cx=(bb.min.x+bb.max.x)/2,side=Math.sign(wg.position.x)||1;
     wg.traverse(o=>{if(o.isMesh){o.visible=false;o.userData.hideW=true}});
-    const W=makeWheel(st,r,w,col,side);W.g.position.x=cx;wg.add(W.g);wg.userData.swapped=true;
+    const W=makeWheel(st,r*F.s,w,st?col:'#8d939b',side,{rf:F.rf||.71});W.g.position.x=cx;wg.add(W.g);wg.userData.swapped=true;
     if(W.cal){W.cal.position.copy(wg.position);W.cal.position.x+=cx;W.cal.name='wheel_cal';wg.parent.add(W.cal)}}}
 
 function buildCar(body,L,vis,o={}){
@@ -1631,8 +1651,8 @@ function buildCar(body,L,vis,o={}){
   bodyG.add(new THREE.Mesh(G.head,vis.lights===1?mat('xenon',()=>new THREE.MeshStandardMaterial({color:lin('#dff0ff'),emissive:lin('#bfe3ff'),emissiveIntensity:2})):headM));
   bodyG.add(new THREE.Mesh(G.trim,mat('trim',()=>new THREE.MeshStandardMaterial({color:lin('#1b1d21'),roughness:.6}))));if(G.bezel)bodyG.add(new THREE.Mesh(G.bezel,mat('bezel',()=>new THREE.MeshStandardMaterial({color:lin('#0c0d0f'),roughness:.3,metalness:.6}))));
   bodyG.add(new THREE.Mesh(G.plate,mat('plate',()=>new THREE.MeshStandardMaterial({color:lin('#e8ecef'),emissive:lin('#ffffff'),emissiveIntensity:.15,roughness:.5}))));bodyG.add(new THREE.Mesh(G.tail,tailM));
-  const ws=vis.wheel||0,wheels=[];if(o.cheap){grp.add(new THREE.Mesh(G.tires,tireM));grp.add(new THREE.Mesh(G.rims,rimM));grp.add(new THREE.Mesh(G.wheelFaces,mat('wf'+ws+rimC,()=>new THREE.MeshStandardMaterial({map:R3.ctex(128,128,c=>drawWheel(c,64,64,63,ws,rimC,.4)),transparent:true,metalness:.35,roughness:.35}))))}else{const B=G.B,r=B.r,wx=W0/2-.14;for(const u of B.wheels)for(const s of[-1,1]){const piv=new THREE.Group();piv.position.set(s*wx,r,G.Z(u*G.sx));piv.name='wheel_'+(u<B.L/2?'R':'F')+(s>0?'L':'R');
-    const Wm=makeWheel(ws,r,.24,ws?rimC:'#8d939b',s,{caliper:!o.cheap});piv.add(Wm.g);grp.add(piv);wheels.push(piv);if(Wm.cal){Wm.cal.position.copy(piv.position);grp.add(Wm.cal)}}}
+  const WF=o.cheap?WFIT0:wfit(o.model,vis);const ws=vis.wheel||0,wheels=[];if(o.cheap){grp.add(new THREE.Mesh(G.tires,tireM));grp.add(new THREE.Mesh(G.rims,rimM));grp.add(new THREE.Mesh(G.wheelFaces,mat('wf'+ws+rimC,()=>new THREE.MeshStandardMaterial({map:R3.ctex(128,128,c=>drawWheel(c,64,64,63,ws,rimC,.4)),transparent:true,metalness:.35,roughness:.35}))))}else{const B=G.B,r=B.r,wx=W0/2-.14;for(const u of B.wheels)for(const s of[-1,1]){const piv=new THREE.Group();piv.position.set(s*wx,r*WF.s,G.Z(u*G.sx));piv.name='wheel_'+(u<B.L/2?'R':'F')+(s>0?'L':'R');
+    const Wm=makeWheel(ws,r*WF.s,.24,ws?rimC:'#8d939b',s,{caliper:!o.cheap,rf:WF.rf||.71});piv.add(Wm.g);grp.add(piv);wheels.push(piv);if(Wm.cal){Wm.cal.position.copy(piv.position);grp.add(Wm.cal)}}}
   bodyG.add(new THREE.Mesh(G.pipes,mat('chrome',()=>new THREE.MeshStandardMaterial({color:lin('#c9ccd1'),metalness:.6,roughness:.25}))));
   const bk=o.brand||'V',bm=mat('badge'+bk,()=>new THREE.MeshStandardMaterial({map:badgeTex(bk),metalness:.4,roughness:.3,transparent:true}));
   bodyG.add(new THREE.Mesh(G.badgeF,bm));bodyG.add(new THREE.Mesh(G.badgeR,bm));
@@ -1660,7 +1680,7 @@ function buildCar(body,L,vis,o={}){
   const popG=new THREE.Group();for(const sx of[-1,1]){const c=new THREE.Mesh(new THREE.ConeGeometry(.11,.7,8).rotateX(Math.PI/2).translate(0,0,.35),popM);c.position.set(sx*W*.27,G.bmp+.05,G.rear);popG.add(c);
     const core=new THREE.Mesh(new THREE.ConeGeometry(.06,.4,8).rotateX(Math.PI/2).translate(0,0,.2),mat('popcore',()=>new THREE.MeshBasicMaterial({color:lin('#fff1c0'),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})));core.position.copy(c.position);popG.add(core)}
   popG.visible=false;grp.add(popG);
-  bodyG.position.y=-(vis.height||0)*.032;
+  bodyG.position.y=-(vis.height||0)*.032+WF.d;if(WF.d){glow.position.y+=WF.d;popG.position.y+=WF.d;if(flame)flame.position.y+=WF.d}
   grp.userData={paint,tailM,glow,flame,bodyG,popG,wheels};
   return grp;
 }
@@ -1719,7 +1739,7 @@ function buildGlbCar(src,vis,o,cfg){cfg=cfg||GOL_CFG;
     if(m.name==='exhaust'){if(vis.exhaust===2)m.visible=false;else if(vis.exhaust===1)m.scale.set(1,1.6,1.6)}});
   addAcc3D(bodyG,vis,{W,L,front,rear,bmp,hood:cfg.hood,roofY:cfg.roofY,roofZ:cfg.roofZ,wheelZ:cfg.wheelZ,r:cfg.r},o);
   if(cfg.spacer)wheels.forEach(w=>{w.position.x+=Math.sign(w.position.x)*cfg.spacer});
-  swapGlbWheels(inner,wheels,vis);
+  const WF=wfit(o.model,vis);swapGlbWheels(inner,wheels,vis,WF);const dW=(cfg.r||.31)*(WF.s-1);
   const root=inner.children.length===1?inner.children[0]:inner;root.children.forEach(c=>{if(!/^wheel_/.test(c.name||''))c.position.y-=low});
   if(vis.spoiler&&cfg.roles){const lipS=vis.spoiler===1;const sp=lipS?new THREE.BoxGeometry(W*.8,.04,.22).translate(0,cfg.roofY-.02,cfg.spoilerZ):null;if(sp)bodyG.add(new THREE.Mesh(sp,paint))}
   if(vis.spoiler===2){const sz=cfg.spoilerZ,sy=cfg.roofY+.13;const sp=mergeGeos([new THREE.BoxGeometry(W*.96,.05,.4).translate(0,sy,sz),...[-1,1].map(s=>new THREE.BoxGeometry(.05,.26,.12).translate(s*W*.3,sy-.12,sz))]);bodyG.add(new THREE.Mesh(sp,mat('spo',()=>new THREE.MeshStandardMaterial({color:lin('#15171b'),metalness:.4,roughness:.35}))))}
@@ -1740,10 +1760,11 @@ function buildGlbCar(src,vis,o,cfg){cfg=cfg||GOL_CFG;
       const c=new THREE.Mesh(new THREE.ConeGeometry(.09,.5,8).translate(0,.25,0),fc);c.position.copy(o.position);c.userData.ph=i*1.7;hoodG.add(c)}
     const turb=new THREE.Mesh(new THREE.CylinderGeometry(.2,.24,.28,14),mat('turbo3d',()=>new THREE.MeshStandardMaterial({color:lin('#b8bcc2'),metalness:.85,roughness:.25})));turb.position.set(0,hy-low+.16,hz);bodyG.add(turb);
     hoodG.visible=false;grp.add(hoodG)}
+  if(dW){bodyG.position.y+=dW;glow.position.y+=dW;popG.position.y+=dW;if(flame)flame.position.y+=dW;if(hoodG)hoodG.position.y+=dW}
   grp.userData={paint,tailM,glow,flame,bodyG,popG,wheels,hoodG};
   return grp;
 }
-function carMesh(model,vis,o){const u=model&&model.glb;if(u&&!GLB[u]){const p=loadGLB(u);p&&p.then(()=>{if(TAB==='visual'&&!Game.scene)render()})}const g=glbReady(u)?buildGlbCar(GLB[u].scene,vis,o,model.glbCfg||GOL_CFG):buildCar(model.body,model.L,vis,o);
+function carMesh(model,vis,o){const u=model&&model.glb;if(u&&!GLB[u]){const p=loadGLB(u);p&&p.then(()=>{if(TAB==='visual'&&!Game.scene)render()})}o={...(o||{}),model};const g=glbReady(u)?buildGlbCar(GLB[u].scene,vis,o,model.glbCfg||GOL_CFG):buildCar(model.body,model.L,vis,o);
   if(!(o&&o.noTrailer)&&hasPar(model,vis))attachTrailer(g,model);return g}
 function parScene(){if(!GLB[PAR_URL]){const p=loadGLB(PAR_URL);p&&p.then(sc=>{if(!sc)return;G3.key=null;if(TAB==='visual'&&!Game.scene)render();if(Game.scene&&Game.scene.rebuildCars)Game.scene.rebuildCars()})}return glbReady(PAR_URL)?GLB[PAR_URL].scene:null}
 function attachTrailer(g,model){const src=parScene();if(!src)return;
@@ -2144,7 +2165,7 @@ const G3={cv:null,r:null,scene:null,cam:null,key:'',car:null,ex:null,yaw:-.7,pit
   setCar(model,vis,car){const key=model.id+JSON.stringify(vis)+(glbReady(model.glb)?1:0)+(car?car.up.turbo:0);if(key===this.key)return;this.key=key;
     if(this.car){this.scene.remove(this.car)}const g=new THREE.Group(),m=carMesh(model,vis,{hero:true,lights:true,brand:model.brand,decalN:DECAL_N(car)});g.add(m);this.body=m;
     this.ex=this.parts(model,vis,car);g.add(this.ex.g);this.car=g;this.scene.add(g);this.dist=Math.max(model.L,3.8)*1.55;if(hasPar(model,vis)){this.dist=(model.L+PAR_LEN+1)*1.25;g.position.z=-PAR_LEN/2}},
-  parts(model,vis,car){const D=carDims(model),g=new THREE.Group(),W=D.W,low=(vis.height||0)*.032;
+  parts(model,vis,car){const D=carDims(model),g=new THREE.Group(),W=D.W,low=(vis.height||0)*.032-wfit(model,vis).d;
     const paint=new THREE.MeshPhysicalMaterial({color:lin(vis.color),metalness:.25,roughness:.3,clearcoat:1,clearcoatRoughness:.08,side:THREE.DoubleSide}),
       glass=new THREE.MeshPhysicalMaterial({color:lin(['#6d8aa0','#3a4a5a','#1d252f','#07090c'][vis.tint||0]),metalness:.1,roughness:.05,transparent:true,opacity:.5,side:THREE.DoubleSide}),
       dark=new THREE.MeshStandardMaterial({color:lin('#141519'),roughness:.75,side:THREE.DoubleSide}),trimM=new THREE.MeshStandardMaterial({color:lin('#0e0f12'),roughness:.35,metalness:.5,side:THREE.DoubleSide}),
@@ -2441,7 +2462,8 @@ function vVisual(m){
    <div class="optgroup"><h4>Pintura <span>${fmt(VIS.paintP)} · personalizada ${fmt(VIS.customP)}</span></h4><div class="opts">${PALETTE.map(c=>sw('paint','color',c)).join('')}<input type="color" id="customColor" value="${v.color.length===7?v.color:'#ffffff'}" title="Cor personalizada"></div></div>
    <div class="optgroup"><h4>Rodas <span>${VIS.wheel.length} modelos</span></h4><div class="opts">${VIS.wheel.map((w,i)=>opt('wheel',i,w.n)).join('')}</div>
     <div class="opts" style="margin-top:8px">${WHEEL_COLORS.map(c=>sw('wcolor','wheelColor',c,1)).join('')}<small style="color:var(--mu);align-self:center">cor da roda ${fmt(VIS.wheelColorP)}</small></div></div>
-   <div class="optgroup"><h4>Rebaixamento <span>${fmt(VIS.heightP)} · exige suspensão instalada</span></h4><div class="opts">${VIS.height.map((n,i)=>opt('height',i,n,i>maxH?`Precisa suspensão ${LV_NAMES[i]}`:'')).join('')}</div></div>
+   ${rimHTML(model,v,opt)}
+   <div class="optgroup"><h4>Rebaixamento <span>${fmt(VIS.heightP)} · exige suspensão instalada</span></h4><div class="opts">${VIS.height.map((n,i)=>{const f=wheelFit(model,{...v,height:i});return opt('height',i,n,i>maxH?`Precisa suspensão ${LV_NAMES[i]}`:!f.ok?f.why:'')}).join('')}</div></div>
    <div class="optgroup"><h4>Insulfilm <span>${fmt(VIS.tintP)}</span></h4><div class="opts">${VIS.tint.map((n,i)=>opt('tint',i,n)).join('')}</div></div>
    <div class="optgroup"><h4>Faixas</h4><div class="opts">${VIS.stripe.map((w,i)=>opt('stripe',i,w.n)).join('')}</div>${v.stripe?`<div class="opts" style="margin-top:8px">${['#111111','#ffffff','#d7263d','#f2c200','#1e5bd8','#c6ff3d'].map(c=>sw('scolor','stripeColor',c,1)).join('')}</div>`:''}</div>
    ${grp('decal','Adesivos')}
@@ -2460,10 +2482,19 @@ function vVisual(m){
   if(use3d){const h=$('#g3host');if(!G3.mount(h,model,v,car)){S.settings.vis2d=true;render()}}
   const cc=$('#customColor');cc.addEventListener('change',()=>setDraft('color',cc.value));
 }
+function rimHTML(model,v,opt){const st=stockTire(model);
+  if(noRims(model))return`<div class="optgroup"><h4>Aro e pneu</h4><p class="sub" style="margin:0">Esse carro usa rodas de competição fixas.</p></div>`;
+  const f=wheelFit(model,v),a=v.rim?RIMS[v.rim]:st.a,P=v.tire?TIRES[v.tire]:st.P;
+  const lk=(k,i)=>{const t=wheelFit(model,{...v,[k]:i});return t.ok?'':t.why};
+  const lab=(k,i)=>i?VIS[k][i].n:(k==='rim'?'Original (aro '+st.a+')':'Original ('+st.P+')');
+  return`<div class="optgroup"><h4>Aro <span>medida atual ${st.W}/${P} R${a}${f.ok?'':' · não cabe'}</span></h4><div class="opts">${VIS.rim.map((w,i)=>opt('rim',i,lab('rim',i),lk('rim',i))).join('')}</div></div>
+   <div class="optgroup"><h4>Perfil do pneu <span>quanto menor, mais baixo o pneu</span></h4><div class="opts">${VIS.tire.map((w,i)=>opt('tire',i,lab('tire',i),lk('tire',i))).join('')}</div>
+   <p class="sub" style="margin:6px 0 0">Combinações que batem na lataria, passam da caixa de roda ou deixam o carro arrastando ficam bloqueadas.</p></div>`}
 function setDraft(k,val){const car=activeCar(),v=draftVis(car);const model=CAR[car.model];if(k==='paredao'&&model.cat!=='Rebaixado'){toast(model.paredao?'Esse paredão é fixo de fábrica':'Paredão só pra carros da categoria Rebaixado');return}
   if(k==='height'&&val>Math.max(car.up.susp,(model.preset&&model.preset.height)||0)){toast(`Instale suspensão ${LV_NAMES[val]} na Oficina primeiro`);return}
+  if(k==='rim'||k==='tire'||k==='height'){const f=wheelFit(model,{...v,[k]:val});if(!f.ok){toast(f.why+' · bloqueado');return}}
   v[k]=val;const y=scrollY;render();scrollTo(0,y)}
-function buyCart(){const car=activeCar();if(!VD||VD.uid!==car.uid)return;const cd=cartDiff(car,VD.vis);if(!cd.items.length)return;if(S.money<cd.total){toast('Dinheiro insuficiente');return}
+function buyCart(){const car=activeCar();if(!VD||VD.uid!==car.uid)return;{const f=wheelFit(CAR[car.model],VD.vis);if(!f.ok){toast(f.why+' · ajuste aro/pneu antes de comprar');return}}const cd=cartDiff(car,VD.vis);if(!cd.items.length)return;if(S.money<cd.total){toast('Dinheiro insuficiente');return}
   S.money-=cd.total;car.spent+=cd.total;markOwned(car,VD.vis);car.vis={...VD.vis};VD=null;if(cd.total){track('style');Snd.cash()}save();toast(cd.total?`Visual instalado · ${fmt(cd.total)}`:'Visual trocado de graça');render()}
 const REF_BONUS=30000,REF_LVL=5;
 const REF={rows:null,
