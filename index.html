@@ -2382,7 +2382,35 @@ let modalLocked=false;
 function modal(html,locked=false){modalLocked=locked;$('#modalRoot').innerHTML=`<div class="mbg" data-bg="1"><div class="modal">${html}</div></div>`}
 function closeModal(){$('#modalRoot').innerHTML='';modalLocked=false}
 let toastT;function toast(t){let el=$('.toast');if(!el){el=document.createElement('div');el.className='toast';document.body.appendChild(el)}el.textContent=t;el.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>el.style.opacity=0,2400)}
-const TABS=[['eventos','Eventos'],['rodagem','Rodagem'],['online','Online'],['garagem','Garagem'],['oficina','Oficina'],['visual','Visual'],['loja','Concessionária'],['patro','Patrocínios'],['conta','Conta']];
+// ===== Loja paga (Pix via Mercado Pago, api/pay.js) =====
+const PAY={cat:null,loading:false,poll:0,cur:null};
+const brl=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
+async function payCatalog(){if(PAY.cat||PAY.loading)return;PAY.loading=true;try{const r=await fetch('/api/pay?catalog=1');PAY.cat=await r.json()}catch(e){PAY.cat={on:false,items:[],err:1}}PAY.loading=false;if(TAB==='premium'&&!Game.scene)render()}
+function payOwned(x){const g=x.g||{};if(g.money)return false;const cars=g.cars||[];const has=id=>S.cars.some(c=>c.model===id);
+  if(cars.length&&!g.vip&&!g.pass)return cars.every(has);return(!g.vip||S.vip)&&(!g.pass||S.pass)&&cars.every(has)}
+function vPremium(m){payCatalog();const c=PAY.cat;
+  const grp=[['Acesso',x=>(x.g.vip||x.g.pass)&&!x.g.cars],['Dinheiro do jogo',x=>x.g.money&&!x.g.vip&&!x.g.pass],['Carros avulsos',x=>x.g.cars&&x.g.cars.length]];
+  const card=x=>{const own=payOwned(x),car=x.g.cars&&x.g.cars.length===1?CAR[x.g.cars[0]]:null;
+    return`<div class="card">${car?`<canvas data-car="${car.id}" data-small="1"></canvas>`:''}<div class="cb"><h3>${escapeHtml(x.n)}</h3><p>${escapeHtml(x.d||'')}</p><div class="row"><span class="price">${brl(x.price)}</span>${own?'<span class="tag a">Já é seu</span>':`<button class="btn sm pri" data-act="paybuy" data-v="${x.id}" ${c.on?'':'disabled'}>Pagar com Pix</button>`}</div></div></div>`};
+  const pend=(S.orders||[]).filter(o=>!o.done&&Date.now()-o.ts<36e5);
+  m.innerHTML=`<h2>Loja 💎</h2><p class="sub">Compras com dinheiro de verdade, por Pix. O item é liberado sozinho assim que o Pix cai, e você recebe um código de resgate de garantia.</p>
+  ${pend.length?`<div class="panel" style="margin:10px 0;border-color:var(--ac)"><b>Pagamento em andamento</b><p class="sub" style="margin:4px 0 8px">${pend.map(o=>escapeHtml(o.name)+' · '+brl(o.price)).join(' · ')}</p><button class="btn sm pri" data-act="paycheck">Já paguei, verificar</button></div>`:''}
+  ${!c?'<p class="sub">Carregando ofertas…</p>':!c.on?`<div class="panel" style="margin:10px 0"><b>Loja em manutenção</b><p class="sub" style="margin:4px 0 0">As compras por Pix ainda não estão disponíveis. Tente mais tarde.</p></div>`:''}
+  ${c&&c.items?grp.map(([t,f])=>{const it=c.items.filter(f);return it.length?`<h3 style="margin:18px 0 8px">${t}</h3><div class="grid g3">${it.map(card).join('')}</div>`:''}).join(''):''}
+  ${(S.paid||[]).length?`<h3 style="margin:18px 0 8px">Minhas compras</h3><div class="panel">${S.paid.slice(-10).reverse().map(p=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0"><span>${escapeHtml(p.name)}</span><span class="sub" style="margin:0">código ${p.code}</span></div>`).join('')}</div>`:''}
+  <p class="sub" style="margin-top:14px">Pagamento processado pelo Mercado Pago. Itens digitais, liberados neste navegador; guarde o código de resgate pra recuperar a compra em outro aparelho.</p>`}
+function payModal(o){modal(`<h2 style="text-align:center">${escapeHtml(o.name)} · ${brl(o.price)}</h2><p class="sub" style="text-align:center">Abra o app do seu banco, escolha Pix e leia o QR Code ou use o copia e cola.</p>
+  ${o.qrImg?`<div style="text-align:center"><img src="data:image/png;base64,${o.qrImg}" alt="QR Code Pix" style="width:220px;height:220px;background:#fff;border-radius:12px;padding:8px"></div>`:''}
+  <div style="display:flex;gap:8px;margin:10px 0"><input id="pixcode" readonly value="${escapeHtml(o.qr||'')}" style="flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid var(--ln);background:var(--p2);color:#eef1f5;font:600 13px Rajdhani,Arial"><button class="btn pri" data-act="paycopy">Copiar</button></div>
+  <p class="sub" id="paystat" style="text-align:center">⏳ Aguardando o pagamento… (vale por 30 minutos)</p>
+  <div class="acts"><button class="btn" data-act="close">Fechar</button><button class="btn pri" data-act="paycheck">Já paguei</button></div>`);payWatch()}
+function payWatch(){clearInterval(PAY.poll);let n=0;PAY.poll=setInterval(()=>{n++;if(n>450){clearInterval(PAY.poll);return}payCheck(true)},4000)}
+async function payCheck(quiet){const list=(S.orders||[]).filter(o=>!o.done&&Date.now()-o.ts<36e5);if(!list.length){clearInterval(PAY.poll);return}
+  for(const o of list){try{const r=await fetch('/api/pay?order='+o.order);const j=await r.json();
+    if(j.status==='paid'&&j.code){o.done=1;S.paid=S.paid||[];if(!S.paid.some(p=>p.code===j.code))S.paid.push({name:o.name,code:j.code,ts:Date.now()});save();clearInterval(PAY.poll);closeModal();await ACT.redeem({code:j.code});return}
+    if(j.status==='failed'){o.done=1;save();if(!quiet)toast('Pagamento cancelado ou expirado')}}catch(e){}}
+  if(!quiet)toast('Ainda não caiu. Pode levar alguns segundos.');}
+const TABS=[['eventos','Eventos'],['rodagem','Rodagem'],['online','Online'],['garagem','Garagem'],['oficina','Oficina'],['visual','Visual'],['loja','Concessionária'],['premium','💎 Loja'],['patro','Patrocínios'],['conta','Conta']];
 function clsBadge(pi){const c=classOf(pi);return`<span class="cls" style="background:${c.color}">${c.name}<span style="opacity:.75">${pi}</span></span>`}
 function render(){
   genMissions();
@@ -2391,7 +2419,7 @@ function render(){
   const claim=S.missions.some(m=>m.p>=m.n)||S.daily.last!==today();
   $('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-v="${k}">${n}${(k==='patro'&&claim)||(k==='loja'&&!S.gift80)?'<span class="dot"></span>':''}</button>`).join('');
   const m=$('#main');
-  ({rodagem:vRodagem,online:vOnline,eventos:vEventos,garagem:vGaragem,oficina:vOficina,visual:vVisual,loja:vLoja,patro:vPatro,conta:vConta})[TAB](m);
+  ({rodagem:vRodagem,online:vOnline,eventos:vEventos,garagem:vGaragem,oficina:vOficina,visual:vVisual,loja:vLoja,premium:vPremium,patro:vPatro,conta:vConta})[TAB](m);
   requestAnimationFrame(drawCanvases);
   try{refreshOnline()}catch(e){}
 }
@@ -2603,9 +2631,17 @@ const ACT={
   vis:d=>setDraft(d.k,+d.v),
   paint:d=>setDraft('color',d.v),wcolor:d=>setDraft('wheelColor',d.v),scolor:d=>setDraft('stripeColor',d.v),ncolor:d=>setDraft('neonColor',d.v),
   vipgo:()=>{closeModal();TAB='loja';render();const el=[...document.querySelectorAll('.vipt')][0];if(el)el.scrollIntoView({block:'center'})},
-  passhelp:()=>{TAB='conta';render();scrollTo(0,0);toast('Digite seu código PASSE no campo Código de resgate')},
+  passhelp:()=>{TAB='premium';render();scrollTo(0,0);toast('Libere o PASSE aqui na Loja 💎')},
   passgo:()=>{closeModal();TAB='garagem';render();scrollTo(0,0)},
-  viphelp:()=>{TAB='conta';render();scrollTo(0,0);toast('Digite seu código VIP no campo Código de resgate')},
+  paybuy:d=>{const x=PAY.cat&&PAY.cat.items.find(i=>i.id===d.v);if(!x)return;modal(`<h2>${escapeHtml(x.n)} · ${brl(x.price)}</h2><p class="sub">Informe seu e-mail. O Mercado Pago usa pra registrar o Pix e mandar o comprovante.</p><input id="payemail" type="email" placeholder="seu@email.com" value="${escapeHtml(S.email||'')}" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--ln);background:var(--p2);color:#eef1f5;font:600 15px Rajdhani,Arial;margin:8px 0"><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="paygo" data-v="${x.id}">Gerar Pix</button></div>`)},
+  paygo:async d=>{const em=(($('#payemail')||{}).value||'').trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){toast('Digite um e-mail válido');return}S.email=em;save();
+    if(NET.mode!=='p2p'){toast('Compras só funcionam no site');return}toast('Gerando Pix…');
+    try{const r=await fetch('/api/pay',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({item:d.v,pid:S.pid,email:em})});const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.order){toast(j.error||'Não deu pra gerar o Pix');return}
+      S.orders=(S.orders||[]).filter(o=>Date.now()-o.ts<864e5);S.orders.push({order:j.order,name:j.name,price:j.price,ts:Date.now()});save();payModal(j)}catch(e){toast('Sem conexão')}},
+  paycheck:()=>payCheck(false),
+  paycopy:()=>{const t=$('#pixcode');if(!t)return;try{navigator.clipboard.writeText(t.value).then(()=>toast('Código Pix copiado'),()=>{t.select();toast('Selecionado: copie')})}catch(e){t.select()}},
+  viphelp:()=>{TAB='premium';render();scrollTo(0,0);toast('Libere o VIP aqui na Loja 💎')},
   buy:d=>{const c=CAR[d.v];if(c.vip&&!S.vip){toast('Carro exclusivo VIP');return}if(c.pass&&!S.pass){toast('Carro exclusivo PASSE');return}if(S.money<c.price)return;if(!c.price&&S.cars.some(x=>x.model===c.id)){toast('Você já pegou esse');return}modal(`<h2>Comprar ${c.name}?</h2><p class="sub">${c.price?fmt(c.price):'De graça'} · ele vira seu carro ativo.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" data-act="buyok" data-v="${c.id}">Comprar</button></div>`)},
   buyok:d=>{const c=CAR[d.v];if(c.pass&&!S.pass)return;if(S.money<c.price)return;if(!c.price&&S.cars.some(x=>x.model===c.id))return;S.money-=c.price;const car=addCar(S,c.id);S.active=car.uid;save();closeModal();Snd.cash();toast(c.name+' na garagem!');TAB='garagem';render()},
   sell:d=>{const car=S.cars.find(c=>c.uid==d.v);if(!car||S.cars.length<2)return;modal(`<h2>Vender ${CAR[car.model].name}?</h2><p class="sub">Você recebe ${fmt(carValue(car))}. Peças e visual vão junto.</p><div class="acts"><button class="btn" data-act="close">Cancelar</button><button class="btn warn" data-act="sellok" data-v="${car.uid}">Vender</button></div>`)},
@@ -2620,9 +2656,9 @@ const ACT={
   claim:d=>{const x=S.missions.find(m=>m.id==d.v);if(!x||x.p<x.n)return;S.money+=x.cash;const ups=addXP(x.rep);S.missions=S.missions.filter(m=>m!==x);save();Snd.cash();toast(`${x.sp} pagou ${fmt(x.cash)}`+(ups.length?` · nível ${S.level}!`:''));render()},
   refcopy:()=>{const v=REF.link();(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('Link copiado')).catch(()=>{const el=$('#reflink');if(el){el.select();try{document.execCommand('copy');toast('Link copiado')}catch(e){}}})},
   refwa:()=>{},
-  redeem:async()=>{const el=$('#rcode'),code=(el&&el.value||'').trim();if(!code){toast('Digite o código');return}if(NET.mode!=='p2p'){toast('Resgate só funciona no site');return}
+  redeem:async(d)=>{const el=$('#rcode'),code=((d&&d.code)||(el&&el.value)||'').trim();if(!code){toast('Digite o código');return}if(NET.mode!=='p2p'){toast('Resgate só funciona no site');return}
     try{const r=await fetch('/api/redeem',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({code,pid:S.pid})});const j=await r.json().catch(()=>({}));
-      if(!r.ok||!(j.amount||j.vip||j.pass||(j.cars&&j.cars.length))){toast(j.error||'Não deu pra resgatar');return}if(Array.isArray(j.cars)&&j.cars.length){if(j.vip)S.vip=1;if(j.amount)S.money+=j.amount;const got=[];for(const id of j.cars){const c=CAR[id];if(c&&!S.cars.some(x=>x.model===id)){addCar(S,id);got.push(c.name)}}save();Snd.cash();modal(`<div class="big" style="color:#f2c200">${j.vip?'VIP + ':''}${got.length} CARROS</div><h2 style="text-align:center">Carros liberados!</h2><p class="sub" style="text-align:center">${got.length?got.join(', ')+' já estão na sua garagem.':'Você já tinha todos esses carros.'}${j.amount?' '+fmt(j.amount)+' foram adicionados à sua conta.':''}</p><div class="acts"><button class="btn pri" data-act="passgo">Ver na garagem</button></div>`);render();return}if(j.pass){S.pass=1;if(j.vip)S.vip=1;if(j.amount)S.money+=j.amount;const got=[];for(const c of CARS)if(c.pass&&!S.cars.some(x=>x.model===c.id)){addCar(S,c.id);got.push(c.name)}save();Snd.cash();modal(`<div class="big" style="color:#ff7a1a">${j.vip?'VIP + ':''}PASSE${j.amount?' + '+fmt(j.amount):''}</div><h2 style="text-align:center">${j.vip?'VIP e Passe liberados!':'Passe liberado!'}</h2><p class="sub" style="text-align:center">${got.length?got.join(' e ')+' já estão na sua garagem. ':''}${j.amount?fmt(j.amount)+' foram adicionados à sua conta.':''}</p><div class="acts"><button class="btn pri" data-act="passgo">Ver na garagem</button></div>`);render();return}if(j.vip){S.vip=1;if(j.amount)S.money+=j.amount;save();Snd.cash();modal(`<div class="big" style="color:#f2c200">VIP${j.amount?' + '+fmt(j.amount):''}</div><h2 style="text-align:center">Você agora é VIP!</h2><p class="sub" style="text-align:center">${j.amount?fmt(j.amount)+' foram adicionados à sua conta. ':''}Os carros VIP foram liberados na Concessionária. Eles ainda custam dinheiro do jogo.</p><div class="acts"><button class="btn pri" data-act="vipgo">Ver carros VIP</button></div>`);render();return}S.money+=j.amount;save();Snd.cash();toast(fmt(j.amount)+' adicionados à conta');render()}catch(e){toast('Sem conexão')}},
+      if(!r.ok||!(j.amount||j.vip||j.pass||(j.cars&&j.cars.length))){toast(j.error||'Não deu pra resgatar');return}if(Array.isArray(j.cars)&&j.cars.length){if(j.vip)S.vip=1;if(j.amount)S.money+=j.amount;const got=[];for(const id of j.cars){const c=CAR[id];if(c&&!S.cars.some(x=>x.model===id)){addCar(S,id);got.push(c.name)}}save();Snd.cash();modal(`<div class="big" style="color:#f2c200">${j.vip?'VIP + ':''}${got.length} CARRO${got.length===1?'':'S'}</div><h2 style="text-align:center">Carros liberados!</h2><p class="sub" style="text-align:center">${got.length?got.join(', ')+' já estão na sua garagem.':'Você já tinha todos esses carros.'}${j.amount?' '+fmt(j.amount)+' foram adicionados à sua conta.':''}</p><div class="acts"><button class="btn pri" data-act="passgo">Ver na garagem</button></div>`);render();return}if(j.pass){S.pass=1;if(j.vip)S.vip=1;if(j.amount)S.money+=j.amount;const got=[];for(const c of CARS)if(c.pass&&!S.cars.some(x=>x.model===c.id)){addCar(S,c.id);got.push(c.name)}save();Snd.cash();modal(`<div class="big" style="color:#ff7a1a">${j.vip?'VIP + ':''}PASSE${j.amount?' + '+fmt(j.amount):''}</div><h2 style="text-align:center">${j.vip?'VIP e Passe liberados!':'Passe liberado!'}</h2><p class="sub" style="text-align:center">${got.length?got.join(' e ')+' já estão na sua garagem. ':''}${j.amount?fmt(j.amount)+' foram adicionados à sua conta.':''}</p><div class="acts"><button class="btn pri" data-act="passgo">Ver na garagem</button></div>`);render();return}if(j.vip){S.vip=1;if(j.amount)S.money+=j.amount;save();Snd.cash();modal(`<div class="big" style="color:#f2c200">VIP${j.amount?' + '+fmt(j.amount):''}</div><h2 style="text-align:center">Você agora é VIP!</h2><p class="sub" style="text-align:center">${j.amount?fmt(j.amount)+' foram adicionados à sua conta. ':''}Os carros VIP foram liberados na Concessionária. Eles ainda custam dinheiro do jogo.</p><div class="acts"><button class="btn pri" data-act="vipgo">Ver carros VIP</button></div>`);render();return}S.money+=j.amount;save();Snd.cash();toast(fmt(j.amount)+' adicionados à conta');render()}catch(e){toast('Sem conexão')}},
   gift:()=>{if(S.gift80)return;S.gift80=1;S.money+=GIFT;save();closeModal();Snd.cash();toast(fmt(GIFT)+' na conta! Boas compras');TAB='loja';render();scrollTo(0,0)},
   daily:()=>{if(S.daily.last===today())return;const y=new Date(Date.now()-864e5).toISOString().slice(0,10);S.daily.streak=S.daily.last===y?S.daily.streak+1:1;const a=dailyAmount();S.money+=a;S.daily.last=today();save();Snd.cash();toast('Bônus diário: '+fmt(a));render()},
   copy:()=>{const t=$('#saveCode');try{navigator.clipboard.writeText(t.value).then(()=>toast('Código copiado'),()=>{t.select();toast('Selecionado: use Ctrl+C')})}catch(e){t.select();toast('Selecionado: use Ctrl+C')}},
@@ -2959,6 +2995,7 @@ if(/resgat|presente|gift/i.test(location.hash+location.search)&&!S.gift80&&!PEND
 render();
 if(!S.gift80&&!PEND_CODE&&!/^#sala-/i.test(location.hash))setTimeout(giftModal,500);
 NET.init();
+setTimeout(()=>{if((S.orders||[]).some(o=>!o.done&&Date.now()-o.ts<36e5))payCheck(true)},4000);
 try{if(window.THREE&&THREE.GLTFLoader){S.cars.forEach(c=>{const m=CAR[c.model];m&&m.glb&&loadGLB(m.glb)});if(S.cars.some(c=>hasPar(CAR[c.model],c.vis)))parScene()}}catch(e){}
 if(S.daily.last!==today()&&S.stats.races>0)setTimeout(()=>toast('Bônus diário disponível em Patrocínios'),800);
 </script>

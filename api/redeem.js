@@ -12,7 +12,9 @@ export default async function handler(req, res) {
   const pid = String((b && b.pid) || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 24);
   let codes = {};
   try { codes = JSON.parse(process.env.REDEEM_CODES || '{}'); } catch {}
-  const val = codes[code];
+  let val = codes[code];
+  // códigos gerados por compra Pix (api/pay.js)
+  if (val === undefined && hasKV && /^RB[A-Z0-9]{8}$/.test(code)) { try { const v = await kv('GET', 'paycode:' + code); if (v) val = JSON.parse(v); } catch {} }
   const vip = val === 'vip' || !!(val && typeof val === 'object' && val.vip);
   const pass = !!(val && typeof val === 'object' && val.pass);
   const cars = val && typeof val === 'object' && Array.isArray(val.cars) ? val.cars.map(String).slice(0, 20) : [];
