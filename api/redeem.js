@@ -12,6 +12,8 @@ export default async function handler(req, res) {
   const pid = String((b && b.pid) || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 24);
   let codes = {};
   try { codes = JSON.parse(process.env.REDEEM_CODES || '{}'); } catch {}
+  // códigos extras (mais fácil de adicionar sem mexer na lista principal)
+  try { Object.assign(codes, JSON.parse(process.env.REDEEM_CODES_2 || '{}')); } catch {}
   let val = codes[code];
   // códigos gerados por compra Pix (api/pay.js)
   if (val === undefined && hasKV && /^RB[A-Z0-9]{8}$/.test(code)) { try { const v = await kv('GET', 'paycode:' + code); if (v) val = JSON.parse(v); } catch {} }
