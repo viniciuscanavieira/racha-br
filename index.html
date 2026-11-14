@@ -273,12 +273,12 @@ body{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
 .tabbar .tb.on{color:var(--ac)}.tabbar .tb.on .ic{background:linear-gradient(180deg,#d8ff6a,#9fd61e);box-shadow:0 0 18px -2px rgba(198,255,61,.6);filter:saturate(1.1)}
 .tabbar .tb.mid .ic{width:52px;height:52px;margin-top:-22px;border-radius:50%;background:#16241a;border:2px solid #2e5a35;box-shadow:0 0 16px -4px #36d67a}.tabbar .tb.mid.on .ic{background:linear-gradient(180deg,#5cf08e,#1fa955);border-color:#7bffa8}
 .tabbar .cnt{position:absolute;top:-8px;right:-14px;background:#36d67a;color:#062;font:900 11px Rajdhani,Arial;border-radius:999px;padding:1px 6px;font-style:normal;border:2px solid #0e1115}.tabbar .dt{position:absolute;top:2px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--rd)}
-body.onhome header,body.onhome #subnav{display:none!important}body.onhome main{padding:0;max-width:none}
-.home{position:relative;height:calc(100svh - 74px - env(safe-area-inset-bottom));min-height:560px;overflow:hidden}
+body.onhome header,body.onhome #subnav{display:none!important}body.onhome main{padding:0;max-width:none}html:has(body.onhome),body.onhome{overflow:hidden;overscroll-behavior:none}body.onhome{padding-bottom:0;height:100svh}
+.home{position:fixed;inset:0;height:100svh;overflow:hidden;touch-action:none}
 .home3d{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hm-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,10,14,.55) 0%,transparent 22%,transparent 52%,rgba(8,10,14,.85) 82%,#0a0c0f 100%)}
 .hm-top{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:space-between;gap:8px;align-items:center}
-.hm-me{display:flex;align-items:center;gap:10px;padding:5px 14px 5px 5px;border-radius:999px;background:rgba(14,17,21,.72);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px);text-align:left;min-width:0}
+.hm-me{display:flex;align-items:center;gap:10px;padding:9px 16px;border-radius:999px;background:rgba(14,17,21,.72);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px);text-align:left;min-width:0}
 .hm-av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font:900 18px "Russo One",Arial;color:#111;background:radial-gradient(circle at 35% 30%,#e6ff9a,#8fc414);box-shadow:0 0 0 2px #0e1115,0 0 0 4px rgba(198,255,61,.5);flex:none}
 .hm-me b{display:block;font:italic 900 17px "Russo One",Arial;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38vw}.hm-me small{color:#9aa3ae;font:800 11px Rajdhani,Arial;letter-spacing:.08em}
 .hm-r{display:flex;gap:6px}.hm-pill{padding:10px 14px;border-radius:999px;background:rgba(14,17,21,.72);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px);font:900 13px "Russo One",Arial;letter-spacing:.06em;color:#eef1f5;white-space:nowrap}.hm-pill.money{color:var(--ac)}
@@ -286,7 +286,7 @@ body.onhome header,body.onhome #subnav{display:none!important}body.onhome main{p
 .hm-name{font:italic 900 clamp(34px,9vw,58px)/1 "Russo One",Arial;letter-spacing:-.01em;background:linear-gradient(180deg,#fff 30%,#b9c0c9);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 4px 18px rgba(0,0,0,.35);filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
 .hm-tags{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}.hm-tag{font:900 12px "Russo One",Arial;letter-spacing:.08em;padding:4px 10px;border-radius:8px;background:rgba(14,17,21,.7);border:1px solid #3a414b;color:var(--ac2)}.hm-tag.mu{color:#c9ced6}
 .hm-lvl{display:flex;align-items:center;gap:10px;margin-top:10px}.hm-lvl span{font:italic 900 14px "Russo One",Arial;letter-spacing:.1em;color:#111;background:linear-gradient(90deg,#d8ff6a,#9fd61e);padding:5px 12px;border-radius:8px;transform:skewX(-10deg)}.hm-xp{flex:0 1 160px;height:6px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden}.hm-xp div{height:100%;background:linear-gradient(90deg,#ffd23d,#c6ff3d)}
-.hm-bot{position:absolute;left:12px;right:12px;bottom:10px;display:flex;flex-direction:column;gap:10px;max-width:620px;margin:0 auto}
+.hm-bot{position:absolute;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;max-width:620px;margin:0 auto}
 .hm-mode{display:flex;align-items:center;gap:8px}.hm-arr{width:44px;height:52px;border-radius:14px;background:rgba(14,17,21,.75);border:1px solid #2a313b;color:var(--ac);font:900 28px Arial;flex:none}
 .hm-mc{flex:1;display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:14px;background:rgba(14,17,21,.75);border:1px solid #2a313b;backdrop-filter:blur(8px);min-width:0}.hm-mc span{font-size:26px}.hm-mc b{display:block;font:italic 900 18px "Russo One",Arial}.hm-mc small{color:#9aa3ae;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .hm-stats{display:grid;grid-template-columns:repeat(5,1fr);border-radius:16px;background:rgba(14,17,21,.82);border:1px solid #2a313b;backdrop-filter:blur(8px);padding:10px 2px}
@@ -1360,7 +1360,7 @@ class StreetRace{
   constructor(ev,car,bet,net){
     this.mode=ev.mode;this.ev=ev;this.car=car;this.model=CAR[car.model];this.spec=perf(this.model,playerUp(car)).spec;this.bet=bet||0;
     const racha=ev.mode==='racha';
-    this.lanes=racha?4:3;this.lw=3.6;this.halfW=this.lanes*this.lw/2;this.D=ev.dist;this.env=racha?'hwy':'city';
+    this.lanes=4;this.lw=racha?3.6:4.1;this.halfW=this.lanes*this.lw/2;this.D=ev.dist;this.env=racha?'hwy':'city';
     this.net=net||null;const seed=net?(net.seed%100000)/100:Math.random()*1000;this.seed=seed;
     this.f=racha?(d=>(6*Math.sin(d/420+seed)+3*Math.sin(d/150+seed*2))*clamp(d/300,0,1)):(d=>(26*Math.sin(d/280+seed)+12*Math.sin(d/90+seed*3))*clamp(d/250,0,1)**2);
     this.laneOff=i=>(i-(this.lanes-1)/2)*this.lw;
@@ -1413,7 +1413,7 @@ class StreetRace{
     const brake=!!Input.k.brake,blown=this.broken.motor,gas=!blown&&(S.settings.autoGas?!brake:!!Input.k.gas);
     const up=Input.take('shift'),dn=Input.take('down');
     if(!S.settings.autoShift&&!this.pFin){if(up)doShift(this,pr,sp,1,true);if(dn)doShift(this,pr,sp,-1,true)}
-    const off=p.x-this.f(pr.x),offroad=Math.abs(off)>this.halfW-.8;
+    const off=p.x-this.f(pr.x),offroad=this.env==='hwy'&&Math.abs(off)>this.halfW+.2;
     if(!this.pFin){
       physStep(sp,pr,dt,{throttle:gas?1:0,brake,nitro:sp.nitro>0&&Input.k.nitro,auto:S.settings.autoShift&&!this.broken.cambio?.93:0,offroad});tuneFx(this,pr,gas,dt);
       if(pr.justShifted){pr.justShifted=false;pop(pr,.8);if(sp.spool<50)Snd.noise(.18,.08,2600)}
@@ -1421,9 +1421,13 @@ class StreetRace{
       if(blown&&this.t-this.blownAt>3&&!this.pFin){this.pFin=this.t;this.pos=this.rivals.length+1;setTimeout(()=>Game.finish({mode:this.mode,won:false,pos:this.pos,total:this.rivals.length+1,hits:this.hits,nearMiss:this.nearMiss,nmCash:this.nmCash,perfect:this.perfect,time:this.t,trap:this.top*3.6,bet:this.bet,dnf:true,failed:'motor'}),400)}
     }else{physStep(sp,pr,dt,{throttle:0,brake:true,auto:.93});if(pr.popT>0)pr.popT-=dt}
     p.brake=brake;
+    {const fn=this.f(pr.x);if(this._fp!=null)p.x+=(fn-this._fp)*.6;this._fp=fn}// acompanha parte da curva sozinho
     const cap=sp.latCap*clamp(pr.v/14,.3,1);const tx=steer*cap;p.xv+=(tx-p.xv)*Math.min(1,dt*7);p.x+=p.xv*dt;
-    const lim=this.halfW+1.6,rel=p.x-this.f(pr.x);
-    if(Math.abs(rel)>lim){p.x=this.f(pr.x)+Math.sign(rel)*lim;pr.v*=Math.pow(.25,dt);p.xv=0;this.shake=.15;for(let i=0;i<2;i++)this.parts.add({x:p.x+Math.sign(rel)*p.W/2,y:pr.x,vx:rnd(-3,3),vy:rnd(-2,6),r:.15,life:.4,c:'spark'})}
+    // guia de concreto: encosta, raspa, solta faísca e devolve o carro pra pista (volante continua livre)
+    const lim=this.halfW+.3-p.W/2,rel=p.x-this.f(pr.x);if(this._bh>0)this._bh-=dt;
+    if(Math.abs(rel)>lim){const sd=Math.sign(rel),hit=Math.abs(p.xv);p.x=this.f(pr.x)+sd*lim;p.xv=-sd*Math.min(2.5,hit*.35);
+      pr.v*=Math.pow(.8,dt);if(hit>3){pr.v*=1-Math.min(.12,hit*.015);this.shake=Math.min(.3,.08+hit*.03);if(!(this._bh>0)){this._bh=.35;Snd.noise(.22,.14,1600)}}
+      const n=pr.v>4?3:1;for(let i=0;i<n;i++)this.parts.add({x:p.x+sd*p.W/2,y:pr.x-rnd(0,p.L*.6),vx:-sd*rnd(0,3),vy:rnd(-1,7),r:.15,life:.45,c:'spark'})}
     if(offroad&&pr.v>8&&Math.random()<.5)this.parts.add({x:p.x+rnd(-1,1),y:pr.x-p.L/2,vx:rnd(-1,1),vy:-rnd(0,2),r:.5,gr:1.5,life:.8,c:'dust'});
     this.top=Math.max(this.top,pr.v);
     // rivais
@@ -2016,7 +2020,9 @@ class World3D{
       trunk.count=leaf.count=k;sc.add(trunk);sc.add(leaf);
       if(this.lightsOn)for(let d=0;d<d1;d+=48)this.lamps.push([rc.f(d)+edge+.6,rc.g(d),d,1]);
     }else{
-      const curb=lin('#6c6f75');
+      const curb=lin('#6c6f75'),jer=new THREE.MeshStandardMaterial({color:lin('#b8b4aa'),map:noise,roughness:.85,envMapIntensity:.4});
+      add(ribbon(rc,d0,d1,st,[hw+.02,hw+.08,hw+.32,hw+.4,hw+.44],(d,o,c)=>[0,.32,.82,.82,0][c],4,4),jer);
+      add(ribbon(rc,d0,d1,st,[-(hw+.44),-(hw+.4),-(hw+.32),-(hw+.08),-(hw+.02)],(d,o,c)=>[0,.82,.82,.32,0][c],4,4),jer);
       for(const s of[-1,1]){const offs=s<0?[-(hw+5),-(hw+.02),-hw]:[hw,hw+.02,hw+5];const hs=s<0?[.17,.17,0]:[0,.17,.17];
         add(ribbon(rc,d0,d1,st,offs,(d,o,c)=>hs[c],4,4),new THREE.MeshStandardMaterial({color:curb,map:noise,roughness:sk.wet?.4:.9,envMapIntensity:.5}));
         const lot=s<0?[-(hw+160),-(hw+5)]:[hw+5,hw+160];add(ribbon(rc,d0,d1,6,lot,()=>.17,20,10),new THREE.MeshStandardMaterial({color:lin('#23262b'),map:noise,roughness:.95}))}
@@ -2787,8 +2793,8 @@ const HOME={cv:null,r:null,scene:null,cam:null,carG:null,key:'',raf:0,t:0,sem:nu
     if(this.carG){this.scene.remove(this.carG)}const g=carMesh(m,car.vis,{});g.position.set(0,0,0);g.rotation.y=0;if(this.env)g.traverse(o=>{if(o.isMesh)[].concat(o.material).forEach(mt=>{if(mt&&'envMap' in mt&&!mt.envMap){mt.envMap=this.env;mt.envMapIntensity=.7;mt.needsUpdate=true}})});this.scene.add(g);this.carG=g;this.carL=m.L||4.2},
   start(){cancelAnimationFrame(this.raf);let last=performance.now();const loop=now=>{this.raf=0;const cv=this.cv;if(TAB!=='home'||Game.scene||!cv||!document.body.contains(cv))return;
     const dt=Math.min(.05,(now-last)/1000);last=now;this.t+=dt;this.setCar();const w=cv.clientWidth,h=cv.clientHeight;if(w&&h&&(cv.width!==Math.round(w*this.r.getPixelRatio())||cv.height!==Math.round(h*this.r.getPixelRatio()))){this.r.setSize(w,h,false);this.cam.aspect=w/h;this.cam.updateProjectionMatrix()}
-    const por=h>w,a=.62+Math.sin(this.t*.18)*.22,d=(por?9.6:8.6)+(this.carL-4.2)*.8,c=this.cam;c.fov=por?44:36;c.updateProjectionMatrix();
-    c.position.set(Math.sin(a)*d,por?1.9:1.6,-Math.cos(a)*d);c.lookAt(por?.25:0,por?-.6:-.05,por?.3:.6);
+    const por=h>w,a=.62+Math.sin(this.t*.18)*.22,d=(por?13:8.6)+(this.carL-4.2)*(por?1.4:.8),c=this.cam;c.fov=por?44:36;c.updateProjectionMatrix();
+    c.position.set(Math.sin(a)*d,por?1.9:1.6,-Math.cos(a)*d);c.lookAt(0,.6,0);c.setViewOffset(w,h,0,h*(por?.17:.13),w,h);
     const cyc=this.t%9,st=cyc<4?2:cyc<5.2?1:0;for(const ls of this.sem)ls.forEach((l,i)=>{const on=i===st;l.m.color.setHex(on?l.c:0x1c1414);l.gl.visible=on});
     if(this.carG&&this.carG.userData.wheels)this.carG.userData.wheels.forEach(w=>{});
     this.r.render(this.scene,c);this.raf=requestAnimationFrame(loop)};this.raf=requestAnimationFrame(loop)}
@@ -2800,7 +2806,7 @@ function homePlay(){const md=HMODES[HOME.mode%HMODES.length].k;if(md==='rk')retu
 function vHome(m){const car=activeCar(),model=CAR[car.model],pf=perf(model,car.up),need=xpNeed(S.level),mo=HMODES[HOME.mode%HMODES.length],nick=S.settings.nick||AUTH.name||'Piloto',st=S.stats||{},R=rkState();
   const rec=car.ghost&&car.ghost.tot?car.ghost.tot.toFixed(2)+'s':'—',wins=st.wins||0,races=st.races||0;
   m.innerHTML=`<div class="home"><canvas class="home3d"></canvas><div class="hm-shade"></div>
-   <div class="hm-top"><button class="hm-me" data-act="tab" data-v="conta"><span class="hm-av">${escapeHtml(nick.slice(0,1).toUpperCase())}</span><span><b>${escapeHtml(nick)}</b><small>${wins}V · ${races} corridas</small></span></button>
+   <div class="hm-top"><button class="hm-me" data-act="tab" data-v="conta"><b>${escapeHtml(nick)}</b></button>
     <div class="hm-r"><button class="hm-pill" data-act="tab" data-v="premium">💎 LOJA</button><div class="hm-pill money">${fmt(S.money)}</div></div></div>
    <div class="hm-car"><div class="hm-name">${model.name}</div><div class="hm-tags"><span class="hm-tag">${model.drive||'FWD'}</span>${clsBadge(pf.pi)}<span class="hm-tag mu">${model.cat}</span></div>
     <div class="hm-lvl"><span>NÍVEL ${S.level}</span><div class="hm-xp"><div style="width:${S.xp/need*100}%"></div></div></div></div>
