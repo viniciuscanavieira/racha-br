@@ -1214,8 +1214,12 @@ class DragRace{
       if(rt<0){this.jump=true;this.rt=rt;this.msg('LUZ VERMELHA '+rt.toFixed(3),'#ff4d5a');Snd.beep(200,.4,.1)}
       else{this.react=rt;this.msg(rt<.01?'REAÇÃO PERFEITA!':rt<.06?'ÓTIMA REAÇÃO':rt<.15?'BOA REAÇÃO':'REAÇÃO LENTA',rt<.06?'#c6ff3d':rt<.15?'#eef1f5':'#ffd23d');if(this.launchOk&&rt<.15)this.msg('SAÍDA PERFEITA')}}
     this.top=Math.max(this.top,p.v);
-    if(this.pF==null&&p.x>=402)this.pF=this.t;
-    if(this.oF==null&&o.x>=402)this.oF=this.t;
+    if(this.pF==null&&p.x>=402){this.pF=this.t-clamp((p.x-402)/Math.max(1,p.v),0,dt);
+      if(!this.jump&&this.react!=null){const et=this.pF-this.greenT-this.react;this.pET=et;this.flashT=1.6;
+        if(this.rk){const d=et-this.rk.dial;this.pVerd=d<0?['QUEBROU −'+(-d).toFixed(3)+'s','#ff4d5a']:d<=.05?['CRAVOU +'+d.toFixed(3)+'s','#ffd23d']:['+'+d.toFixed(3)+'s','#c6ff3d']}
+        Snd.beep(990,.12,.07)}}
+    if(this.oF==null&&o.x>=402)this.oF=this.t-clamp((o.x-402)/Math.max(1,o.v||1),0,dt);
+    if(this.flashT>0)this.flashT-=dt;
     if(!this.done&&this.rk&&!this.broken.motor&&((this.pF!=null&&this.oF!=null)||(this.pF!=null&&this.t-this.pF>5)||(this.oF!=null&&this.t-this.oF>8&&(p.launched||this.t>this.greenT+12))||(this.jump&&this.t>this.greenT+1.5))){this.done=true;
       const myEt=!this.jump&&this.pF!=null&&this.react!=null?this.pF-this.greenT-this.react:null;let oEt=null,oJ=false,oRt=null;
       if(this.rkG){oEt=this.rkG.et;oRt=this.rkG.rt}else{oJ=!!this.oJump;oRt=this.oRt;oEt=this.oF!=null?this.oF-this.greenT-(this.oRt!=null?this.oRt:.2):null}
@@ -1279,6 +1283,10 @@ class DragRace{
     const bw=Math.min(420,W*.5),bx=(W-bw)/2;hudBar(ctx,bx,14,bw,6,p.x/402,'#c6ff3d','');
     if(!this.solo){ctx.fillStyle='#ff4d5a';ctx.fillRect(bx+bw*clamp(this.o.x/402,0,1)-2,10,4,14)}
     if(this.ghost){ctx.fillStyle='#9fd4ff';ctx.fillRect(bx+bw*clamp(this.gx/402,0,1)-2,10,4,14)}
+    {const run=p.launched&&this.react!=null&&!this.jump,tm=this.pET!=null?this.pET:run?Math.max(0,this.t-this.greenT-this.react):null;
+      if(tm!=null){const big=this.pET!=null,pt=H>W*1.1,cx=pt?W*.6:W/2,cy=pt?H*.205:58;ctx.textAlign='center';
+        if(big&&this.flashT>0){const k=clamp(this.flashT-1.2,0,.4)/.4;ctx.save();ctx.translate(W/2,pt?H*.43:H*.4);ctx.scale(1+k*.5,1+k*.5);ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(-120,-34,240,this.pVerd?70:48);ctx.fillStyle='#c6ff3d';ctx.font='900 34px "Russo One",Arial';ctx.fillText(tm.toFixed(3)+'s',0,4);if(this.pVerd){ctx.fillStyle=this.pVerd[1];ctx.font='900 16px "Russo One",Arial';ctx.fillText(this.pVerd[0],0,28)}ctx.restore()}
+        ctx.fillStyle=big?'#c6ff3d':'#eef1f5';ctx.font=`800 ${pt?16:20}px "Russo One",Arial`;ctx.fillText((big?'⏱ ':'')+tm.toFixed(big?3:2)+'s',cx,cy-(pt?0:4))}}
     ctx.fillStyle='#eef1f5';ctx.font='700 13px Rajdhani,Arial';ctx.textAlign='right';if(W>=640)ctx.fillText(this.ev.test?'TEST DRIVE':this.solo?(this.ghost?`FANTASMA · ${this.ghost.t.toFixed(2)}s`:'PRIMEIRA PASSADA · SEM RECORDE'):this.net?(this.net.group?`RACHA EM GRUPO · ${this.net.peers.length+1} PILOTOS`:`${this.net.oppName.toUpperCase()} · ${this.om.name}`):`${this.om.name.toUpperCase()} · ${this.obuild?this.obuild.toUpperCase()+' · ':''}PI ${this.opi}`,W-60,24);
     if(this.rk){ctx.textAlign='center';ctx.font='800 14px Rajdhani,Arial';ctx.fillStyle='#c6ff3d';const pt=H>W*1.1,yy=pt?H*.235:44,xx=pt?W*.6:W/2;ctx.font=`800 ${pt?12:14}px Rajdhani,Arial`;ctx.fillText(`VOCÊ DECLAROU ${this.rk.dial.toFixed(2)}s`,xx,yy);ctx.fillStyle='#ff8a8a';ctx.fillText(`${String(this.rk.oppName||'ADVERSÁRIO').toUpperCase().slice(0,16)}${this.rkG?' 👻':''} · ${(+this.rk.oppDial).toFixed(2)}s`,xx,yy+16)}
     if(this.net&&!this.net.go)netWaitHUD(ctx,W,H,this.net);else if(this.introT>0)introHUD(ctx,W,H,this);
