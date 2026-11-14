@@ -1197,7 +1197,9 @@ class DragRace{
       if(p.justShifted){p.justShifted=false;pop(p,.8);if(sp.spool<50)Snd.noise(.2,.1,2600)}
       exhaustFx(p,gas,dt,true);wearStep(this,p,gas,dt);tuneFx(this,p,gas,dt);
       if(blown&&Math.random()<.6)this.parts.add({x:p.x-this.model.L*.2,y:.9,vx:-rnd(1,3),vy:rnd(.5,2),r:.5,gr:2.5,life:1.6,c:'smoke'});
-      if(p.wheelspin||p.launchT<.4)for(let i=0;i<2;i++)this.parts.add({x:p.x-this.model.L+.3,y:0,vx:-rnd(2,6),vy:rnd(.5,1.8),r:.4,gr:2.2,life:1.2,c:'smoke'});
+      // fumaça sai das rodas de tração: dianteira (FWD), traseira (RWD) ou as duas (AWD)
+      if(p.wheelspin||p.launchT<.4){const L=this.model.L,dr=this.model.drive||'FWD',ax=dr==='RWD'?[L*.8]:dr==='AWD'?[L*.8,L*.22]:[L*.22];
+        for(const a of ax)for(let i=0;i<(ax.length>1?1:2);i++)this.parts.add({x:p.x-a+rnd(-.15,.15),y:0,vx:-rnd(2,6),vy:rnd(.5,1.8),r:.4,gr:2.2,life:1.2,c:'smoke'})}
     }
     if(this.net){const s=NET.remote(this.net);if(s&&s.d!=null){const tx=s.d+(s.v||0)*.08;o.x+=(tx-o.x)*Math.min(1,dt*12);o.v=+s.v||0;o.gear=s.g|0||1;o.nitroOn=!!s.n;o.launched=!!s.l;
         if(s.f!=null&&this.oF==null)this.oF=this.greenT+(+s.f);if(s.j)this.oJump=true;if(s.rt!=null)this.oRt=+s.rt}}
