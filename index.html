@@ -25,7 +25,7 @@ body{background:radial-gradient(1200px 600px at 80% -10%,#1b2a12 0%,transparent 
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .ff{font-family:'Russo One','Arial Black',sans-serif,sans-serif;letter-spacing:.5px}
 header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:10px 18px;background:rgba(10,12,15,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--ln)}
-.logo{font-family:'Russo One','Arial Black',sans-serif;font-size:24px;line-height:1;white-space:nowrap}
+.logo{font-family:'Russo One','Arial Black',sans-serif;font-size:24px;line-height:1;white-space:nowrap;display:flex;align-items:center;gap:6px;font-style:italic}.logoemb{height:38px;width:auto;flex:none}@media(max-width:520px){.logoemb{height:30px}}
 .logo b{color:var(--ac)}.logo i{font-style:normal;color:var(--ac2)}
 .hstats{margin-left:auto;display:flex;align-items:center;gap:14px}
 .money{font-family:'Russo One','Arial Black',sans-serif;font-size:20px;color:var(--ac)}
@@ -211,6 +211,7 @@ a.btn{text-decoration:none;color:var(--tx)}
 @keyframes btroad{from{background-position:0 0,0 0}to{background-position:0 0,0 120px}}
 #boot .bt-lines{position:absolute;inset:0;background:repeating-linear-gradient(100deg,transparent 0 46px,rgba(198,255,61,.06) 46px 48px);animation:btlines 1.2s linear infinite}
 @keyframes btlines{from{background-position:0 0}to{background-position:-480px 0}}
+#boot .bt-emb{position:relative;width:clamp(120px,30vw,190px);margin-bottom:6px;animation:btfade .8s both,btdrop .9s cubic-bezier(.2,1.5,.4,1) both}#boot .btsvg{width:100%;height:auto;display:block}#boot .imp{animation:btspin .5s linear infinite}@keyframes btspin{to{transform:rotate(360deg)}}@keyframes btdrop{from{transform:translateY(-40px) scale(.7)}to{transform:none}}
 #boot .bt-logo{position:relative;font:900 clamp(46px,11vw,96px)/1 Rajdhani,Arial;letter-spacing:.04em;color:#eef1f5;font-style:italic;text-shadow:0 0 30px rgba(198,255,61,.25);animation:btin 1s cubic-bezier(.2,1.4,.4,1) both}
 #boot .bt-logo b{color:var(--ac);text-shadow:0 0 26px rgba(198,255,61,.7)}
 @keyframes btin{from{transform:translateX(-120vw) skewX(-25deg)}70%{transform:translateX(3vw) skewX(8deg)}to{transform:none}}
@@ -267,12 +268,27 @@ a.btn{text-decoration:none;color:var(--tx)}
 </head>
 <body>
 <div id="boot"><div class="bt-lines"></div><div class="bt-road"></div>
-<div class="bt-logo">RACHA<b>BR</b></div><div class="bt-tag">RACHAS DE RUA BRASILEIROS</div>
+<div class="bt-emb"><svg class="btsvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 124 124"><defs>
+<linearGradient id="st" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef1f5"/><stop offset=".45" stop-color="#9aa3ae"/><stop offset="1" stop-color="#3a414b"/></linearGradient>
+<radialGradient id="hub" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#1b2027"/><stop offset="1" stop-color="#0b0d10"/></radialGradient>
+<filter id="gl" x="-1" y="-1" width="3" height="3"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g>
+ <path d="M49,20 L88,20 L88,35 L49,35 Z" fill="url(#st)" stroke="#0b0d10" stroke-width="2"/>
+ <rect x="86" y="16" width="6" height="23" rx="1.5" fill="#c6ff3d" stroke="#0b0d10" stroke-width="1.5"/>
+ <path d="M65.00,40.02 L67.58,41.36 L70.03,42.96 L72.34,44.80 L74.48,46.87 L76.43,49.16 L78.16,51.65 L79.65,54.32 L80.89,57.14 L81.86,60.10 L82.54,63.15 L82.93,66.29 L83.02,69.47 L82.79,72.67 L82.26,75.86 L81.41,79.01 L80.26,82.09 L78.80,85.06 L77.04,87.90 L75.01,90.58 L72.71,93.07 L70.16,95.34 L67.39,97.37 L64.41,99.14 L61.25,100.62 L57.94,101.80 L54.50,102.66 L50.97,103.19 L47.39,103.38 L43.77,103.22 L40.16,102.71 L36.60,101.84 L33.11,100.63 L29.73,99.08 L26.49,97.20 L23.43,95.00 L20.57,92.50 L17.95,89.71 L15.60,86.67 L13.54,83.39 L11.79,79.91 L10.37,76.25 L9.31,72.45 L8.61,68.53 L8.29,64.54 L8.36,60.52 L8.82,56.49 L9.66,52.50 L10.90,48.59 L12.52,44.79 L14.50,41.15 L16.85,37.68 L19.53,34.44 L22.53,31.46 L25.82,28.76 L29.38,26.38 L33.17,24.34 L37.16,22.66 L41.32,21.37 L45.62,20.48 L50.00,20.00 L50.00,42.50 L46.63,42.74 L43.33,43.47 L40.16,44.66 L37.20,46.29 L34.51,48.33 L32.13,50.74 L30.13,53.46 L28.53,56.44 L27.38,59.62 L26.70,62.93 L26.50,66.31 L26.79,69.68 L27.56,72.97 L28.79,76.12 L30.46,79.06 L32.54,81.72 L34.97,84.07 L37.72,86.04 L40.72,87.59 L43.92,88.70 L47.24,89.34 L50.62,89.49 L53.98,89.16 L57.26,88.35 L60.39,87.08 L63.31,85.37 L65.95,83.26 L68.26,80.79 L70.20,78.02 L71.71,74.99 L72.78,71.78 L73.37,68.46 L73.48,65.08 L73.11,61.72 L72.25,58.45 L70.94,55.33 L69.19,52.44 L67.05,49.82 L64.55,47.55 L61.75,45.65 Z" fill="url(#st)" stroke="#0b0d10" stroke-width="2.2" stroke-linejoin="round"/>
+ <circle cx="50" cy="66" r="23.5" fill="url(#hub)" stroke="#c6ff3d" stroke-width="2.4"/>
+ <g class="imp" fill="none" stroke="#c9ced6" stroke-width="2.6" stroke-linecap="round" style="transform-origin:50px 66px"><path d="M56.00,66.00 Q63.59,72.34 62.05,83.20" /><path d="M54.60,69.86 Q56.34,79.59 48.17,86.92" /><path d="M51.04,71.91 Q46.12,80.49 35.15,80.85" /><path d="M47.00,71.20 Q37.71,74.60 29.08,67.83" /><path d="M44.36,68.05 Q35.06,64.69 32.80,53.95" /><path d="M44.36,63.95 Q39.39,55.39 44.56,45.72" /><path d="M47.00,60.80 Q48.69,51.06 58.87,46.97" /><path d="M51.04,60.09 Q58.60,53.71 69.03,57.13" /><path d="M54.60,62.14 Q64.49,62.12 70.28,71.44" /></g>
+ <circle cx="50" cy="66" r="5" fill="#c6ff3d" stroke="#0b0d10" stroke-width="1.5"/>
+ <rect x="92" y="10" width="24" height="86" rx="6" fill="#15181c" stroke="#3a414b" stroke-width="2"/>
+ <rect x="102.5" y="96" width="3" height="18" fill="#3a414b"/><rect x="94" y="112" width="20" height="4" rx="2" fill="#3a414b"/>
+ <circle cx="98" cy="22" r="4.6" fill="#3db8ff" filter="url(#gl)"/><circle cx="110" cy="22" r="4.6" fill="#3db8ff" filter="url(#gl)"/><circle cx="98" cy="32" r="4.6" fill="#3db8ff" filter="url(#gl)"/><circle cx="110" cy="32" r="4.6" fill="#3db8ff" filter="url(#gl)"/><circle cx="98" cy="46" r="4.6" fill="#ffb020" filter="url(#gl)"/><circle cx="110" cy="46" r="4.6" fill="#ffb020" filter="url(#gl)"/><circle cx="98" cy="58" r="4.6" fill="#ffb020" filter="url(#gl)"/><circle cx="110" cy="58" r="4.6" fill="#ffb020" filter="url(#gl)"/><circle cx="98" cy="70" r="4.6" fill="#ffb020" filter="url(#gl)"/><circle cx="110" cy="70" r="4.6" fill="#ffb020" filter="url(#gl)"/><circle cx="98" cy="84" r="4.6" fill="#3dff6a" filter="url(#gl)"/><circle cx="110" cy="84" r="4.6" fill="#3dff6a" filter="url(#gl)"/>
+</g></svg></div><div class="bt-logo">RACHA<b>BR</b></div><div class="bt-tag">RACHAS DE RUA BRASILEIROS</div>
 <div class="bt-tach"><svg viewBox="0 0 170 96"><path d="M12 85 A73 73 0 0 1 158 85" fill="none" stroke="#252b33" stroke-width="10" stroke-linecap="round"/><path d="M120 22 A73 73 0 0 1 158 85" fill="none" stroke="#ff4d5a" stroke-width="10" stroke-linecap="round"/><g id="btneedle"><line x1="85" y1="85" x2="85" y2="22" stroke="#c6ff3d" stroke-width="4" stroke-linecap="round"/></g><circle cx="85" cy="85" r="8" fill="#eef1f5"/></svg><div class="bt-pct" id="btpct">0%</div></div>
 <div class="bt-bar"><i id="btbar"></i></div><div class="bt-txt" id="bttxt">Ligando a ignição…</div>
 <div class="bt-act" id="btact"></div></div>
 <header>
-  <div class="logo">RACHA<b>BR</b></div>
+  <div class="logo"><img src="/emblem.svg" alt="" class="logoemb">RACHA<b>BR</b></div>
   <div class="hstats" id="hstats"></div>
   <button class="hacc" id="hacc" data-act="tab" data-v="conta" aria-label="Conta">👤</button>
 </header>
