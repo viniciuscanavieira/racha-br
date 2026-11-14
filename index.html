@@ -2569,37 +2569,39 @@ function vPasse(m){const b=bpState(),t=bpTier(),into=t>=BP_TIERS?BP_STEP:b.pts-t
 // 16 divisões: Bracinho 1-4, Braço 1-4, Amador 1-4, Profissional 1-4. Vence quem chega mais perto do tempo que declarou.
 const RK_G=[{n:'Bracinho',c:'#b8c0cc',min:15,max:22,ic:'🥉'},{n:'Braço',c:'#4fc3f7',min:13,max:17.5,ic:'🥈'},{n:'Amador',c:'#c6ff3d',min:11,max:14.5,ic:'🥇'},{n:'Profissional',c:'#ffd23d',min:7,max:12.5,ic:'🏆'}];
 const RK_ERR=[.32,.28,.24,.2,.17,.15,.13,.11,.095,.08,.068,.058,.048,.04,.032,.025];
+const RK_MIN=5,RK_MAX=30;
 const rkG=t=>RK_G[Math.min(3,Math.floor(t/4))],rkName=t=>`${rkG(t).n} ${t%4+1}`;
 const rkPrize=t=>1000+t*350,rkPromo=t=>(3000+t*1500)*(t%4===0?2:1);
 const RK_EV={id:'rk',mode:'drag',name:'Arrancada Ranqueada',place:'Tempo declarado',lvl:1,entry:0,prize:0,rep:60,pi:0,ranked:true};
 function rkState(){if(!S.rk)S.rk={t:0,p:0,w:0,l:0,best:null,last:[]};return S.rk}
 function rkBadge(t,big){const g=rkG(t);return`<span class="rkb" style="--rc:${g.c};${big?'font-size:20px;padding:6px 14px':''}">${g.ic} ${rkName(t)}</span>`}
 function rkEst(car){try{return perf(CAR[car.model],playerUp(car)).t402}catch(e){return 15}}
-function rkScore(et,dial,jump){if(jump||et==null||!isFinite(et))return Infinity;return et<dial?(dial-et)*2:et-dial}
+// tier 0 = ficou no/acima do declarado (válido), tier 1 = quebrou (fez abaixo), Infinity = queimou/não terminou
+function rkScore(et,dial,jump){if(jump||et==null||!isFinite(et))return Infinity;return et>=dial?et-dial:1000+(dial-et)}
 function rkJudge(me,md,mj,op,od,oj,mr,orr){const a=rkScore(me,md,mj),b=rkScore(op,od,oj);let won=a<b||(a===b&&a!==Infinity&&(mr==null?9:mr)<(orr==null?9:orr));if(a===Infinity)won=false;return{won,me,md,op,od,a,b,brk:me!=null&&me<md,obrk:op!=null&&op<od,mj,oj}}
 function rkTraceX(tr,tt,v){const f=tt/.05,i=Math.floor(f);if(i>=tr.length-1)return tr[tr.length-1]+(f-tr.length+1)*.05*(v||40);return tr[i]+(tr[i+1]-tr[i])*(f-i)}
 // fantasma robô (quando ainda não há corridas gravadas na divisão)
 const RK_BOTS=['Zé do Grau','Tiaguinho Turbo','Marcão 1/4','Lekinho AP','Dona Cida','Neguinho do Escape','Rafa Remap','Juninho 16v','Paulão Diesel','Gui Forjado'];
-function rkBot(t){const g=rkG(t),pool=CARS.filter(c=>!c.vip&&!c.pass);let best=null;
+function rkBot(t,want){const g={min:want?want-1.2:rkG(t).min,max:want?want+1.2:rkG(t).max},pool=CARS.filter(c=>!c.vip&&!c.pass);let best=null;
   for(let i=0;i<14;i++){const m=pick(pool),lv=clamp(Math.floor(t/3)+Math.round(rnd(-1,1)),0,4),up={...UP0(),motor:lv,turbo:Math.max(0,lv-1),cambio:lv,pneus:lv,peso:Math.max(0,lv-1)};const sp=perf(m,up).spec;
     const r=newRunner(sp);r.launchT=0;r.launchRpm=.62;const nat=[0];let tt=0;while(r.x<440&&tt<40){for(let k=0;k<6;k++)physStep(sp,r,1/120,{throttle:1,auto:.93});tt+=.05;nat.push(r.x)}
     const e=nat.findIndex(x=>x>=402)*.05;const d=e<g.min?g.min-e:e>g.max?e-g.max:0;if(!best||d<best.d)best={d,m,up,nat,e,v:r.v}}
-  const dial=+clamp(best.e+rnd(.05,.45),g.min,g.max).toFixed(2),et=Math.max(5,dial+(Math.random()<.5?-1:1)*Math.abs(rnd(-1,1)*RK_ERR[t])*rnd(.6,1.6)),rt=rnd(.02,.3-t*.012),k=et/best.e;
+  const dial=+clamp(best.e+rnd(.05,.45),RK_MIN,RK_MAX).toFixed(2),et=Math.max(5,dial+(Math.random()<.5?-1:1)*Math.abs(rnd(-1,1)*RK_ERR[t])*rnd(.6,1.6)),rt=rnd(.02,.3-t*.012),k=et/best.e;
   const tr=[];for(let i=0;i<Math.ceil((rt+et)/.05)+30;i++){const tt=i*.05-rt;if(tt<=0){tr.push(0);continue}const f=tt/k/.05,j=Math.floor(f);tr.push(+(j>=best.nat.length-1?best.nat[best.nat.length-1]+(f-best.nat.length+1)*.05*best.v:best.nat[j]+(best.nat[j+1]-best.nat[j])*(f-j)).toFixed(2))}
   return{n:pick(RK_BOTS),model:best.m.id,vis:VIS0(pick(['#d7263d','#f2f2f2','#15181d','#1f6feb','#f2c200','#8a8f98'])),dial,et:+et.toFixed(3),rt:+rt.toFixed(3),v:best.v/k,trace:tr,bot:true}}
 const RK={searching:false,t0:0,iv:0,dial:0,invAt:0,
   open(){if(guestLocked()){loginModal('A Ranqueada é pra quem tem conta. Entre pra disputar as divisões.');return}const R=rkState(),car=activeCar(),g=rkG(R.t),est=rkEst(car);
-    const def=+clamp(this.dial||Math.ceil((est+.25)*20)/20,g.min,g.max).toFixed(2),fits=est<=g.max+.3;
+    const def=+clamp(this.dial||Math.ceil((est+.25)*20)/20,RK_MIN,RK_MAX).toFixed(2),fits=true;
     modal(`<div style="text-align:center">${rkBadge(R.t,true)}<div class="xpbar" style="height:9px;margin:10px auto 4px;width:100%;max-width:none"><div style="width:${R.p}%;background:${g.c}"></div></div><small style="color:var(--mu)">${R.p}/100 pontos · ${R.w}V ${R.l}D${R.best!=null?` · melhor cravada ${R.best.toFixed(3)}s`:''}</small></div>
-      <h3 style="margin:14px 0 4px">Declare seu tempo</h3><p class="sub" style="margin:0 0 8px">Categoria <b style="color:${g.c}">${g.n}</b>: declare entre <b>${g.min.toFixed(2)}s</b> e <b>${g.max.toFixed(2)}s</b>. Seu ${CAR[car.model].name} faz uns <b>${est.toFixed(2)}s</b> no limpo.</p>
+      <h3 style="margin:14px 0 4px">Declare seu tempo</h3><p class="sub" style="margin:0 0 8px">Declare o tempo que quiser. Seu ${CAR[car.model].name} faz uns <b>${est.toFixed(2)}s</b> no limpo.</p>
       ${fits?'':`<p class="sub" style="color:var(--rd);margin:0 0 8px">Seu carro está lento pra essa categoria. Prepare na Oficina ou troque de carro.</p>`}
       <div style="display:flex;gap:6px;align-items:center;justify-content:center;margin:6px 0;flex-wrap:wrap"><button class="btn sm" data-act="rkd" data-v="-0.1">−0,1</button><button class="btn sm" data-act="rkd" data-v="-0.01">−0,01</button>
-       <input id="rkdial" type="number" step="0.01" min="${g.min}" max="${g.max}" value="${def.toFixed(2)}" style="width:110px;text-align:center;font:800 24px Rajdhani,Arial;padding:8px;border-radius:10px;border:1px solid var(--ln);background:var(--p2);color:#eef1f5"><b>s</b>
+       <input id="rkdial" type="number" step="0.01" min="${RK_MIN}" max="${RK_MAX}" value="${def.toFixed(2)}" style="width:110px;text-align:center;font:800 24px Rajdhani,Arial;padding:8px;border-radius:10px;border:1px solid var(--ln);background:var(--p2);color:#eef1f5"><b>s</b>
        <button class="btn sm" data-act="rkd" data-v="0.01">+0,01</button><button class="btn sm" data-act="rkd" data-v="0.1">+0,1</button></div>
-      <p class="sub" style="font-size:13px;margin:8px 0">🎯 Não é quem chega primeiro: vence quem faz o tempo mais perto do que declarou (tempo de pista, sem a reação). Fazer <b>abaixo</b> do declarado (quebrar) conta em dobro. Luz vermelha perde.<br>Vitória ${fmt(rkPrize(R.t))} e +20 pontos (+5 se cravar até 0,05s). Derrota −12 pontos. 100 pontos sobe de divisão.</p>
+      <p class="sub" style="font-size:13px;margin:8px 0">🎯 Não é quem chega primeiro: vence quem faz o tempo mais perto do que declarou (tempo de pista, sem a reação). Quem faz <b>abaixo</b> do declarado <b>quebra</b> e perde pra quem ficou no tempo ou acima. Se os dois quebrarem, ou os dois ficarem acima, vence a menor diferença. Luz vermelha perde.<br>Vitória ${fmt(rkPrize(R.t))} e +20 pontos (+5 se cravar até 0,05s). Derrota −12 pontos. 100 pontos sobe de divisão.</p>
       <div class="acts"><button class="btn" data-act="rktop">Ranking</button><button class="btn" data-act="close">Fechar</button><button class="btn pri" data-act="rkgo">Procurar adversário</button></div>`)},
-  bump(d){const el=$('#rkdial');if(!el)return;const g=rkG(rkState().t);el.value=clamp((+el.value||g.min)+d,g.min,g.max).toFixed(2)},
-  go(){const el=$('#rkdial'),g=rkG(rkState().t),v=+(el&&el.value);if(!(v>=g.min&&v<=g.max)){toast(`Declare entre ${g.min.toFixed(2)} e ${g.max.toFixed(2)}s`);return}
+  bump(d){const el=$('#rkdial');if(!el)return;el.value=clamp((+el.value||12)+d,RK_MIN,RK_MAX).toFixed(2)},
+  go(){const el=$('#rkdial'),v=+(el&&el.value);if(!(v>=RK_MIN&&v<=RK_MAX)){toast(`Declare entre ${RK_MIN} e ${RK_MAX}s`);return}
     if(isBroken(activeCar())){toast('Seu carro está quebrado. Conserte na Oficina.');return}
     this.dial=+v.toFixed(2);this.searching=true;this.t0=performance.now();this.invAt=0;
     try{NET.set&&NET.set({rq:{t:rkState().t,d:this.dial,ts:Date.now()}})}catch(e){}
@@ -2614,7 +2616,7 @@ const RK={searching:false,t0:0,iv:0,dial:0,invAt:0,
         clearTimeout(NET.invT);NET.invT=setTimeout(()=>{if(NET.myInv&&NET.myInv.code===code){NET.myInv=null;NET.set({inv:null})}},6000)}}
     if(wait>=12&&!NET.myInv){this.stop();this.ghost()}},
   async ghost(){const R=rkState();let g=null;try{const r=await fetch(`/api/rk?ghost=1&tier=${R.t}&not=${S.pid}`,{cache:'no-store'});if(r.ok)g=(await r.json()).ghost}catch(e){}
-    if(!g||!CAR[g.model]||!g.trace||g.trace.length<40)g=rkBot(R.t);this.startGhost(g)},
+    if(!g||!CAR[g.model]||!g.trace||g.trace.length<40)g=rkBot(R.t,this.dial);this.startGhost(g)},
   startGhost(g){const m=CAR[g.model],car=activeCar();closeModal();
     const ev={...RK_EV,prize:0,rivals:[{model:m,spec:perf(m,UP0()).spec,vis:cleanVis(g.vis,m),pi:0}],rk:{dial:this.dial,oppDial:g.dial,oppName:g.n||'Piloto',ghost:g,tier:rkState().t}};
     TAB='eventos';Game.start(ev,0)},
@@ -2631,7 +2633,7 @@ function rkApply(res){const R=rkState(),r=res.rkr,t0=R.t,car=activeCar();let dp=
   if(r.me!=null&&!r.mj&&!r.brk){const e=Math.abs(r.me-r.md);if(R.best==null||e<R.best)R.best=+e.toFixed(3)}
   R.last=[{w:r.won,d:r.md,e:r.me,ts:Date.now()},...(R.last||[])].slice(0,10);
   rkPost(res,t0,car);
-  const col=(nm,dial,et,j,brk,sc,win)=>`<div class="rkcol ${win?'w':''}"><small>${nm}</small><div>Declarou <b>${dial.toFixed(2)}s</b></div><div>Fez <b>${j?'QUEIMOU':et!=null?et.toFixed(3)+'s':'—'}</b></div><div class="${brk?'brk':''}">${j||et==null?'—':brk?`QUEBROU ${(dial-et).toFixed(3)}s (×2)`:`+${(et-dial).toFixed(3)}s`}</div></div>`;
+  const col=(nm,dial,et,j,brk,sc,win)=>`<div class="rkcol ${win?'w':''}"><small>${nm}</small><div>Declarou <b>${dial.toFixed(2)}s</b></div><div>Fez <b>${j?'QUEIMOU':et!=null?et.toFixed(3)+'s':'—'}</b></div><div class="${brk?'brk':''}">${j||et==null?'—':brk?`QUEBROU −${(dial-et).toFixed(3)}s`:`+${(et-dial).toFixed(3)}s`}</div></div>`;
   const opn=Game.scene&&Game.scene.rk?Game.scene.rk.oppName:'Adversário';
   return`<div class="rkres">${col('VOCÊ',r.md,r.me,r.mj,r.brk,r.a,r.won)}${col(escapeHtml(opn).toUpperCase(),r.od,r.op,r.oj,r.obrk,r.b,!r.won)}</div>
    ${crav?'<div class="rkpromo up">🎯 CRAVOU! +5 pontos</div>':''}<p class="sub" style="text-align:center;margin:6px 0">${rkBadge(R.t)} · <b style="color:${dp>0?'var(--ac)':'var(--rd)'}">${dp>0?'+':''}${dp} pontos</b> (${R.p}/100)${prize?` · prêmio ${fmt(prize)}`:''}</p>${promo}`}
