@@ -2398,8 +2398,9 @@ function buildControls(mode){
   const c=$('#ctl'),k=$('#keys'),car=activeCar(),hasN=perf(CAR[car.model],playerUp(car)).spec.nitro>0,man=!S.settings.autoShift;
   const B=(key,cls,icon,lab)=>`<button class="cbtn ${cls}" data-key="${key}" aria-label="${lab||key}">${ICON[icon]}${lab?`<span class="lb">${lab}</span>`:''}</button>`;
   if(mode==='drag'){
-    c.innerHTML=`<div class="rcl">${B('gas','pedal gas','gas','ACELERA')}${hasN?`<div class="paddles">${B('nitro','nitrob','nitro')}</div>`:''}</div>
-      <div class="dragr"><div class="gearrow">${man?B('down','paddle','down'):''}${B('shift','paddle','up')}</div>${B('clutch','pedal clutch','clutch','EMBREAGEM')}</div>`;
+    // igual carro de verdade: embreagem no pé esquerdo, acelerador no direito
+    c.innerHTML=`<div class="rcl">${B('clutch','pedal clutch','clutch','EMBREAGEM')}${hasN?`<div class="paddles">${B('nitro','nitrob','nitro')}</div>`:''}</div>
+      <div class="dragr"><div class="gearrow">${man?B('down','paddle','down'):''}${B('shift','paddle','up')}</div>${B('gas','pedal gas','gas','ACELERA')}</div>`;
     k.textContent=`↑/W acelerar · segure C (embreagem) e solte na largada · E/Shift sobe marcha${man?' · Q reduz':''}${hasN?' · Espaço nitro':''} · Esc pausa`}
   else if(mode==='roam'){
     c.innerHTML=`<div class="wheel" data-wheel>${ICON.wheel}</div>
