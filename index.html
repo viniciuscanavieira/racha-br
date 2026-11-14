@@ -1507,8 +1507,10 @@ class StreetRace{
     const g0=r.gear;physStep(a.spec,r,dt,{throttle:(!a.broken&&v<vlim&&a.fin==null)?1:0,brake,auto:.93,nitro:!a.broken&&a.spec.nitro>0&&maxS<.04&&v>18&&a.fin==null,powerMul:rubber*a.aggr});
     if(r.gear>g0)pop(r,.8,false);if(r.popT>0)r.popT-=dt;
     a.brake=brake;
-    const tx=this.f(r.x)+this.laneOff(a.lane);const cap=a.spec.latCap*.9;
-    const want=clamp((tx-a.x)*2.8,-cap,cap);a.xv+=(want-a.xv)*Math.min(1,dt*6);a.x+=a.xv*dt;
+    // posição lateral relativa à pista: o rival acompanha a curva sempre (antes ele ficava pra trás nas curvas fechadas e saía da rua, sumindo atrás dos prédios)
+    const o0=a.x-this.f(d),cap=a.spec.latCap*.9,lim=this.halfW-a.W/2-.15;
+    const want=clamp((this.laneOff(a.lane)-o0)*2.8,-cap,cap);a.xv+=(want-a.xv)*Math.min(1,dt*6);
+    const o=clamp(o0+a.xv*dt,-lim,lim),x0=a.x;a.x=this.f(r.x)+o;a.xw=dt>0?(a.x-x0)/dt:a.xv;
   }
   draw(ctx,W,H){
     if(this.v3){ctx.clearRect(0,0,W,H);try{this.v3.render(W,H)}catch(e){console.warn(e);this.v3=null;$('#rc3d').style.display='none'}this.drawHUD(ctx,W,H);return}
@@ -1562,6 +1564,7 @@ class StreetRace{
     ctx.textAlign='right';ctx.fillStyle='#eef1f5';ctx.font=`${Math.round(R*.7)}px "Russo One","Arial Black",sans-serif`;const py2=fp?(H>W*1.1?150:104):H>W*1.1?C.y+R*.3:R*.95+10;ctx.fillText(pos+'º',W-40,py2);ctx.font='700 16px Rajdhani,Arial';ctx.fillStyle='#8b95a4';ctx.fillText('/'+(this.rivals.length+1),W-16,py2);
     const bw=Math.min(420,W*.46),bx=(W-bw)/2;hudBar(ctx,bx,14,bw,6,pr.x/this.D,'#c6ff3d','');ctx.fillStyle='#eef1f5';ctx.font='700 12px Rajdhani,Arial';ctx.textAlign='left';ctx.fillText(Math.max(0,Math.round(this.D-pr.x))+' m',bx+bw+8,22);
     for(const a of this.rivals){ctx.fillStyle='#ff4d5a';ctx.fillRect(bx+bw*clamp(a.r.x/this.D,0,1)-2,10,4,14)}
+    {const ah=this.rivals.filter(a=>a.r.x>pr.x).map(a=>a.r.x-pr.x).sort((a,b)=>a-b);if(!this.pFin&&ah.length&&ah[0]>110){ctx.textAlign='center';ctx.font='700 13px Rajdhani,Arial';ctx.fillStyle='#ff8a94';ctx.fillText('▲ rival a '+Math.round(ah[0])+' m',W/2,40)}}
     let y=C.bottom+16;ctx.textAlign='left';ctx.font='700 15px Rajdhani,Arial';
     if(sp.nitro>0){hudBar(ctx,18,y,Math.min(150,R*2),7,pr.nitroLeft/sp.nitro,'#3db8ff','NITRO');y+=30}
     ctx.fillStyle='#ffd23d';ctx.fillText(`Raspões ${this.nearMiss}  +${fmt(this.nmCash)}`,18,y);y+=20;
@@ -1964,12 +1967,13 @@ class World3D{
     sc.add(new THREE.HemisphereLight(lin(sk.hemi[0]),lin(sk.hemi[1]),sk.hemi[2]));
     this.sun=new THREE.DirectionalLight(lin(sk.sun[1]),sk.sun[0]);sc.add(this.sun);sc.add(this.sun.target);
     if(this.lightsOn){this.spot=new THREE.SpotLight(lin('#fff1d0'),3.2,90,.55,.55,1.2);sc.add(this.spot);sc.add(this.spot.target);
-      this.pls=[];for(let i=0;i<4;i++){const l=new THREE.PointLight(lin('#ffc98a'),1.6,30,2);sc.add(l);this.pls.push(l)}}
+      this.pls=[];for(let i=0;i<(isTouch?2:4);i++){const l=new THREE.PointLight(lin('#ffc98a'),isTouch?2:1.6,isTouch?36:30,2);sc.add(l);this.pls.push(l)}}
     this.buildWorld();
     // carros
     const lo=this.lightsOn;
     this.pm=carMesh(rc.model,rc.car.vis,{hero:true,lights:lo,brand:rc.model.brand,decalN:DECAL_N(rc.car)});sc.add(this.pm);
     this.rm=rc.rivals.map(a=>{const m=carMesh(a.model,a.vis,{hero:true,lights:lo,brand:a.model.brand});sc.add(m);return m});
+    this.glbOk=[rc.model,...rc.rivals.map(a=>a.model)].map(m=>!m.glb||glbReady(m.glb));
     this.pool={};this.live=new Set();
     if(sk.rain)this.makeRain();
   }
@@ -2050,6 +2054,12 @@ class World3D{
       sc.add(pole);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(gp,3));
       sc.add(new THREE.Points(g,new THREE.PointsMaterial({size:1.7,map:T.glow,color:lin('#ffcf8a'),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})))}
   }
+  // troca carros que nasceram sem o modelo 3D (ainda baixando) e compila os shaders antes da largada
+  refreshCars(){const rc=this.rc,lo=this.lightsOn,ms=[rc.model,...rc.rivals.map(a=>a.model)];
+    ms.forEach((m,i)=>{if(this.glbOk[i]||!m.glb||!glbReady(m.glb))return;this.glbOk[i]=true;
+      if(i===0){this.scene.remove(this.pm);this.pm=carMesh(rc.model,rc.car.vis,{hero:true,lights:lo,brand:rc.model.brand,decalN:DECAL_N(rc.car)});this.scene.add(this.pm)}
+      else{const a=rc.rivals[i-1];this.scene.remove(this.rm[i-1]);this.rm[i-1]=carMesh(a.model,a.vis,{hero:true,lights:lo,brand:a.model.brand});this.scene.add(this.rm[i-1])}})}
+  warm(){if(!this.popL){this.popL=new THREE.PointLight(lin('#ff8a2a'),0,9,2);this.scene.add(this.popL)}try{this.R.compile(this.scene,this.cam)}catch(e){}}
   makeRain(){const n=isTouch?900:1800,p=new Float32Array(n*6);this.drops=[];
     for(let i=0;i<n;i++)this.drops.push([rnd(-30,30),rnd(-8,22),rnd(-70,8)]);
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
@@ -2062,6 +2072,8 @@ class World3D{
   render(W,H){
     const now=performance.now(),dt=Math.min(.05,(now-this.last)/1000);this.last=now;
     const R=this.R,rc=this.rc,p=rc.p,pr=p.r,cam=this.cam;
+    // resolução adaptativa: se o aparelho não segurar ~45 fps, baixa a escala de render aos poucos (só desce, nunca oscila)
+    {const fa=this.fa||(this.fa={n:0,s:0,skip:30});const raw=(now-(this.lastRaw||now))/1000;this.lastRaw=now;if(fa.skip>0)fa.skip--;else if(raw>0&&raw<.5){fa.n++;fa.s+=raw;if(fa.n>=90){const avg=fa.s/fa.n;fa.n=0;fa.s=0;const pr0=R.getPixelRatio();if(avg>1/45&&pr0>.85){R.setPixelRatio(Math.max(.8,pr0-.2));this.W=0;fa.skip=30}}}}
     if(this.W!==W||this.H!==H){R.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();this.W=W;this.H=H}
     const yawOf=(xv,v)=>-Math.atan(xv/Math.max(v,4));
     this.place(this.pm,p.x,pr.x,yawOf(p.xv,pr.v));this.pm.userData.bodyG.rotation.z=clamp(-p.xv*.012,-.06,.06);setBrake(this.pm,p.brake);
@@ -2070,7 +2082,7 @@ class World3D{
     const popV=(m,r)=>{const g=m.userData.popG,on=r.popT>0;g.visible=on;if(on){const k=(r.popS||1)*(.7+Math.random()*.8);g.children.forEach(c=>c.scale.set(1,1,k))}};
     popV(this.pm,pr);hoodFx(this.pm,pr);trailFx(this.pm);if(!this.popL){this.popL=new THREE.PointLight(lin('#ff8a2a'),0,9,2);this.scene.add(this.popL)}
     this.popL.intensity=pr.popT>0?2.5*(pr.popS||1):0;if(pr.popT>0){this.popL.position.copy(this.pm.position);this.popL.position.y+=.5;this.popL.position.z+=Math.cos(this.pm.rotation.y)*(rc.model.L/2+.5)}
-    rc.rivals.forEach((a,i)=>{const m=this.rm[i];this.place(m,a.x,a.r.x,yawOf(a.xv,a.r.v));setBrake(m,a.brake);m.userData.flame.visible=a.r.nitroOn;popV(m,a.r);hoodFx(m,a.r);trailFx(m)});
+    rc.rivals.forEach((a,i)=>{const m=this.rm[i];this.place(m,a.x,a.r.x,yawOf(a.xw!=null?a.xw:a.xv,a.r.v));setBrake(m,a.brake);m.userData.flame.visible=a.r.nitroOn;popV(m,a.r);hoodFx(m,a.r);trailFx(m)});
     const near=rc.traffic.filter(t=>t.d>pr.x-80&&t.d<pr.x+430),cur=new Set(near);for(const t of[...this.live])if(!cur.has(t))this.release(t);
     for(const t of near){if(!t.mesh)this.acquire(t);this.place(t.mesh,rc.wx(t.d,t.off),t.d,-Math.atan(rc.slope(t.d))+t.rot);setBrake(t.mesh,t.hit||(t.v<8))}
     // câmera
@@ -2092,7 +2104,7 @@ class World3D{
     this.skyG.position.set(cam.position.x,0,cam.position.z);
     this.sun.position.set(P.x+40,P.y+70,P.z+30);this.sun.target.position.copy(P);
     if(this.spot){this.spot.position.copy(P).addScaledVector(fwd,1.6);this.spot.position.y+=.9;this.spot.target.position.copy(P).addScaledVector(fwd,30)}
-    if(this.pls&&this.lamps.length){const near=this.lamps.filter(l=>l[2]>d-12&&l[2]<d+120).slice(0,this.pls.length);this.pls.forEach((pl,i)=>{const l=near[i];pl.visible=!!l;if(l)pl.position.set(l[4],l[5],-l[2])})}
+    if(this.pls&&this.lamps.length){const near=this.lamps.filter(l=>l[2]>d-12&&l[2]<d+120).slice(0,this.pls.length);this.pls.forEach((pl,i)=>{const l=near[i];if(pl.userData.i0==null)pl.userData.i0=pl.intensity;pl.intensity=l?pl.userData.i0:0;if(l)pl.position.set(l[4],l[5],-l[2])})}
     if(this.rain){const a=this.rain.geometry.attributes.position.array,sp=pr.v*.7;let k=0;
       for(const q of this.drops){q[1]-=26*dt;q[2]+=sp*dt;if(q[1]<-8){q[1]+=30;q[0]=rnd(-30,30)}if(q[2]>8){q[2]-=78;q[0]=rnd(-30,30)}
         a[k++]=q[0];a[k++]=q[1];a[k++]=q[2];a[k++]=q[0]+.04;a[k++]=q[1]+.9;a[k++]=q[2]-.02*pr.v-.1}
@@ -2294,7 +2306,7 @@ class Roam3D{
     const fov=58+port*14+clamp(Math.abs(vs)/70,0,1)*12+(rc.r.nitroOn?6:0);cam.fov+=(fov-cam.fov)*Math.min(1,dt*3);cam.updateProjectionMatrix();
     this.skyG.position.set(cam.position.x,0,cam.position.z);this.sun.position.set(P.x+40,70,P.z+30);this.sun.target.position.copy(P);
     if(this.spot){this.spot.position.copy(P).addScaledVector(fwd,1.6);this.spot.position.y+=.9;this.spot.target.position.copy(P).addScaledVector(fwd,30)}
-    if(this.pls){const near=this.lamps.map(l=>[l,(l[0]-P.x)**2+(l[1]-P.z)**2]).sort((a,b)=>a[1]-b[1]).slice(0,this.pls.length);this.pls.forEach((pl,i)=>{const l=near[i];pl.visible=!!l;if(l)pl.position.set(l[0][0],7,l[0][1])})}
+    if(this.pls){const near=this.lamps.map(l=>[l,(l[0]-P.x)**2+(l[1]-P.z)**2]).sort((a,b)=>a[1]-b[1]).slice(0,this.pls.length);this.pls.forEach((pl,i)=>{const l=near[i];if(pl.userData.i0==null)pl.userData.i0=pl.intensity;pl.intensity=l?pl.userData.i0:0;if(l)pl.position.set(l[0][0],7,l[0][1])})}
     R.render(this.scene,cam)}
   dispose(){this.scene.traverse(o=>{if(o.geometry&&!Object.values(CARGEO).some(c=>Object.values(c).includes(o.geometry)))o.geometry.dispose();const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];ms.forEach(m=>{if(!Object.values(MATC).includes(m)){if(m.map&&!Object.values(R3.T).includes(m.map))m.map.dispose();m.dispose()}})});this.R.clear()}
 }
@@ -2409,11 +2421,11 @@ const Game={scene:null,raf:0,last:0,paused:false,ev:null,car:null,
     S.money-=ev.entry+(bet||0);save();
     this.net=net||null;this.scene=ev.mode==='drag'?new DragRace(ev,car,net):new StreetRace(ev,car,bet,net);
     lockPortrait();Input.clear();this.paused=false;$('#race').style.display='block';$('#rc3d').style.display=this.scene.v3?'block':'none';buildControls(ev.mode);
-    cancelAnimationFrame(this.raf);const sc=this.scene,run=()=>{if(this.scene!==sc)return;this.warmDrag(sc);Snd.startEngine();this.last=performance.now();this.raf=requestAnimationFrame(t=>this.loop(t))},
+    cancelAnimationFrame(this.raf);const sc=this.scene,run=()=>{if(this.scene!==sc)return;this.warmDrag(sc);if(sc.v3){sc.v3.refreshCars();sc.v3.warm()}Snd.startEngine();this.last=performance.now();this.raf=requestAnimationFrame(t=>this.loop(t))},
       go=()=>{if(this.scene!==sc)return;if(sc.mode!=='drag'||!window.THREE)return run();const need=[[sc.model,sc.car.vis],[sc.om,sc.ovis]].some(([m,v])=>m&&m.glb&&v&&glbReady(m.glb)&&!SPR.cache.has(sprKey(m,v)));if(!need)return run();
         const{ctx:cx,w,h}=fit($('#rc'));cx.fillStyle='#07090d';cx.fillRect(0,0,w,h);cx.fillStyle='#ffb300';cx.font='800 18px system-ui,sans-serif';cx.textAlign='center';cx.fillText('PREPARANDO A PISTA…',w/2,h/2);setTimeout(run,40)};
     // arrancada: carrega os modelos 3D e pré-desenha os sprites dos dois carros ANTES da largada (evita travada no começo e no meio da corrida)
-    if(sc.mode==='drag'&&window.THREE&&THREE.GLTFLoader){const ps=[];for(const m of[sc.model,sc.om])if(m&&m.glb&&!glbReady(m.glb))ps.push(loadGLB(m.glb));
+    if(window.THREE&&THREE.GLTFLoader&&(sc.mode==='drag'||sc.v3)){const ps=[];for(const m of sc.mode==='drag'?[sc.model,sc.om]:[sc.model,...sc.rivals.map(a=>a.model)])if(m&&m.glb&&!glbReady(m.glb)){const p=GLB[m.glb]&&GLB[m.glb].p||loadGLB(m.glb);if(p)ps.push(p)}
       if(ps.length){const{ctx:cx,w,h}=fit($('#rc'));cx.fillStyle='#07090d';cx.fillRect(0,0,w,h);cx.fillStyle='#ffb300';cx.font='800 18px system-ui,sans-serif';cx.textAlign='center';cx.fillText('CARREGANDO OS CARROS…',w/2,h/2);Promise.race([Promise.all(ps),new Promise(r=>setTimeout(r,7000))]).then(go,go);return}}
     go();
   },
