@@ -42,7 +42,11 @@ export default async function handler(req, res) {
   if (b.act === 'score') {
     const r = { n: str(b.name, 18) || 'Piloto', t: Math.round(num(b.t, 0, 15) || 0), p: Math.round(num(b.p, 0, 100) || 0), w: Math.round(num(b.w, 0, 1e6) || 0), l: Math.round(num(b.l, 0, 1e6) || 0), c: str(b.car, 30), b: num(b.best, 0, 9) };
     await kv('HSET', 'rk:' + SEASON, pid, JSON.stringify(r));
-    return res.status(200).json({ ok: true });
+    // posição no ranking (divisão, depois pontos, depois vitórias)
+    const raw = (await kv('HGETALL', 'rk:' + SEASON)) || [];
+    const sc = x => x.t * 100 + x.p, me = sc(r);let pos = 1, total = 0;
+    for (let i = 0; i < raw.length; i += 2) { total++; if (raw[i] === pid) continue; try { const o = JSON.parse(raw[i + 1]); if (sc(o) > me || (sc(o) === me && o.w > r.w)) pos++ } catch {} }
+    return res.status(200).json({ ok: true, pos, total });
   }
   return res.status(400).json({ error: 'ação' });
 }

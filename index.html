@@ -243,6 +243,26 @@ a.btn{text-decoration:none;color:var(--tx)}
 .rkpromo{text-align:center;font:900 18px "Russo One",Arial;margin:6px 0}.rkpromo.up{color:var(--ac)}.rkpromo.down{color:var(--rd)}
 .rktop{max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:6px}.rkrow{display:grid;grid-template-columns:36px 1fr auto 70px;gap:8px;align-items:center;padding:8px;border-radius:10px;background:var(--p2)}.rkrow.me{outline:1px solid var(--ac)}.rkrow small{display:block;color:var(--mu);font-size:11px}.rkrow .pt{text-align:right;font-weight:800}
 .rkcard{border-color:#5c4b12!important;background:linear-gradient(135deg,#1d2410,#121519)!important}
+.rkhead{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;border:1px solid var(--rc);background:radial-gradient(circle at 0 0,color-mix(in srgb,var(--rc) 22%,transparent),transparent 70%),var(--p2)}.rkhead small{color:var(--mu);font-size:11px;font-weight:800;letter-spacing:.05em}.rkhead b{display:block;font:900 22px "Russo One",Arial;color:var(--rc)}
+.rkemb{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:30px;background:#0d1014;border:2px solid var(--rc);box-shadow:0 0 18px -4px var(--rc);flex:none}
+.rkladder{display:flex;gap:4px;justify-content:center;margin:8px 0 2px;flex-wrap:wrap}.rkladder span{font:700 11px Rajdhani,Arial;color:#5b6573;padding:2px 8px;border-radius:999px;border:1px solid #252b33}.rkladder span.on{color:var(--rc);border-color:var(--rc)}
+.rkx{margin:4px 0 10px}.rkx-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:stretch}
+.rkx-card{position:relative;border:1px solid var(--ln);border-radius:14px;padding:12px 8px 10px;background:linear-gradient(180deg,#1a1f26,#11151a);text-align:center;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.rkx-card.win{border-color:var(--ac);box-shadow:0 0 0 1px rgba(198,255,61,.35),0 8px 30px -10px rgba(198,255,61,.45)}.rkx-card.me .who{color:var(--ac)}
+.rkx-card .who{padding:0 16px;font:900 13px "Russo One",Arial;letter-spacing:.04em;color:#ff8a8a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rkx-card .car{color:var(--mu);font-size:11px;min-height:13px}
+.rkx-card .dial{font:700 12px Rajdhani,Arial;color:#9aa3ae;margin-top:4px}.rkx-card .dial b{color:#eef1f5;font-size:14px}
+.rkx-card .et{font:900 30px/1.05 "Russo One",Arial;margin:4px 0}.rkx-card .et i{font-size:14px;font-style:normal;color:var(--mu)}.rkx-card .et.ok{color:#eef1f5}.rkx-card .et.perf{color:var(--ac)}.rkx-card .et.bad{color:var(--rd)}
+.rkx-card .chip{align-self:center;font:800 11px Rajdhani,Arial;padding:3px 8px;border-radius:999px;background:#262c34;color:#c9ced6}.chip.perf{background:rgba(198,255,61,.15);color:var(--ac)}.chip.bad{background:rgba(255,77,90,.15);color:var(--rd)}
+.rkx-crown{position:absolute;top:4px;right:6px;font-size:16px;animation:rkpop .6s .3s both}@keyframes rkpop{from{transform:scale(0) rotate(-30deg)}to{transform:none}}
+.rkx-mid{align-self:center;font:italic 900 20px "Russo One",Arial;color:#5b6573}
+.rkx-rule{text-align:center;color:#c9ced6;font-size:13px;margin:8px 0}
+.rkx-stats{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--ln);border-radius:14px;padding:10px;background:var(--p2)}
+.rkx-pts{text-align:center;min-width:64px}.rkx-pts b{display:block;font:900 30px/1 "Russo One",Arial}.rkx-pts.up b{color:var(--ac)}.rkx-pts.dn b{color:var(--rd)}.rkx-pts small,.rkx-pos small{color:var(--mu);font-size:10px;font-weight:800;letter-spacing:.06em}
+.rkx-div small{color:var(--mu);font-weight:700}.rkx-bar{height:8px;border-radius:8px;background:#1d2228;overflow:hidden;margin:6px 0 3px}.rkx-bar div{height:100%;border-radius:8px;transition:width 1.1s cubic-bezier(.2,.9,.3,1)}.sub2{font-size:11px}
+.rkx-pos{text-align:center;min-width:70px}.rkx-pos b{display:block;font:900 22px/1.1 "Russo One",Arial;color:#ffd23d}.rkx-pos.in b{animation:rkpop .5s both}.rkx-pos i{font-style:normal;font-weight:900}.rkx-pos i.up{color:var(--ac)}.rkx-pos i.dn{color:var(--rd)}
+.rkx-prize{text-align:center;margin:8px 0 0;color:#c9ced6}.rkx-prize b{color:var(--ac)}
+.rkx-promo{display:flex;gap:10px;align-items:center;margin:8px 0 0;padding:10px 12px;border-radius:12px;animation:rkpop .5s .5s both}.rkx-promo span{font-size:28px}.rkx-promo b{display:block;font:900 16px "Russo One",Arial}.rkx-promo small{color:#c9ced6}
+.rkx-promo.up{background:linear-gradient(90deg,rgba(198,255,61,.18),transparent);border:1px solid rgba(198,255,61,.4)}.rkx-promo.up b{color:var(--ac)}.rkx-promo.perf{background:linear-gradient(90deg,rgba(255,210,61,.16),transparent);border:1px solid rgba(255,210,61,.4)}.rkx-promo.perf b{color:#ffd23d}.rkx-promo.dn{background:linear-gradient(90deg,rgba(255,77,90,.15),transparent);border:1px solid rgba(255,77,90,.35)}.rkx-promo.dn b{color:var(--rd)}
 </style>
 </head>
 <body>
@@ -2592,7 +2612,8 @@ function rkBot(t,want){const g={min:want?want-1.2:rkG(t).min,max:want?want+1.2:r
 const RK={searching:false,t0:0,iv:0,dial:0,invAt:0,
   open(){if(guestLocked()){loginModal('A Ranqueada é pra quem tem conta. Entre pra disputar as divisões.');return}const R=rkState(),car=activeCar(),g=rkG(R.t),est=rkEst(car);
     const def=+clamp(this.dial||Math.ceil((est+.25)*20)/20,RK_MIN,RK_MAX).toFixed(2),fits=true;
-    modal(`<div style="text-align:center">${rkBadge(R.t,true)}<div class="xpbar" style="height:9px;margin:10px auto 4px;width:100%;max-width:none"><div style="width:${R.p}%;background:${g.c}"></div></div><small style="color:var(--mu)">${R.p}/100 pontos · ${R.w}V ${R.l}D${R.best!=null?` · melhor cravada ${R.best.toFixed(3)}s`:''}</small></div>
+    modal(`<div class="rkhead" style="--rc:${g.c}"><div class="rkemb">${g.ic}</div><div style="flex:1;min-width:0"><small>SUA DIVISÃO</small><b>${rkName(R.t)}</b><div class="rkx-bar"><div style="width:${R.p}%;background:${g.c}"></div></div><small>${R.p}/100 pontos · ${R.w}V ${R.l}D${R.best!=null?` · cravada ${R.best.toFixed(3)}s`:''}</small></div><div class="rkx-pos"><b>${R.pos?'#'+R.pos:'—'}</b><small>RANKING</small></div></div>
+      <div class="rkladder">${RK_G.map((x,i)=>`<span class="${Math.floor(R.t/4)===i?'on':''}" style="--rc:${x.c}">${x.ic} ${x.n}</span>`).join('')}</div>
       <h3 style="margin:14px 0 4px">Declare seu tempo</h3><p class="sub" style="margin:0 0 8px">Declare o tempo que quiser. Seu ${CAR[car.model].name} faz uns <b>${est.toFixed(2)}s</b> no limpo.</p>
       ${fits?'':`<p class="sub" style="color:var(--rd);margin:0 0 8px">Seu carro está lento pra essa categoria. Prepare na Oficina ou troque de carro.</p>`}
       <div style="display:flex;gap:6px;align-items:center;justify-content:center;margin:6px 0;flex-wrap:wrap"><button class="btn sm" data-act="rkd" data-v="-0.1">−0,1</button><button class="btn sm" data-act="rkd" data-v="-0.01">−0,01</button>
@@ -2623,20 +2644,33 @@ const RK={searching:false,t0:0,iv:0,dial:0,invAt:0,
 };
 function rkPost(res,t0,car){if(!S.pid)return;const R=rkState(),m=CAR[car.model];
   const body={act:'score',pid:S.pid,name:S.settings.nick||AUTH.name||'Piloto',t:R.t,p:R.p,w:R.w,l:R.l,car:m.name,best:R.best};
-  fetch('/api/rk',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).catch(()=>{});
+  fetch('/api/rk',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).then(j=>{if(!j||!j.pos)return;const old=R.pos;R.pos=j.pos;R.tot=j.total;save();
+    const el=$('#rkpos');if(el){const mv=old?old-j.pos:0;el.innerHTML=`<b>#${j.pos}</b><small>de ${j.total} pilotos${mv>0?` <i class="up">▲${mv}</i>`:mv<0?` <i class="dn">▼${-mv}</i>`:''}</small>`;el.classList.add('in')}}).catch(()=>{const el=$('#rkpos');if(el)el.innerHTML='<b>—</b><small>sem conexão</small>'});
   if(res.et&&!res.jump&&res.trace&&res.trace.length>40)fetch('/api/rk',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({act:'run',pid:S.pid,name:body.name,tier:t0,dial:res.rkr.md,et:+res.et.toFixed(3),rt:res.react,v:Game.scene&&Game.scene.p?Game.scene.p.v:40,trace:res.trace.slice(0,420),model:car.model,vis:car.vis})}).catch(()=>{})}
-function rkApply(res){const R=rkState(),r=res.rkr,t0=R.t,car=activeCar();let dp=r.won?20:-12,crav=false;
+function rkApply(res){const R=rkState(),r=res.rkr,t0=R.t,p0=R.p,car=activeCar();let dp=r.won?20:-12,crav=false;
   if(r.won&&r.me!=null&&!r.brk&&Math.abs(r.me-r.md)<=.05){dp+=5;crav=true}
-  R.p+=dp;let promo='',bonus=0;if(R.p>=100){if(R.t<15){R.t++;R.p=20;bonus=rkPromo(R.t);promo=`<div class="rkpromo up">⬆ SUBIU PARA ${rkName(R.t).toUpperCase()}! +${fmt(bonus)}</div>`}else R.p=100}
-  else if(R.p<0){if(R.t>0){R.t--;R.p=75;promo=`<div class="rkpromo down">⬇ Caiu para ${rkName(R.t)}</div>`}else R.p=0}
+  R.p+=dp;let promo='',bonus=0;if(R.p>=100){if(R.t<15){R.t++;R.p=20;bonus=rkPromo(R.t);promo=`<div class="rkx-promo up"><span>${rkG(R.t).ic}</span><div><b>SUBIU DE DIVISÃO!</b><small>Agora você é ${rkName(R.t)} · bônus ${fmt(bonus)}</small></div></div>`}else R.p=100}
+  else if(R.p<0){if(R.t>0){R.t--;R.p=75;promo=`<div class="rkx-promo dn"><span>⬇</span><div><b>CAIU DE DIVISÃO</b><small>Agora você é ${rkName(R.t)}. Bora recuperar!</small></div></div>`}else R.p=0}
   if(r.won)R.w++;else R.l++;const prize=r.won?rkPrize(t0):0;S.money+=prize+bonus;
   if(r.me!=null&&!r.mj&&!r.brk){const e=Math.abs(r.me-r.md);if(R.best==null||e<R.best)R.best=+e.toFixed(3)}
   R.last=[{w:r.won,d:r.md,e:r.me,ts:Date.now()},...(R.last||[])].slice(0,10);
   rkPost(res,t0,car);
-  const col=(nm,dial,et,j,brk,sc,win)=>`<div class="rkcol ${win?'w':''}"><small>${nm}</small><div>Declarou <b>${dial.toFixed(2)}s</b></div><div>Fez <b>${j?'QUEIMOU':et!=null?et.toFixed(3)+'s':'—'}</b></div><div class="${brk?'brk':''}">${j||et==null?'—':brk?`QUEBROU −${(dial-et).toFixed(3)}s`:`+${(et-dial).toFixed(3)}s`}</div></div>`;
-  const opn=Game.scene&&Game.scene.rk?Game.scene.rk.oppName:'Adversário';
-  return`<div class="rkres">${col('VOCÊ',r.md,r.me,r.mj,r.brk,r.a,r.won)}${col(escapeHtml(opn).toUpperCase(),r.od,r.op,r.oj,r.obrk,r.b,!r.won)}</div>
-   ${crav?'<div class="rkpromo up">🎯 CRAVOU! +5 pontos</div>':''}<p class="sub" style="text-align:center;margin:6px 0">${rkBadge(R.t)} · <b style="color:${dp>0?'var(--ac)':'var(--rd)'}">${dp>0?'+':''}${dp} pontos</b> (${R.p}/100)${prize?` · prêmio ${fmt(prize)}`:''}</p>${promo}`}
+  const sc=Game.scene,opn=sc&&sc.rk?sc.rk.oppName:'Adversário',om=sc&&sc.om?sc.om.name:(sc&&sc.net&&sc.net.oppModel?sc.net.oppModel.name:''),ghost=sc&&sc.rkG;
+  const card=(who,carN,dial,et,j,brk,win,me)=>{const st=j?['QUEIMOU','bad']:et==null?['NÃO TERMINOU','bad']:brk?[`QUEBROU −${(dial-et).toFixed(3)}s`,'bad']:Math.abs(et-dial)<=.05?[`CRAVOU +${(et-dial).toFixed(3)}s`,'perf']:[`+${(et-dial).toFixed(3)}s`,'ok'];
+    return`<div class="rkx-card ${win?'win':''} ${me?'me':''}">${win?'<div class="rkx-crown">👑</div>':''}<small class="who">${who}</small><small class="car">${carN}</small>
+      <div class="dial">DECLAROU <b>${dial.toFixed(2)}</b></div><div class="et ${st[1]}">${j?'—':et!=null?et.toFixed(3):'—'}<i>s</i></div><span class="chip ${st[1]}">${st[0]}</span></div>`};
+  const g=rkG(R.t),sameT=R.t===t0;
+  setTimeout(()=>{const b=$('#rkbar');if(b)b.style.width=R.p+'%';const n=$('#rkptsn');if(n){let k=0;const tgt=dp,iv=setInterval(()=>{k+=Math.sign(tgt);n.textContent=(k>0?'+':'')+k;if(k===tgt)clearInterval(iv)},28)}},350);
+  return`<div class="rkx ${r.won?'won':'lost'}">
+    <div class="rkx-vs">${card('VOCÊ',CAR[car.model].name,r.md,r.me,r.mj,r.brk,r.won,1)}<div class="rkx-mid">VS</div>${card(escapeHtml(opn).toUpperCase()+(ghost?' 👻':''),escapeHtml(om||''),r.od,r.op,r.oj,r.obrk,!r.won,0)}</div>
+    <p class="rkx-rule">${r.brk&&!r.obrk?'Você fez abaixo do que declarou e quebrou.':!r.brk&&r.obrk&&!r.oj?'O adversário quebrou o tempo dele.':r.mj?'Luz vermelha: saiu antes do verde.':r.won?'Seu tempo ficou mais perto do declarado.':'O adversário cravou mais perto do declarado.'}</p>
+    ${crav?'<div class="rkx-promo perf"><span>🎯</span><div><b>CRAVOU!</b><small>Até 0,05s do declarado · +5 pontos extras</small></div></div>':''}
+    <div class="rkx-stats">
+      <div class="rkx-pts ${dp>0?'up':'dn'}"><b id="rkptsn">0</b><small>PONTOS</small></div>
+      <div class="rkx-div"><div style="display:flex;justify-content:space-between;align-items:center">${rkBadge(R.t)}<small>${R.p}/100</small></div><div class="rkx-bar"><div id="rkbar" style="width:${sameT?p0:R.t>t0?0:100}%;background:${g.c}"></div></div><small class="sub2">${R.w}V ${R.l}D${R.best!=null?` · melhor cravada ${R.best.toFixed(3)}s`:''}</small></div>
+      <div class="rkx-pos" id="rkpos"><b>…</b><small>posição no ranking</small></div>
+    </div>
+    ${prize?`<div class="rkx-prize">💵 Prêmio da vitória <b>${fmt(prize)}</b></div>`:''}${promo}</div>`}
 async function rkTop(){modal('<h2>Ranking · Ranqueada</h2><p class="sub">Carregando…</p>');let rows=[];try{const r=await fetch('/api/rk?top=1',{cache:'no-store'});rows=(await r.json()).rows||[]}catch(e){}
   const me=S.pid;modal(`<h2>Ranking · Ranqueada</h2><p class="sub">Temporada 1 · ordem por divisão e pontos</p><div class="rktop">${rows.length?rows.map((r,i)=>`<div class="rkrow ${r.id===me?'me':''}"><b>${i+1}º</b><span class="nm">${escapeHtml(r.n)}<small>${escapeHtml(r.c||'')}</small></span>${rkBadge(r.t)}<span class="pt">${r.p} pts<small>${r.w}V ${r.l}D</small></span></div>`).join(''):'<p class="sub">Ninguém no ranking ainda. Seja o primeiro!</p>'}</div><div class="acts"><button class="btn" data-act="rkopen">Voltar</button></div>`)}
 const TABS=[['eventos','Eventos'],['rodagem','Rodagem'],['online','Online'],['garagem','Garagem'],['oficina','Oficina'],['visual','Visual'],['loja','Concessionária'],['premium','💎 Loja'],['passe','Passe'],['patro','Patrocínios'],['conta','Conta']];
